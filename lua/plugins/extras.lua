@@ -62,7 +62,7 @@ return {
   -- { import = "lazyvim.plugins.extras.lang.rust" },
 
   -- Markdown
-  -- { import = "lazyvim.plugins.extras.lang.markdown" },
+  { import = "lazyvim.plugins.extras.lang.markdown" },
 
   -- AI 辅助编程（Codeium - 免费）
   -- { import = "lazyvim.plugins.extras.ai.codeium" },

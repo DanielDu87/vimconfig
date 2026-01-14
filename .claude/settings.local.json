@@ -3,7 +3,8 @@
     "allow": [
       "Bash(lua:*)",
       "Bash(wc:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(nvim:*)"
     ]
   }
 }

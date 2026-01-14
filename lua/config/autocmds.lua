@@ -8,6 +8,8 @@
 --
 -- 在此文件中添加任何额外的自定义自动命令
 
+-- 注意：启动时自动打开 Explorer 的配置已移至 lua/plugins/explorer.lua
+
 -- 示例：高亮复制（yank）的文本（根据需要取消注释）
 -- vim.api.nvim_create_autocmd("TextYankPost", {
 --   callback = function()
