@@ -1,3 +1,12 @@
--- Keymaps are automatically loaded on the VeryLazy event
--- Default keymaps that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/keymaps.lua
--- Add any additional keymaps here
+--==============================================================================
+-- Neovim 键位映射配置
+--==============================================================================
+-- 这些键位映射会在 VeryLazy 事件时自动加载
+--
+-- LazyVim 已经预配置了大量实用的键位映射
+-- 完整列表: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/keymaps.lua
+--
+-- 使用 :LazyKeys 命令或 <leader>sk 查看所有键位映射
+
+-- 示例：添加自定义快捷键（根据需要取消注释）
+-- vim.keymap.set("n", "<leader>q", "<cmd>q<cr>", { desc = "退出" })

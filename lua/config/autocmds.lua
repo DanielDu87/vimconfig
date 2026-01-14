@@ -1,8 +1,17 @@
--- Autocmds are automatically loaded on the VeryLazy event
--- Default autocmds that are always set: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/autocmds.lua
+--==============================================================================
+-- Neovim 自动命令配置
+--==============================================================================
+-- 这些自动命令会在 VeryLazy 事件时自动加载
 --
--- Add any additional autocmds here
--- with `vim.api.nvim_create_autocmd`
+-- LazyVim 已经预配置了大量实用的自动命令
+-- 完整列表: https://github.com/LazyVim/LazyVim/blob/main/lua/lazyvim/config/autocmds.lua
 --
--- Or remove existing autocmds by their group name (which is prefixed with `lazyvim_` for the defaults)
--- e.g. vim.api.nvim_del_augroup_by_name("lazyvim_wrap_spell")
+-- 在此文件中添加任何额外的自定义自动命令
+
+-- 示例：高亮复制（yank）的文本（根据需要取消注释）
+-- vim.api.nvim_create_autocmd("TextYankPost", {
+--   callback = function()
+--     vim.highlight.on_yank({ higroup = "Visual", timeout = 200 })
+--   end,
+--   desc = "高亮被复制的文本",
+-- })

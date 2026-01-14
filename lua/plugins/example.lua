@@ -1,197 +1,122 @@
--- since this is just an example spec, don't actually load anything here and return an empty spec
--- stylua: ignore
-if true then return {} end
-
--- every spec file under the "plugins" directory will be loaded automatically by lazy.nvim
+--==============================================================================
+-- LazyVim 插件配置示例
+--==============================================================================
+-- 本文件展示如何配置 LazyVim 插件
 --
--- In your plugin files, you can:
--- * add extra plugins
--- * disable/enabled LazyVim plugins
--- * override the configuration of LazyVim plugins
-return {
-  -- add gruvbox
-  { "ellisonleao/gruvbox.nvim" },
+-- 重要提示：
+-- 这只是一个示例文件，默认被禁用（见下方的 return {} 语句）
+-- 要使用这些配置，请删除或注释掉 "return {}" 这一行
+--
+-- 官方文档：
+-- https://lazyvim.github.io/configuration#adding-plugins
 
-  -- Configure LazyVim to load gruvbox
+--==============================================================================
+-- 示例配置开关
+--==============================================================================
+-- 将此行改为注释以启用示例配置
+if true then
+  return {}
+end
+
+--==============================================================================
+-- 插件配置示例
+--==============================================================================
+return {
+
+  -------------------------------------------------------------------------
+  -- 示例 1: 导入 LazyVim 官方 extras（推荐方式）
+  -------------------------------------------------------------------------
+  -- LazyVim 官方提供了许多预配置的语言和工具支持
+  -- 完整列表: https://lazyvim.github.io/extras
+
+  -- TypeScript/JavaScript 支持
+  { import = "lazyvim.plugins.extras.lang.typescript" },
+
+  -- Python 支持
+  { import = "lazyvim.plugins.extras.lang.python" },
+
+  -- Go 支持
+  { import = "lazyvim.plugins.extras.lang.go" },
+
+  -- Rust 支持
+  { import = "lazyvim.plugins.extras.lang.rust" },
+
+  -- JSON/YAML 支持
+  { import = "lazyvim.plugins.extras.lang.json" },
+
+  -- Tailwind CSS 支持
+  { import = "lazyvim.plugins.extras.lang.tailwind" },
+
+  -------------------------------------------------------------------------
+  -- 示例 2: 更改配色方案
+  -------------------------------------------------------------------------
   {
     "LazyVim/LazyVim",
     opts = {
-      colorscheme = "gruvbox",
+      colorscheme = "tokyonight", -- 默认主题
+      -- 其他可选主题: "catppuccin", "gruvbox", "nord"
     },
   },
 
-  -- change trouble config
+  -------------------------------------------------------------------------
+  -- 示例 3: 配置 treesitter（添加语法解析器）
+  -------------------------------------------------------------------------
   {
-    "folke/trouble.nvim",
-    -- opts will be merged with the parent spec
-    opts = { use_diagnostic_signs = true },
-  },
-
-  -- disable trouble
-  { "folke/trouble.nvim", enabled = false },
-
-  -- override nvim-cmp and add cmp-emoji
-  {
-    "hrsh7th/nvim-cmp",
-    dependencies = { "hrsh7th/cmp-emoji" },
-    ---@param opts cmp.ConfigSchema
+    "nvim-treesitter/nvim-treesitter",
     opts = function(_, opts)
-      table.insert(opts.sources, { name = "emoji" })
+      -- 添加需要确保安装的解析器
+      vim.list_extend(opts.ensure_installed, {
+        "python",
+        "typescript",
+        "tsx",
+      })
     end,
   },
 
-  -- change some telescope options and a keymap to browse plugin files
+  -------------------------------------------------------------------------
+  -- 示例 4: 配置 Mason（安装 LSP 和工具）
+  -------------------------------------------------------------------------
   {
-    "nvim-telescope/telescope.nvim",
-    keys = {
-      -- add a keymap to browse plugin files
-      -- stylua: ignore
-      {
-        "<leader>fp",
-        function() require("telescope.builtin").find_files({ cwd = require("lazy.core.config").options.root }) end,
-        desc = "Find Plugin File",
-      },
-    },
-    -- change some options
+    "williamboman/mason.nvim",
     opts = {
-      defaults = {
-        layout_strategy = "horizontal",
-        layout_config = { prompt_position = "top" },
-        sorting_strategy = "ascending",
-        winblend = 0,
+      ensure_installed = {
+        "stylua",      -- Lua 格式化
+        "black",       -- Python 格式化
+        "prettierd",   -- JS/TS 格式化
+        "shellcheck",  -- Shell 检查
       },
     },
   },
 
-  -- add pyright to lspconfig
+  -------------------------------------------------------------------------
+  -- 示例 5: 配置 LSP 服务器
+  -------------------------------------------------------------------------
   {
     "neovim/nvim-lspconfig",
-    ---@class PluginLspOpts
     opts = {
-      ---@type lspconfig.options
       servers = {
-        -- pyright will be automatically installed with mason and loaded with lspconfig
+        -- pyright 会自动安装
         pyright = {},
       },
     },
   },
 
-  -- add tsserver and setup with typescript.nvim instead of lspconfig
-  {
-    "neovim/nvim-lspconfig",
-    dependencies = {
-      "jose-elias-alvarez/typescript.nvim",
-      init = function()
-        require("lazyvim.util").lsp.on_attach(function(_, buffer)
-          -- stylua: ignore
-          vim.keymap.set( "n", "<leader>co", "TypescriptOrganizeImports", { buffer = buffer, desc = "Organize Imports" })
-          vim.keymap.set("n", "<leader>cR", "TypescriptRenameFile", { desc = "Rename File", buffer = buffer })
-        end)
-      end,
-    },
-    ---@class PluginLspOpts
-    opts = {
-      ---@type lspconfig.options
-      servers = {
-        -- tsserver will be automatically installed with mason and loaded with lspconfig
-        tsserver = {},
-      },
-      -- you can do any additional lsp server setup here
-      -- return true if you don't want this server to be setup with lspconfig
-      ---@type table<string, fun(server:string, opts:_.lspconfig.options):boolean?>
-      setup = {
-        -- example to setup with typescript.nvim
-        tsserver = function(_, opts)
-          require("typescript").setup({ server = opts })
-          return true
-        end,
-        -- Specify * to use this function as a fallback for any server
-        -- ["*"] = function(server, opts) end,
-      },
-    },
-  },
+  -------------------------------------------------------------------------
+  -- 示例 6: 添加新插件
+  -------------------------------------------------------------------------
+  -- 添加 gruvbox 配色方案
+  { "ellisonleao/gruvbox.nvim" },
 
-  -- for typescript, LazyVim also includes extra specs to properly setup lspconfig,
-  -- treesitter, mason and typescript.nvim. So instead of the above, you can use:
-  { import = "lazyvim.plugins.extras.lang.typescript" },
-
-  -- add more treesitter parsers
-  {
-    "nvim-treesitter/nvim-treesitter",
-    opts = {
-      ensure_installed = {
-        "bash",
-        "html",
-        "javascript",
-        "json",
-        "lua",
-        "markdown",
-        "markdown_inline",
-        "python",
-        "query",
-        "regex",
-        "tsx",
-        "typescript",
-        "vim",
-        "yaml",
-      },
-    },
-  },
-
-  -- since `vim.tbl_deep_extend`, can only merge tables and not lists, the code above
-  -- would overwrite `ensure_installed` with the new value.
-  -- If you'd rather extend the default config, use the code below instead:
-  {
-    "nvim-treesitter/nvim-treesitter",
-    opts = function(_, opts)
-      -- add tsx and treesitter
-      vim.list_extend(opts.ensure_installed, {
-        "tsx",
-        "typescript",
-      })
-    end,
-  },
-
-  -- the opts function can also be used to change the default opts:
-  {
-    "nvim-lualine/lualine.nvim",
-    event = "VeryLazy",
-    opts = function(_, opts)
-      table.insert(opts.sections.lualine_x, {
-        function()
-          return "😄"
-        end,
-      })
-    end,
-  },
-
-  -- or you can return new options to override all the defaults
-  {
-    "nvim-lualine/lualine.nvim",
-    event = "VeryLazy",
-    opts = function()
-      return {
-        --[[add your custom lualine config here]]
-      }
-    end,
-  },
-
-  -- use mini.starter instead of alpha
-  { import = "lazyvim.plugins.extras.ui.mini-starter" },
-
-  -- add jsonls and schemastore packages, and setup treesitter for json, json5 and jsonc
-  { import = "lazyvim.plugins.extras.lang.json" },
-
-  -- add any tools you want to have installed below
-  {
-    "williamboman/mason.nvim",
-    opts = {
-      ensure_installed = {
-        "stylua",
-        "shellcheck",
-        "shfmt",
-        "flake8",
-      },
-    },
-  },
+  -------------------------------------------------------------------------
+  -- 示例 7: 禁用 LazyVim 插件
+  -------------------------------------------------------------------------
+  -- { "folke/trouble.nvim", enabled = false },
 }
+
+--==============================================================================
+-- 重要提示
+--==============================================================================
+-- 1. 删除开头的 "if true then return {} end" 来启用这些配置
+-- 2. 或者将此文件的内容复制到 lua/config/ 下的相应文件中
+-- 3. 推荐使用官方 extras（import 语句）而不是手动配置
+-- 4. 完整的插件列表: https://lazyvim.github.io/plugins
