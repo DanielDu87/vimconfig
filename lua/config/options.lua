@@ -25,6 +25,22 @@ vim.opt.termguicolors = true
 -- 设置窗口边框样式（单字符）
 vim.opt.winborder = "single"
 
+--==============================================================================
+-- Tab 和缩进设置
+--==============================================================================
+
+-- 使用 tab 字符（而不是空格）
+vim.opt.expandtab = false
+
+-- Tab 宽度为 4
+vim.opt.tabstop = 4
+
+-- 自动缩进宽度为 4
+vim.opt.shiftwidth = 4
+
+-- 软制表符宽度（用于编辑操作）
+vim.opt.softtabstop = 4
+
 -- 示例：设置 Python 文件的缩进（根据需要取消注释）
 -- vim.api.nvim_create_autocmd("FileType", {
 --   pattern = "python",

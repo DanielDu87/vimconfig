@@ -5,217 +5,217 @@
 
 return {
 
-  -------------------------------------------------------------------------
-  -- Treesitter（核心语法高亮引擎）
-  -------------------------------------------------------------------------
-  {
-    "nvim-treesitter/nvim-treesitter",
-    -- 确保 Treesitter 在打开文件时加载
-    event = { "BufReadPost", "BufNewFile" },
-    build = ":TSUpdate",
-    opts = {
-      -- 启用所有核心功能
-      highlight = {
-        enable = true,              -- 启用语法高亮
-        additional_vim_regex_highlighting = false,
-      },
+	-------------------------------------------------------------------------
+	-- Treesitter（核心语法高亮引擎）
+	-------------------------------------------------------------------------
+	{
+		"nvim-treesitter/nvim-treesitter",
+		-- 确保 Treesitter 在打开文件时加载
+		event = { "BufReadPost", "BufNewFile" },
+		build = ":TSUpdate",
+		opts = {
+			-- 启用所有核心功能
+			highlight = {
+				enable = true,              -- 启用语法高亮
+				additional_vim_regex_highlighting = false,
+			},
 
-      -- 增量选择
-      incremental_selection = {
-        enable = true,
-        keymaps = {
-          init_selection = "<CR>",
-          node_incremental = "<CR>",
-          scope_incremental = "<TAB>",
-          node_decremental = "<S-TAB>",
-        },
-      },
+			-- 增量选择
+			incremental_selection = {
+				enable = true,
+				keymaps = {
+					init_selection = "<CR>",
+					node_incremental = "<CR>",
+					scope_incremental = "<TAB>",
+					node_decremental = "<S-TAB>",
+				},
+			},
 
-      -- 缩进
-      indent = {
-        enable = true,
-      },
+			-- 缩进
+			indent = {
+				enable = true,
+			},
 
-      -- 确保安装前端和 Python 相关的 parser
-      ensure_installed = {
-        -- 前端
-        "html",
-        "css",
-        "javascript",
-        "typescript",
-        "tsx",
-        "json",
-        "jsonc",
-        "yaml",
+			-- 确保安装前端和 Python 相关的 parser
+			ensure_installed = {
+				-- 前端
+				"html",
+				"css",
+				"javascript",
+				"typescript",
+				"tsx",
+				"json",
+				"jsonc",
+				"yaml",
 
-        -- Python
-        "python",
+				-- Python
+				"python",
 
-        -- 基础
-        "lua",
-        "vim",
-        "vimdoc",
-        "query",
-        "regex",
+				-- 基础
+				"lua",
+				"vim",
+				"vimdoc",
+				"query",
+				"regex",
 
-        -- 常用
-        "bash",
-        "markdown",
-        "markdown_inline",
-        "dockerfile",
-      },
-    },
-  },
+				-- 常用
+				"bash",
+				"markdown",
+				"markdown_inline",
+				"dockerfile",
+			},
+		},
+	},
 
-  -------------------------------------------------------------------------
-  -- Treesitter 文本对象（更好的文本操作）
-  -------------------------------------------------------------------------
-  {
-    "nvim-treesitter/nvim-treesitter-textobjects",
-    event = "VeryLazy",
-    dependencies = { "nvim-treesitter/nvim-treesitter" },
-    opts = {
-      textobjects = {
-        select = {
-          enable = true,
-          lookahead = true,
-        },
-        swap = {
-          enable = true,
-        },
-        move = {
-          enable = true,
-        },
-      },
-    },
-  },
+	-------------------------------------------------------------------------
+	-- Treesitter 文本对象（更好的文本操作）
+	-------------------------------------------------------------------------
+	{
+		"nvim-treesitter/nvim-treesitter-textobjects",
+		event = "VeryLazy",
+		dependencies = { "nvim-treesitter/nvim-treesitter" },
+		opts = {
+			textobjects = {
+				select = {
+					enable = true,
+					lookahead = true,
+				},
+				swap = {
+					enable = true,
+				},
+				move = {
+					enable = true,
+				},
+			},
+		},
+	},
 
-  -------------------------------------------------------------------------
-  -- 上下文显示（显示当前函数/类名）
-  -------------------------------------------------------------------------
-  {
-    "nvim-treesitter/nvim-treesitter-context",
-    event = "VeryLazy",
-    dependencies = { "nvim-treesitter/nvim-treesitter" },
-    opts = {
-      enable = true,
-      max_lines = 3,  -- 最多显示 3 行上下文
-    },
-  },
+	-------------------------------------------------------------------------
+	-- 上下文显示（显示当前函数/类名）
+	-------------------------------------------------------------------------
+	{
+		"nvim-treesitter/nvim-treesitter-context",
+		event = "VeryLazy",
+		dependencies = { "nvim-treesitter/nvim-treesitter" },
+		opts = {
+			enable = true,
+			max_lines = 3,  -- 最多显示 3 行上下文
+		},
+	},
 
-  -------------------------------------------------------------------------
-  -- 自动闭合标签（HTML/JSX/Vue 等）
-  -------------------------------------------------------------------------
-  {
-    "windwp/nvim-ts-autotag",
-    event = "InsertEnter",
-    dependencies = { "nvim-treesitter/nvim-treesitter" },
-    opts = {},
-  },
+	-------------------------------------------------------------------------
+	-- 自动闭合标签（HTML/JSX/Vue 等）
+	-------------------------------------------------------------------------
+	{
+		"windwp/nvim-ts-autotag",
+		event = "InsertEnter",
+		dependencies = { "nvim-treesitter/nvim-treesitter" },
+		opts = {},
+	},
 
-  -------------------------------------------------------------------------
-  -- 彩虹括号（不同层级的括号不同颜色）
-  -------------------------------------------------------------------------
-  {
-    "hiphish/rainbow-delimiters.nvim",
-    event = "BufRead",
-    config = function()
-      local rainbow_delimiters = require("rainbow-delimiters")
+	-------------------------------------------------------------------------
+	-- 彩虹括号（不同层级的括号不同颜色）
+	-------------------------------------------------------------------------
+	{
+		"hiphish/rainbow-delimiters.nvim",
+		event = "BufRead",
+		config = function()
+			local rainbow_delimiters = require("rainbow-delimiters")
 
-      vim.g.rainbow_delimiters = {
-        strategy = {
-          [""] = rainbow_delimiters.strategy["global"],
-          vim = rainbow_delimiters.strategy["local"],
-        },
-        query = {
-          [""] = "rainbow-delimiters",
-          lua = "rainbow-blocks",
-        },
-      }
-    end,
-  },
+			vim.g.rainbow_delimiters = {
+				strategy = {
+					[""] = rainbow_delimiters.strategy["global"],
+					vim = rainbow_delimiters.strategy["local"],
+				},
+				query = {
+					[""] = "rainbow-delimiters",
+					lua = "rainbow-blocks",
+				},
+			}
+		end,
+	},
 
-  -------------------------------------------------------------------------
-  -- 颜色代码高亮（显示 #ffffff 等颜色）
-  -------------------------------------------------------------------------
-  {
-    "brenoprata10/nvim-highlight-colors",
-    event = "BufRead",
-    opts = {
-      render = "background",  -- 或 'foreground' 或 'virtual'
-      enable_named_colors = true,
-      enable_tailwind = true,
-    },
-  },
+	-------------------------------------------------------------------------
+	-- 颜色代码高亮（显示 #ffffff 等颜色）
+	-------------------------------------------------------------------------
+	{
+		"brenoprata10/nvim-highlight-colors",
+		event = "BufRead",
+		opts = {
+			render = "background",  -- 或 'foreground' 或 'virtual'
+			enable_named_colors = true,
+			enable_tailwind = true,
+		},
+	},
 
-  -------------------------------------------------------------------------
-  -- CSS 颜色预览（Tailwind, CSS 变量等）
-  -------------------------------------------------------------------------
-  {
-    "norcalli/nvim-colorizer.lua",
-    event = "BufRead",
-    opts = {
-      filetypes = {
-        "css",
-        "scss",
-        "sass",
-        "html",
-        "javascript",
-        "typescript",
-        "tsx",
-        "vue",
-      },
-      user_default_options = {
-        mode = "background",
-        tailwind = true,
-      },
-    },
-  },
+	-------------------------------------------------------------------------
+	-- CSS 颜色预览（Tailwind, CSS 变量等）
+	-------------------------------------------------------------------------
+	{
+		"norcalli/nvim-colorizer.lua",
+		event = "BufRead",
+		opts = {
+			filetypes = {
+				"css",
+				"scss",
+				"sass",
+				"html",
+				"javascript",
+				"typescript",
+				"tsx",
+				"vue",
+			},
+			user_default_options = {
+				mode = "background",
+				tailwind = true,
+			},
+		},
+	},
 
-  -------------------------------------------------------------------------
-  -- 缩进参考线（LazyVim 已内置，这里自定义配置）
-  -------------------------------------------------------------------------
-  {
-    "lukas-reineke/indent-blankline.nvim",
-    main = "ibl",
-    event = "BufRead",
-    opts = {
-      indent = {
-        char = "│",
-        tab_char = "│",
-      },
-      scope = {
-        enabled = true,
-        show_start = true,
-        show_end = true,
-      },
-      exclude = {
-        filetypes = {
-          "help",
-          "alpha",
-          "dashboard",
-          "neo-tree",
-          "Trouble",
-          "lazy",
-          "mason",
-          "notify",
-          "toggleterm",
-          "lazyterm",
-        },
-      },
-    },
-  },
+	-------------------------------------------------------------------------
+	-- 缩进参考线（LazyVim 已内置，这里自定义配置）
+	-------------------------------------------------------------------------
+	{
+		"lukas-reineke/indent-blankline.nvim",
+		main = "ibl",
+		event = "BufRead",
+		opts = {
+			indent = {
+				char = "│",
+				tab_char = "│",
+			},
+			scope = {
+				enabled = true,
+				show_start = true,
+				show_end = true,
+			},
+			exclude = {
+				filetypes = {
+					"help",
+					"alpha",
+					"dashboard",
+					"neo-tree",
+					"Trouble",
+					"lazy",
+					"mason",
+					"notify",
+					"toggleterm",
+					"lazyterm",
+				},
+			},
+		},
+	},
 
-  -------------------------------------------------------------------------
-  -- 高亮 Yank（复制时高亮选中的文本）
-  -------------------------------------------------------------------------
-  -- LazyVim 已经内置此功能，无需额外配置
-  -- 可以在 lua/config/autocmds.lua 中启用
+	-------------------------------------------------------------------------
+	-- 高亮 Yank（复制时高亮选中的文本）
+	-------------------------------------------------------------------------
+	-- LazyVim 已经内置此功能，无需额外配置
+	-- 可以在 lua/config/autocmds.lua 中启用
 
-  -------------------------------------------------------------------------
-  -- 匹配的括号高亮
-  -------------------------------------------------------------------------
-  -- LazyVim 已经内置此功能，无需额外配置
+	-------------------------------------------------------------------------
+	-- 匹配的括号高亮
+	-------------------------------------------------------------------------
+	-- LazyVim 已经内置此功能，无需额外配置
 }
 
 --==============================================================================

@@ -1,0 +1,6 @@
+{
+	"rules": {
+		"indent": ["error", "tab", { "SwitchCase": 1 }],
+		"no-tabs": "off"
+	}
+}

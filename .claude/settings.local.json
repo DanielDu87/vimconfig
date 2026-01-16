@@ -4,7 +4,9 @@
       "Bash(lua:*)",
       "Bash(wc:*)",
       "WebSearch",
-      "Bash(nvim:*)"
+      "Bash(nvim:*)",
+      "Bash(test:*)",
+      "Bash(ls:*)"
     ]
   }
 }
