@@ -530,13 +530,18 @@ return {
 			opts.picker.sources.explorer.win.list.keys["x"] = { "explorer_cut", mode = { "n", "x" } }
 
 			-- 修复从输入模式退出后按键识别问题：确保退出输入模式时焦点返回列表
+			-- 添加自定义动作来聚焦到列表
+			opts.picker = opts.picker or {}
+			opts.picker.actions = opts.picker.actions or {}
+			opts.picker.actions.explorer_focus_list = function(picker)
+				-- 聚焦到列表
+				picker:focus("list", { show = false })
+			end
+
 			opts.picker.sources.explorer.win.input = opts.picker.sources.explorer.win.input or {}
 			opts.picker.sources.explorer.win.input.keys = opts.picker.sources.explorer.win.input.keys or {}
-			opts.picker.sources.explorer.win.input.keys["<Esc>"] = function(picker)
-				-- 退出插入模式并聚焦到列表
-				vim.cmd("stopinsert")
-				picker.list:focus()
-			end
+			-- 覆盖默认的 cancel 行为，改为聚焦到列表
+			opts.picker.sources.explorer.win.input.keys["<Esc>"] = { "explorer_focus_list", mode = { "i" } }
 
 			--==============================================================================
 			-- 处理目录参数启动
