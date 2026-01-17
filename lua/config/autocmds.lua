@@ -10,6 +10,20 @@
 
 -- 注意：启动时自动打开 Explorer 的配置已移至 lua/plugins/explorer.lua
 
+-------------------------------------------------------------------------------
+-- 文件类型检测
+-------------------------------------------------------------------------------
+
+-- 将文件名包含 "docker" 或 "dk" 的文件识别为 dockerfile（忽略大小写）
+vim.filetype.add({
+	pattern = {
+		-- 匹配文件名包含 docker（忽略大小写）
+		[".*[Dd][Oo][Cc][Kk][Ee][Rr].*"] = "dockerfile",
+		-- 匹配文件名包含 dk（忽略大小写）
+		[".*[Dd][Kk].*"] = "dockerfile",
+	},
+})
+
 -- 示例：高亮复制（yank）的文本（根据需要取消注释）
 -- vim.api.nvim_create_autocmd("TextYankPost", {
 --   callback = function()
