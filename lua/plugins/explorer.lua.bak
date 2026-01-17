@@ -30,8 +30,7 @@ return {
 				picker.list:set_selected()
 				local value = table.concat(files, "\n")
 				vim.fn.setreg(vim.v.register or "+", value, "l")
-				local file_list = table.concat(files, "\n- ")
-				Snacks.notify.info("已复制 " .. #files .. " 个文件：\n- " .. file_list)
+				Snacks.notify.info("已复制 " .. #files .. " 个文件")
 			end
 
 			-- 粘贴
@@ -45,13 +44,11 @@ return {
 					return Snacks.notify.warn(("`%s` 寄存器中没有文件"):format(vim.v.register or "+"))
 				end
 				local dir = picker:dir()
-				local file_list = table.concat(files, "\n- ")
 				Snacks.picker.util.copy(files, dir)
 				Tree = require("snacks.explorer.tree")
 				Tree:refresh(dir)
 				Tree:open(dir)
 				Actions.update(picker, { target = dir })
-				Snacks.notify.info("已粘贴 " .. #files .. " 个文件：\n- " .. file_list)
 			end
 
 			-- 新建文件/目录
@@ -86,8 +83,6 @@ return {
 					Tree:open(dir)
 					Tree:refresh(dir)
 					Actions.update(picker, { target = path })
-					local msg_type = is_file and "文件" or "目录"
-					Snacks.notify.info("已创建" .. msg_type .. "：\n- `" .. path .. "`")
 				end)
 			end
 
@@ -99,10 +94,30 @@ return {
 
 				local old_name = vim.fn.fnamemodify(item.file, ":t")
 
+				-- 创建临时 autocmd 在输入框打开后移动光标到末尾（排除扩展名）
+				local group = vim.api.nvim_create_augroup("SnacksInputCursorEnd", { clear = true })
+				vim.api.nvim_create_autocmd("BufWinEnter", {
+					group = group,
+					pattern = "snacks_input",
+					once = true,
+					callback = function()
+						vim.schedule(function()
+							-- 查找文件名最后一个点（扩展名分隔符）
+							local rev = old_name:reverse()
+							local ext_len = rev:find("%.") or 0
+							-- 计算光标位置：如果有扩展名，放在扩展名之前；否则放在末尾
+							local pos = (ext_len > 1) and (#old_name - ext_len) or #old_name
+							vim.api.nvim_win_set_cursor(0, { 1, pos })
+						end)
+					end,
+				})
+
 				Snacks.input({
 					prompt = "重命名：",
 					default = old_name,
 				}, function(new_name)
+					-- 清理 autocmd 组
+					pcall(vim.api.nvim_del_augroup_by_id, group)
 					if not new_name or new_name == "" or new_name == old_name then
 						return
 					end
@@ -122,7 +137,6 @@ return {
 							Tree:refresh(vim.fs.dirname(old))
 							Tree:refresh(vim.fs.dirname(new))
 							Actions.update(picker, { target = new })
-							Snacks.notify.info("已重命名为：\n- " .. new)
 						end,
 					})
 				end)
@@ -138,14 +152,12 @@ return {
 				-- 复制选中项
 				if #paths > 0 then
 					local dir = picker:dir()
-					local file_list = table.concat(paths, "\n- ")
 					Snacks.picker.util.copy(paths, dir)
 					picker.list:set_selected()
 					Tree = require("snacks.explorer.tree")
 					Tree:refresh(dir)
 					Tree:open(dir)
 					Actions.update(picker, { target = dir })
-					Snacks.notify.info("已复制 " .. #paths .. " 个文件：\n- " .. file_list)
 					return
 				end
 				-- 复制单个文件到指定位置
@@ -164,13 +176,12 @@ return {
 					end
 					local ok, err = pcall(Snacks.picker.util.copy_path, item.file, to)
 					if not ok then
-						Snacks.notify.error("复制文件失败：\n- `" .. item.file .. "`\n- " .. (err or "未知错误"))
+						Snacks.notify.error("复制失败：\n- " .. (err or "未知错误"))
 						return
 					end
 					Tree = require("snacks.explorer.tree")
 					Tree:refresh(vim.fs.dirname(to))
 					Actions.update(picker, { target = to })
-					Snacks.notify.info("已复制文件到：\n- `" .. to .. "`")
 				end)
 			end
 
@@ -221,7 +232,6 @@ return {
 						Tree:refresh(vim.fs.dirname(to))
 						picker.list:set_selected()
 						Actions.update(picker, { target = to })
-						Snacks.notify.info("已移动文件：\n- `" .. from .. "`\n到：\n- `" .. to .. "`")
 					end)
 					return
 				end
@@ -245,8 +255,6 @@ return {
 					Tree:refresh(target)
 					picker.list:set_selected()
 					Actions.update(picker, { target = target })
-					local file_list = table.concat(paths, "\n- ")
-					Snacks.notify.info("已移动 " .. #paths .. " 个文件到：\n- `" .. target .. "`\n文件：\n- " .. file_list)
 				end)
 			end
 
@@ -257,20 +265,8 @@ return {
 				if #paths == 0 then
 					return Snacks.notify.warn("未选择文件")
 				end
-				-- 确认对话框显示文件名
-				local filenames = vim.tbl_map(function(p)
-					local name = vim.fn.fnamemodify(p, ":t")
-					-- 移除 macOS 符号链接末尾的 @ 符号
-					return name:gsub("@$", "")
-				end, paths)
-				local msg
-				if #paths == 1 then
-					msg = "是否删除 " .. filenames[1] .. "？"
-				else
-					local filename_list = table.concat(filenames, "\n- ")
-					msg = "是否删除 " .. #paths .. " 个文件？\n- " .. filename_list
-				end
-				Snacks.picker.util.confirm(msg, function()
+				local what = #paths == 1 and vim.fn.fnamemodify(paths[1], ":p:~:.") or #paths .. " 个文件"
+				Snacks.picker.util.confirm("是否删除 " .. what .. "？", function()
 					for _, path in ipairs(paths) do
 						local ok, err = Actions.trash(path)
 						if ok then
@@ -283,9 +279,6 @@ return {
 					end
 					picker.list:set_selected()
 					Actions.update(picker)
-					-- 成功提示显示完整路径
-					local file_list = table.concat(paths, "\n- ")
-					Snacks.notify.info("已删除 " .. #paths .. " 个文件：\n- " .. file_list)
 				end)
 			end
 
