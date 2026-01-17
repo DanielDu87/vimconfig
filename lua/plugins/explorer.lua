@@ -18,6 +18,84 @@ return {
 			local Actions = require("snacks.explorer.actions")
 			local uv = vim.uv or vim.loop
 
+			--==============================================================================
+			-- 覆盖 copy_file 和 copy_path 函数，实现自动重命名和中文提示
+			--==============================================================================
+			local util = require("snacks.picker.util")
+
+			-- 辅助函数：计算副本文件名
+			function util.get_backup_name(to)
+				if not uv.fs_stat(to) then
+					return to
+				end
+				local counter = 1
+				local base, ext = to:match("^(.-)(%.[^.]+)$")
+				if not base then
+					base, ext = to, ""
+				end
+				local new_to = to
+				while uv.fs_stat(new_to) do
+					new_to = base .. "~" .. counter .. ext
+					counter = counter + 1
+				end
+				return new_to
+			end
+
+			-- 覆盖 copy_path
+			function util.copy_path(from, to)
+				if not uv.fs_stat(from) then
+					Snacks.notify.error(("文件不存在：`%s`"):format(from))
+					return
+				end
+				if Snacks.util.path_type(from) == "directory" then
+					util.copy_dir(from, to)
+				else
+					util.copy_file(from, to)
+				end
+			end
+
+			-- 覆盖 copy_file，实现自动重命名而不显示英文错误
+			function util.copy_file(from, to)
+				if vim.fn.filereadable(from) == 0 then
+					Snacks.notify.error(("文件不可读：`%s`"):format(from))
+					return
+				end
+
+				-- 如果目标文件已存在，自动重命名
+				if uv.fs_stat(to) then
+					to = util.get_backup_name(to)
+				end
+
+				local dir = vim.fs.dirname(to)
+				vim.fn.mkdir(dir, "p")
+				local ok, err = uv.fs_copyfile(from, to, { excl = true, ficlone = true })
+				if not ok then
+					Snacks.notify.error(("复制文件失败：\n- 从：`%s`\n- 到：`%s`\n%s"):format(from, to, err))
+				end
+			end
+
+			-- 剪切（cut）- 标记文件为待剪切状态
+			function Actions.actions.explorer_cut(picker)
+				local files = {} ---@type string[]
+				if vim.fn.mode():find("^[vV]") then
+					picker.list:select()
+				end
+				for _, item in ipairs(picker:selected({ fallback = true })) do
+					table.insert(files, Snacks.picker.util.path(item))
+				end
+				if #files == 0 then
+					return Snacks.notify.warn("未选择文件")
+				end
+				picker.list:set_selected()
+				local value = table.concat(files, "\n")
+				-- 使用特殊寄存器标记剪切操作（在寄存器值前加特殊前缀）
+				vim.fn.setreg(vim.v.register or "+", value, "l")
+				-- 使用全局变量标记为剪切模式
+				_G.explorer_cut_mode = true
+				local file_list = table.concat(files, "\n- ")
+				Snacks.notify.info("已剪切 " .. #files .. " 个文件（粘贴后将删除原文件）：\n- " .. file_list)
+			end
+
 			-- 复制（yank）
 			function Actions.actions.explorer_yank(picker)
 				local files = {} ---@type string[]
@@ -27,9 +105,14 @@ return {
 				for _, item in ipairs(picker:selected({ fallback = true })) do
 					table.insert(files, Snacks.picker.util.path(item))
 				end
+				if #files == 0 then
+					return Snacks.notify.warn("未选择文件")
+				end
 				picker.list:set_selected()
 				local value = table.concat(files, "\n")
 				vim.fn.setreg(vim.v.register or "+", value, "l")
+				-- 清除剪切模式标记
+				_G.explorer_cut_mode = false
 				local file_list = table.concat(files, "\n- ")
 				Snacks.notify.info("已复制 " .. #files .. " 个文件：\n- " .. file_list)
 			end
@@ -45,12 +128,106 @@ return {
 					return Snacks.notify.warn(("`%s` 寄存器中没有文件"):format(vim.v.register or "+"))
 				end
 				local dir = picker:dir()
-				local file_list = table.concat(files, "\n- ")
+
+				-- 检查是否在剪切模式
+				local is_cut = _G.explorer_cut_mode == true
+
+				-- 剪切模式：移动文件
+				if is_cut then
+					local success_count = 0
+					local failed_files = {}
+					local moved_files = {}
+
+					for _, file in ipairs(files) do
+						local filename = vim.fn.fnamemodify(file, ":t")
+						local target = vim.fs.normalize(dir .. "/" .. filename)
+
+						-- 如果目标是同一位置，跳过
+						if file == target then
+							table.insert(failed_files, file .. "（已在目标位置）")
+						elseif uv.fs_stat(target) then
+							table.insert(failed_files, file .. "（目标已存在）")
+						else
+							local ok, err = pcall(Snacks.rename.rename_file, { from = file, to = target })
+							if ok then
+								success_count = success_count + 1
+								table.insert(moved_files, file)
+								Tree = require("snacks.explorer.tree")
+								Tree:refresh(vim.fs.dirname(file))
+							else
+								table.insert(failed_files, file .. "（" .. (err or "未知错误") .. "）")
+							end
+						end
+					end
+
+					-- 清除剪切模式标记
+					_G.explorer_cut_mode = false
+
+					-- 刷新目标目录
+					Tree = require("snacks.explorer.tree")
+					Tree:refresh(dir)
+					Tree:open(dir)
+					Actions.update(picker, { target = dir })
+
+					-- 显示结果
+					if success_count > 0 then
+						local moved_list = table.concat(moved_files, "\n- ")
+						Snacks.notify.info("已移动 " .. success_count .. " 个文件到：\n- `" .. dir .. "`\n文件：\n- " .. moved_list)
+					end
+					if #failed_files > 0 then
+						vim.schedule(function()
+							Snacks.notify.warn("部分文件移动失败：\n- " .. table.concat(failed_files, "\n- "))
+						end)
+					end
+					return
+				end
+
+				-- 复制模式：复制文件
+				-- 检查是否在同目录粘贴，并计算副本名称
+				local same_dir_info = {}
+				local file_map = {} -- 记录原文件到副本文件的映射
+				for _, file in ipairs(files) do
+					local filename = vim.fn.fnamemodify(file, ":t")
+					local target_path = vim.fs.normalize(dir .. "/" .. filename)
+					local backup_name = Snacks.picker.util.get_backup_name(target_path)
+					local backup_filename = vim.fn.fnamemodify(backup_name, ":t")
+
+					file_map[file] = backup_name
+
+					local file_dir = vim.fn.fnamemodify(file, ":p:h")
+					if vim.fn.fnamemodify(file_dir, ":p") == vim.fn.fnamemodify(dir, ":p") then
+						table.insert(same_dir_info, {
+							original = filename,
+							backup = backup_filename
+						})
+					end
+				end
+
+				-- 如果有同目录文件，给出提示（显示副本名称）
+				if #same_dir_info > 0 then
+					local info_list = {}
+					for _, info in ipairs(same_dir_info) do
+						if info.original == info.backup then
+							table.insert(info_list, info.backup)
+						else
+							table.insert(info_list, info.original .. " → " .. info.backup)
+						end
+					end
+					Snacks.notify.warn("检测到同目录粘贴，将创建副本：\n- " .. table.concat(info_list, "\n- "))
+				end
+
 				Snacks.picker.util.copy(files, dir)
 				Tree = require("snacks.explorer.tree")
 				Tree:refresh(dir)
 				Tree:open(dir)
 				Actions.update(picker, { target = dir })
+
+				-- 构建成功提示：显示实际创建的副本名称
+				local result_files = {}
+				for _, file in ipairs(files) do
+					table.insert(result_files, file_map[file])
+				end
+				local file_list = table.concat(result_files, "\n- ")
 				Snacks.notify.info("已粘贴 " .. #files .. " 个文件：\n- " .. file_list)
 			end
 
@@ -138,13 +315,49 @@ return {
 				-- 复制选中项
 				if #paths > 0 then
 					local dir = picker:dir()
-					local file_list = table.concat(paths, "\n- ")
+					-- 检查同目录复制
+					local same_dir_info = {}
+					local file_map = {} -- 记录原文件到副本文件的映射
+					for _, path in ipairs(paths) do
+						local filename = vim.fn.fnamemodify(path, ":t")
+						local target_path = vim.fs.normalize(dir .. "/" .. filename)
+						local backup_name = Snacks.picker.util.get_backup_name(target_path)
+						local backup_filename = vim.fn.fnamemodify(backup_name, ":t")
+
+						file_map[path] = backup_name
+
+						local file_dir = vim.fn.fnamemodify(path, ":p:h")
+						if vim.fn.fnamemodify(file_dir, ":p") == vim.fn.fnamemodify(dir, ":p") then
+							table.insert(same_dir_info, {
+								original = filename,
+								backup = backup_filename
+							})
+						end
+					end
+					-- 如果有同目录复制，显示副本名称
+					if #same_dir_info > 0 then
+						local info_list = {}
+						for _, info in ipairs(same_dir_info) do
+							if info.original == info.backup then
+								table.insert(info_list, info.backup)
+							else
+								table.insert(info_list, info.original .. " → " .. info.backup)
+							end
+						end
+						Snacks.notify.warn("检测到同目录复制，将创建副本：\n- " .. table.concat(info_list, "\n- "))
+					end
 					Snacks.picker.util.copy(paths, dir)
 					picker.list:set_selected()
 					Tree = require("snacks.explorer.tree")
 					Tree:refresh(dir)
 					Tree:open(dir)
 					Actions.update(picker, { target = dir })
+					-- 显示实际创建的副本名称
+					local result_files = {}
+					for _, path in ipairs(paths) do
+						table.insert(result_files, file_map[path])
+					end
+					local file_list = table.concat(result_files, "\n- ")
 					Snacks.notify.info("已复制 " .. #paths .. " 个文件：\n- " .. file_list)
 					return
 				end
@@ -158,9 +371,12 @@ return {
 					end
 					local dir = vim.fs.dirname(item.file)
 					local to = vim.fs.normalize(dir .. "/" .. value)
+					-- 计算实际的目标文件名
+					local actual_to = Snacks.picker.util.get_backup_name(to)
+					-- 如果目标文件已存在，显示副本名称
 					if uv.fs_stat(to) then
-						Snacks.notify.warn("目标文件已存在：\n- `" .. to .. "`")
-						return
+						local backup_filename = vim.fn.fnamemodify(actual_to, ":t")
+						Snacks.notify.warn("目标文件已存在，将创建副本：\n- " .. backup_filename)
 					end
 					local ok, err = pcall(Snacks.picker.util.copy_path, item.file, to)
 					if not ok then
@@ -168,9 +384,9 @@ return {
 						return
 					end
 					Tree = require("snacks.explorer.tree")
-					Tree:refresh(vim.fs.dirname(to))
-					Actions.update(picker, { target = to })
-					Snacks.notify.info("已复制文件到：\n- `" .. to .. "`")
+					Tree:refresh(vim.fs.dirname(actual_to))
+					Actions.update(picker, { target = actual_to })
+					Snacks.notify.info("已复制文件到：\n- `" .. actual_to .. "`")
 				end)
 			end
 
@@ -297,6 +513,29 @@ return {
 						Snacks.notify.error("打开文件失败 `" .. item.file .. "`：\n- " .. err)
 					end
 				end
+			end
+
+			--==============================================================================
+			-- 添加 explorer 键映射
+			--==============================================================================
+			-- 根据源代码，应该使用 opts.picker.sources.explorer 而不是 opts.picker.explorer
+			opts.picker = opts.picker or {}
+			opts.picker.sources = opts.picker.sources or {}
+			opts.picker.sources.explorer = opts.picker.sources.explorer or {}
+			opts.picker.sources.explorer.win = opts.picker.sources.explorer.win or {}
+			opts.picker.sources.explorer.win.list = opts.picker.sources.explorer.win.list or {}
+			opts.picker.sources.explorer.win.list.keys = opts.picker.sources.explorer.win.list.keys or {}
+
+			-- 设置 x 键映射到剪切操作
+			opts.picker.sources.explorer.win.list.keys["x"] = { "explorer_cut", mode = { "n", "x" } }
+
+			-- 修复从输入模式退出后按键识别问题：确保退出输入模式时焦点返回列表
+			opts.picker.sources.explorer.win.input = opts.picker.sources.explorer.win.input or {}
+			opts.picker.sources.explorer.win.input.keys = opts.picker.sources.explorer.win.input.keys or {}
+			opts.picker.sources.explorer.win.input.keys["<Esc>"] = function(picker)
+				-- 退出插入模式并聚焦到列表
+				vim.cmd("stopinsert")
+				picker.list:focus()
 			end
 
 			--==============================================================================
