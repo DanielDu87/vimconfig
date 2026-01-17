@@ -6,7 +6,8 @@
       "WebSearch",
       "Bash(nvim:*)",
       "Bash(test:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(find:*)"
     ]
   }
 }
