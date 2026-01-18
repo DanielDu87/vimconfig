@@ -1092,7 +1092,13 @@ return {
 				desc = "将 q 键映射为关闭 buffer，保护 Explorer 窗口布局",
 			})
 
-			-- 3. Option+=/- 切换 buffer
+			-- 3. Option+q 切换目录树
+			vim.keymap.set("n", "<M-q>", function()
+				local Snacks = require("snacks")
+				Snacks.explorer()
+			end, { desc = "Toggle Explorer" })
+
+			-- 4. Option+=/- 切换 buffer
 			vim.keymap.set("n", "<M-=>", function()
 				vim.cmd("bnext")
 			end, { desc = "Next buffer" })
