@@ -280,7 +280,7 @@ return {
 					prompt = "重命名：",
 					default = old_name,
 				}, function(new_name)
-					if not new_name or new_name == "" or new_name == old_name then
+					if not new_name or new_name:find("^%s$") then
 						return
 					end
 					local new_path = vim.fs.normalize(vim.fs.dirname(item.file) .. "/" .. new_name)
@@ -483,8 +483,8 @@ return {
 				if #paths == 1 then
 					msg = "是否删除 " .. filenames[1] .. "？"
 				else
-					local filename_list = table.concat(filenames, "\n- ")
-					msg = "是否删除 " .. #paths .. " 个文件？\n- " .. filename_list
+					local filename_list = table.concat(filenames, "、")
+					msg = "是否删除 " .. #paths .. " 个文件？\n" .. filename_list
 				end
 				Snacks.picker.util.confirm(msg, function()
 					for _, path in ipairs(paths) do
@@ -499,8 +499,11 @@ return {
 					end
 					picker.list:set_selected()
 					Actions.update(picker)
-					-- 成功提示显示完整路径
-					local file_list = table.concat(paths, "\n- ")
+					-- 成功提示显示文件名，换行显示
+					local filenames = vim.tbl_map(function(p)
+						return vim.fn.fnamemodify(p, ":t"):gsub("@$", "")
+					end, paths)
+					local file_list = table.concat(filenames, "\n- ")
 					Snacks.notify.info("已删除 " .. #paths .. " 个文件：\n- " .. file_list)
 				end)
 			end
