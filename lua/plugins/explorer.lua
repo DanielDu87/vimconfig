@@ -92,8 +92,25 @@ return {
 				vim.fn.setreg(vim.v.register or "+", value, "l")
 				-- 使用全局变量标记为剪切模式
 				_G.explorer_cut_mode = true
-				local file_list = table.concat(files, "\n- ")
-				Snacks.notify.info("已剪切 " .. #files .. " 个文件（粘贴后将删除原文件）：\n- " .. file_list)
+				-- 区分文件和目录显示
+				local cut_dirs = {}
+				local cut_files = {}
+				for _, path in ipairs(files) do
+					local stat = uv.fs_stat(path)
+					if stat and stat.type == "directory" then
+						table.insert(cut_dirs, path)
+					else
+						table.insert(cut_files, path)
+					end
+				end
+				local msg_parts = {}
+				if #cut_dirs > 0 then
+					table.insert(msg_parts, "已剪切 " .. #cut_dirs .. " 个目录：\n- " .. table.concat(cut_dirs, "\n- "))
+				end
+				if #cut_files > 0 then
+					table.insert(msg_parts, "已剪切 " .. #cut_files .. " 个文件：\n- " .. table.concat(cut_files, "\n- "))
+				end
+				Snacks.notify.info(table.concat(msg_parts, "\n") .. "\n（粘贴后将删除原文件）")
 			end
 
 			-- 复制（yank）
@@ -113,15 +130,32 @@ return {
 				vim.fn.setreg(vim.v.register or "+", value, "l")
 				-- 清除剪切模式标记
 				_G.explorer_cut_mode = false
-				local file_list = table.concat(files, "\n- ")
-				Snacks.notify.info("已复制 " .. #files .. " 个文件：\n- " .. file_list)
+				-- 区分文件和目录显示
+				local file_names = {}
+				local dir_names = {}
+				for _, path in ipairs(files) do
+					local stat = uv.fs_stat(path)
+					if stat and stat.type == "directory" then
+						table.insert(dir_names, path)
+					else
+						table.insert(file_names, path)
+					end
+				end
+				local msg_parts = {}
+				if #dir_names > 0 then
+					table.insert(msg_parts, "已复制 " .. #dir_names .. " 个目录：\n- " .. table.concat(dir_names, "\n- "))
+				end
+				if #file_names > 0 then
+					table.insert(msg_parts, "已复制 " .. #file_names .. " 个文件：\n- " .. table.concat(file_names, "\n- "))
+				end
+				Snacks.notify.info(table.concat(msg_parts, "\n"))
 			end
 
 			-- 粘贴
 			function Actions.actions.explorer_paste(picker)
 				local files = vim.split(vim.fn.getreg(vim.v.register or "+") or "", "\n", { plain = true })
 				files = vim.tbl_filter(function(file)
-					return file ~= "" and vim.fn.filereadable(file) == 1
+					return file ~= "" and (vim.fn.filereadable(file) == 1 or vim.fn.isdirectory(file) == 1)
 				end, files)
 
 				if #files == 0 then
@@ -169,10 +203,26 @@ return {
 					Tree:open(dir)
 					Actions.update(picker, { target = dir })
 
-					-- 显示结果
+					-- 显示结果，区分文件和目录
 					if success_count > 0 then
-						local moved_list = table.concat(moved_files, "\n- ")
-						Snacks.notify.info("已移动 " .. success_count .. " 个文件到：\n- `" .. dir .. "`\n文件：\n- " .. moved_list)
+						local moved_dirs = {}
+						local moved_files = {}
+						for _, path in ipairs(moved_files) do
+							local stat = uv.fs_stat(path)
+							if stat and stat.type == "directory" then
+								table.insert(moved_dirs, path)
+							else
+								table.insert(moved_files, path)
+							end
+						end
+						local msg_parts = {}
+						if #moved_dirs > 0 then
+							table.insert(msg_parts, "已移动 " .. #moved_dirs .. " 个目录：\n- " .. table.concat(moved_dirs, "\n- "))
+						end
+						if #moved_files > 0 then
+							table.insert(msg_parts, "已移动 " .. #moved_files .. " 个文件：\n- " .. table.concat(moved_files, "\n- "))
+						end
+						Snacks.notify.info(table.concat(msg_parts, "\n"))
 					end
 					if #failed_files > 0 then
 						vim.schedule(function()
@@ -222,13 +272,26 @@ return {
 				Tree:open(dir)
 				Actions.update(picker, { target = dir })
 
-				-- 构建成功提示：显示实际创建的副本名称
+				-- 构建成功提示：区分文件和目录显示
+				local result_dirs = {}
 				local result_files = {}
 				for _, file in ipairs(files) do
-					table.insert(result_files, file_map[file])
+					local result_path = file_map[file]
+					local stat = uv.fs_stat(file)
+					if stat and stat.type == "directory" then
+						table.insert(result_dirs, result_path)
+					else
+						table.insert(result_files, result_path)
+					end
 				end
-				local file_list = table.concat(result_files, "\n- ")
-				Snacks.notify.info("已粘贴 " .. #files .. " 个文件：\n- " .. file_list)
+				local msg_parts = {}
+				if #result_dirs > 0 then
+					table.insert(msg_parts, "已粘贴 " .. #result_dirs .. " 个目录：\n- " .. table.concat(result_dirs, "\n- "))
+				end
+				if #result_files > 0 then
+					table.insert(msg_parts, "已粘贴 " .. #result_files .. " 个文件：\n- " .. table.concat(result_files, "\n- "))
+				end
+				Snacks.notify.info(table.concat(msg_parts, "\n"))
 			end
 
 			-- 新建文件/目录
@@ -352,13 +415,26 @@ return {
 					Tree:refresh(dir)
 					Tree:open(dir)
 					Actions.update(picker, { target = dir })
-					-- 显示实际创建的副本名称
-					local result_files = {}
+					-- 区分文件和目录显示
+					local files = {}
+					local dirs = {}
 					for _, path in ipairs(paths) do
-						table.insert(result_files, file_map[path])
+						-- 使用 uv.fs_stat 检测目录
+						local stat = uv.fs_stat(path)
+						if stat and stat.type == "directory" then
+							table.insert(dirs, path)
+						else
+							table.insert(files, path)
+						end
 					end
-					local file_list = table.concat(result_files, "\n- ")
-					Snacks.notify.info("已复制 " .. #paths .. " 个文件：\n- " .. file_list)
+					local msg_parts = {}
+					if #dirs > 0 then
+						table.insert(msg_parts, "已复制 " .. #dirs .. " 个目录：\n- " .. table.concat(dirs, "\n- "))
+					end
+					if #files > 0 then
+						table.insert(msg_parts, "已复制 " .. #files .. " 个文件：\n- " .. table.concat(files, "\n- "))
+					end
+					Snacks.notify.info(table.concat(msg_parts, "\n"))
 					return
 				end
 				-- 复制单个文件到指定位置
@@ -380,13 +456,15 @@ return {
 					end
 					local ok, err = pcall(Snacks.picker.util.copy_path, item.file, to)
 					if not ok then
-						Snacks.notify.error("复制文件失败：\n- `" .. item.file .. "`\n- " .. (err or "未知错误"))
+						local type_name = Snacks.util.path_type(item.file) == "directory" and "目录" or "文件"
+						Snacks.notify.error("复制" .. type_name .. "失败：\n- `" .. item.file .. "`\n- " .. (err or "未知错误"))
 						return
 					end
 					Tree = require("snacks.explorer.tree")
 					Tree:refresh(vim.fs.dirname(actual_to))
 					Actions.update(picker, { target = actual_to })
-					Snacks.notify.info("已复制文件到：\n- `" .. actual_to .. "`")
+					local type_name = Snacks.util.path_type(item.file) == "directory" and "目录" or "文件"
+					Snacks.notify.info("已复制" .. type_name .. "到：\n- `" .. actual_to .. "`")
 				end)
 			end
 
@@ -473,20 +551,37 @@ return {
 				if #paths == 0 then
 					return Snacks.notify.warn("未选择文件")
 				end
-				-- 确认对话框显示文件名
+				-- 获取文件名列表
 				local filenames = vim.tbl_map(function(p)
 					local name = vim.fn.fnamemodify(p, ":t")
 					-- 移除 macOS 符号链接末尾的 @ 符号
 					return name:gsub("@$", "")
 				end, paths)
-				local msg
-				if #paths == 1 then
-					msg = "是否删除 " .. filenames[1] .. "？"
-				else
-					local filename_list = table.concat(filenames, "、")
-					msg = "是否删除 " .. #paths .. " 个文件？\n" .. filename_list
+
+				-- 统计文件和目录数量
+				local file_count = 0
+				local dir_count = 0
+				for _, path in ipairs(paths) do
+					local stat = uv.fs_stat(path)
+					if stat and stat.type == "directory" then
+						dir_count = dir_count + 1
+					else
+						file_count = file_count + 1
+					end
 				end
-				Snacks.picker.util.confirm(msg, function()
+
+				-- 生成确认提示文本
+				local function get_confirm_text()
+					if dir_count > 0 and file_count > 0 then
+						return "是否删除 " .. dir_count .. " 个目录、" .. file_count .. " 个文件？"
+					elseif dir_count > 0 then
+						return "是否删除 " .. dir_count .. " 个目录？"
+					else
+						return "是否删除 " .. file_count .. " 个文件？"
+					end
+				end
+
+				local function do_delete()
 					for _, path in ipairs(paths) do
 						local ok, err = Actions.trash(path)
 						if ok then
@@ -499,13 +594,85 @@ return {
 					end
 					picker.list:set_selected()
 					Actions.update(picker)
-					-- 成功提示显示文件名，换行显示
-					local filenames = vim.tbl_map(function(p)
-						return vim.fn.fnamemodify(p, ":t"):gsub("@$", "")
-					end, paths)
-					local file_list = table.concat(filenames, "\n- ")
-					Snacks.notify.info("已删除 " .. #paths .. " 个文件：\n- " .. file_list)
-				end)
+					-- 区分文件和目录显示
+					local files = {}
+					local dirs = {}
+					for _, path in ipairs(paths) do
+						-- 使用 uv.fs_stat 检测目录
+						local stat = uv.fs_stat(path)
+						if stat and stat.type == "directory" then
+							table.insert(dirs, path)
+						else
+							table.insert(files, path)
+						end
+					end
+					local msg_parts = {}
+					if #dirs > 0 then
+						table.insert(msg_parts, "已删除 " .. #dirs .. " 个目录：\n- " .. table.concat(dirs, "\n- "))
+					end
+					if #files > 0 then
+						table.insert(msg_parts, "已删除 " .. #files .. " 个文件：\n- " .. table.concat(files, "\n- "))
+					end
+					Snacks.notify.info(table.concat(msg_parts, "\n"))
+				end
+
+				if #paths == 1 then
+					-- 单个文件：简单确认
+					local type_text = dir_count > 0 and "目录" or "文件"
+					Snacks.picker.util.confirm("是否删除" .. type_text .. " " .. filenames[1] .. "？", do_delete)
+				else
+					-- 多个文件：创建预览窗口显示文件列表
+					-- 计算最大文件名长度来确定窗口宽度
+					local max_name_len = 0
+					for _, name in ipairs(filenames) do
+						max_name_len = math.max(max_name_len, vim.api.nvim_strwidth(name))
+					end
+					local width = math.max(20, math.min(max_name_len + 8, 35))
+					local function center_text(text, width)
+						local padding = math.floor((width - vim.api.nvim_strwidth(text)) / 2)
+						return string.rep(" ", math.max(0, padding)) .. text
+					end
+					local file_list_lines = {}
+					for i, name in ipairs(filenames) do
+						local stat = uv.fs_stat(paths[i])
+						local display_name = name
+						if stat and stat.type == "directory" then
+							display_name = name .. "（目录）"
+						end
+						table.insert(file_list_lines, center_text(display_name, width))
+					end
+					-- 先显示文件列表通知
+					local buf = vim.api.nvim_create_buf(false, true)
+					vim.api.nvim_buf_set_lines(buf, 0, -1, false, file_list_lines)
+					vim.api.nvim_buf_set_option(buf, "modifiable", false)
+					local height = #filenames
+					local preview_win = vim.api.nvim_open_win(buf, false, {
+						relative = "editor",
+						row = math.floor((vim.o.lines - height) / 2) - 1,
+						col = math.floor((vim.o.columns - width) / 2),
+						width = width,
+						height = height,
+						style = "minimal",
+						border = "rounded",
+						zindex = 50,
+						anchor = "NW",
+					})
+					-- 去掉背景色
+					vim.api.nvim_win_set_option(preview_win, "winblend", 0)
+					vim.api.nvim_win_set_option(preview_win, "winhl", "Normal:NormalFloat,NormalNC:NormalFloat")
+					-- 显示确认对话框
+					Snacks.picker.select({ "取消", "删除" }, {
+						prompt = get_confirm_text(),
+						layout = { preset = "select", layout = { max_width = 60 } },
+					}, function(item, idx)
+						if preview_win and vim.api.nvim_win_is_valid(preview_win) then
+							vim.api.nvim_win_close(preview_win, true)
+						end
+						if idx == 2 then
+							do_delete()
+						end
+					end)
+				end
 			end
 
 			-- 打开文件（用于系统默认程序打开）
