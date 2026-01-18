@@ -1091,6 +1091,41 @@ return {
 				end,
 				desc = "将 q 键映射为关闭 buffer，保护 Explorer 窗口布局",
 			})
+
+			-- 3. Option+=/- 切换 buffer
+			vim.keymap.set("n", "<M-=>", function()
+				vim.cmd("bnext")
+			end, { desc = "Next buffer" })
+			vim.keymap.set("n", "<M-->", function()
+				vim.cmd("bprevious")
+			end, { desc = "Previous buffer" })
+
+			--==============================================================================
+			-- 行内快速移动
+			--==============================================================================
+			-- 定义 <Plug> 映射作为动作基础
+			vim.keymap.set({ "n", "o", "x" }, "<Plug>(MotionLineStart)", "^", { desc = "Motion to line start" })
+			vim.keymap.set({ "n", "o", "x" }, "<Plug>(MotionLineEnd)", "$", { desc = "Motion to line end" })
+
+			-- Normal 模式快捷移动
+			vim.keymap.set("n", "<M-h>", "<Plug>(MotionLineStart)", { desc = "Move to line start" })
+			vim.keymap.set("n", "<M-l>", "<Plug>(MotionLineEnd)", { desc = "Move to line end" })
+
+			-- Operator-pending 模式 (配合 d, c, y 等操作符)
+			vim.keymap.set("o", "<M-h>", "<Plug>(MotionLineStart)", { desc = "Operator: to line start" })
+			vim.keymap.set("o", "<M-l>", "<Plug>(MotionLineEnd)", { desc = "Operator: to line end" })
+
+			-- Visual 模式扩展选择
+			vim.keymap.set("x", "<M-h>", "^", { desc = "Visual select to line start" })
+			vim.keymap.set("x", "<M-l>", "$", { desc = "Visual select to line end" })
+
+			--==============================================================================
+			-- 屏幕滚动
+			--==============================================================================
+			-- Alt + z 跳转到文件末尾并居中
+			vim.keymap.set({ "n", "i" }, "<M-z>", function()
+				vim.cmd("normal! Gzz")
+			end, { desc = "Go to end of file and center" })
 		end,
 	},
 }
