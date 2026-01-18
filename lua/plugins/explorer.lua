@@ -166,132 +166,311 @@ return {
 				-- 检查是否在剪切模式
 				local is_cut = _G.explorer_cut_mode == true
 
-				-- 剪切模式：移动文件
-				if is_cut then
-					local success_count = 0
-					local failed_files = {}
-					local moved_files = {}
+				-- 检查同名文件
+				local conflicts = {}
+				local no_conflicts = {}
+				for _, file in ipairs(files) do
+					local filename = vim.fn.fnamemodify(file, ":t")
+					local target = vim.fs.normalize(dir .. "/" .. filename)
+					if uv.fs_stat(target) then
+						table.insert(conflicts, { from = file, to = target, name = filename })
+					else
+						table.insert(no_conflicts, file)
+					end
+				end
 
-					for _, file in ipairs(files) do
-						local filename = vim.fn.fnamemodify(file, ":t")
-						local target = vim.fs.normalize(dir .. "/" .. filename)
+				-- 如果没有冲突，直接执行
+				if #conflicts == 0 then
+					-- 执行粘贴操作（无冲突情况）
+					local function do_paste(file_list, is_move)
+						local success_count = 0
+						local failed_files = {}
+						local processed_files = {}
 
-						-- 如果目标是同一位置，跳过
-						if file == target then
-							table.insert(failed_files, file .. "（已在目标位置）")
-						elseif uv.fs_stat(target) then
-							table.insert(failed_files, file .. "（目标已存在）")
-						else
-							local ok, err = pcall(Snacks.rename.rename_file, { from = file, to = target })
+						for _, file in ipairs(file_list) do
+							local filename = vim.fn.fnamemodify(file, ":t")
+							local target = vim.fs.normalize(dir .. "/" .. filename)
+
+							if file == target then
+								table.insert(failed_files, file .. "（已在目标位置）")
+							else
+								local ok, err
+								if is_move then
+									-- 使用系统命令移动文件，支持覆盖
+									local cmd = is_move and "mv" or "cp"
+									local recursive = vim.fn.isdirectory(file) == 1 and " -R" or ""
+									local full_cmd = cmd .. recursive .. " -- " .. vim.fn.shellescape(file) .. " " .. vim.fn.shellescape(dir)
+									local result = vim.fn.system(full_cmd)
+									if vim.v.shell_error == 0 then
+										ok = true
+									else
+										ok, err = false, result
+									end
+								else
+									-- 复制模式
+									local recursive = vim.fn.isdirectory(file) == 1 and " -R" or ""
+									local full_cmd = "cp" .. recursive .. " -- " .. vim.fn.shellescape(file) .. " " .. vim.fn.shellescape(dir)
+									local result = vim.fn.system(full_cmd)
+									if vim.v.shell_error == 0 then
+										ok = true
+									else
+										ok, err = false, result
+									end
+								end
+
+								if ok then
+									success_count = success_count + 1
+									table.insert(processed_files, file)
+									Tree = require("snacks.explorer.tree")
+									Tree:refresh(vim.fs.dirname(file))
+								else
+									table.insert(failed_files, file .. "（" .. (err or "未知错误") .. "）")
+								end
+							end
+						end
+
+						-- 刷新目标目录
+						Tree = require("snacks.explorer.tree")
+						Tree:refresh(dir)
+						Tree:open(dir)
+						Actions.update(picker, { target = dir })
+
+						-- 显示结果
+						if success_count > 0 then
+							local proc_dirs = {}
+							local proc_files = {}
+							for _, path in ipairs(processed_files) do
+								local stat = uv.fs_stat(path) or uv.fs_stat(dir .. "/" .. vim.fn.fnamemodify(path, ":t"))
+								if stat and stat.type == "directory" then
+									table.insert(proc_dirs, path)
+								else
+									table.insert(proc_files, path)
+								end
+							end
+							local msg_parts = {}
+							local action_text = is_move and "已移动" or "已粘贴"
+							if #proc_dirs > 0 then
+								table.insert(msg_parts, action_text .. " " .. #proc_dirs .. " 个目录：\n- " .. table.concat(proc_dirs, "\n- "))
+							end
+							if #proc_files > 0 then
+								table.insert(msg_parts, action_text .. " " .. #proc_files .. " 个文件：\n- " .. table.concat(proc_files, "\n- "))
+							end
+							Snacks.notify.info(table.concat(msg_parts, "\n"))
+						end
+						if #failed_files > 0 then
+							vim.schedule(function()
+								Snacks.notify.warn("部分文件操作失败：\n- " .. table.concat(failed_files, "\n- "))
+							end)
+						end
+					end
+
+					do_paste(files, is_cut)
+					if is_cut then
+						_G.explorer_cut_mode = false
+					end
+					return
+				end
+
+				-- 有冲突，显示确认对话框和文件列表
+				local conflict_names = {}
+				for _, c in ipairs(conflicts) do
+					table.insert(conflict_names, c.name)
+				end
+
+				-- 创建预览窗口显示冲突文件列表
+				local max_name_len = 0
+				for _, name in ipairs(conflict_names) do
+					max_name_len = math.max(max_name_len, vim.api.nvim_strwidth(name))
+				end
+				local width = math.max(20, math.min(max_name_len + 8, 35))
+				local function center_text(text, width)
+					local padding = math.floor((width - vim.api.nvim_strwidth(text)) / 2)
+					return string.rep(" ", math.max(0, padding)) .. text
+				end
+				local file_list_lines = {}
+				for _, name in ipairs(conflict_names) do
+					table.insert(file_list_lines, center_text(name, width))
+				end
+				local buf = vim.api.nvim_create_buf(false, true)
+				vim.api.nvim_buf_set_lines(buf, 0, -1, false, file_list_lines)
+				vim.api.nvim_buf_set_option(buf, "modifiable", false)
+				local height = #conflict_names
+				local preview_win = vim.api.nvim_open_win(buf, false, {
+					relative = "editor",
+					row = math.floor((vim.o.lines - height) / 2) - 1,
+					col = math.floor((vim.o.columns - width) / 2),
+					width = width,
+					height = height,
+					style = "minimal",
+					border = "rounded",
+					zindex = 50,
+					anchor = "NW",
+				})
+				vim.api.nvim_win_set_option(preview_win, "winblend", 0)
+				vim.api.nvim_win_set_option(preview_win, "winhl", "Normal:NormalFloat,NormalNC:NormalFloat")
+
+				-- 显示确认对话框
+				local dir_count = 0
+				local file_count = 0
+				for _, c in ipairs(conflicts) do
+					local stat = uv.fs_stat(c.to)
+					if stat and stat.type == "directory" then
+						dir_count = dir_count + 1
+					else
+						file_count = file_count + 1
+					end
+				end
+				local function get_confirm_text()
+					if dir_count > 0 and file_count > 0 then
+						return "是否覆盖 " .. dir_count .. " 个目录、" .. file_count .. " 个文件？"
+					elseif dir_count > 0 then
+						return "是否覆盖 " .. dir_count .. " 个目录？"
+					else
+						return "是否覆盖 " .. file_count .. " 个文件？"
+					end
+				end
+
+				Snacks.picker.select({ "取消", "覆盖" }, {
+					prompt = get_confirm_text(),
+					layout = { preset = "select", layout = { max_width = 60 } },
+				}, function(item, idx)
+					if preview_win and vim.api.nvim_win_is_valid(preview_win) then
+						vim.api.nvim_win_close(preview_win, true)
+					end
+					if idx ~= 2 then
+						return
+					end
+
+					-- 用户确认覆盖
+					local function do_paste_with_overwrite()
+						local success_count = 0
+						local failed_files = {}
+						local processed_files = {}
+
+						-- 先处理无冲突的文件
+						for _, file in ipairs(no_conflicts) do
+							local filename = vim.fn.fnamemodify(file, ":t")
+							local target = vim.fs.normalize(dir .. "/" .. filename)
+							local ok, err
+
+							if is_cut then
+								local recursive = vim.fn.isdirectory(file) == 1 and " -R" or ""
+								local full_cmd = "mv" .. recursive .. " -- " .. vim.fn.shellescape(file) .. " " .. vim.fn.shellescape(dir)
+								local result = vim.fn.system(full_cmd)
+								if vim.v.shell_error == 0 then
+									ok = true
+								else
+									ok, err = false, result
+								end
+							else
+								local recursive = vim.fn.isdirectory(file) == 1 and " -R" or ""
+								local full_cmd = "cp" .. recursive .. " -- " .. vim.fn.shellescape(file) .. " " .. vim.fn.shellescape(dir)
+								local result = vim.fn.system(full_cmd)
+								if vim.v.shell_error == 0 then
+									ok = true
+								else
+									ok, err = false, result
+								end
+							end
+
 							if ok then
 								success_count = success_count + 1
-								table.insert(moved_files, file)
+								table.insert(processed_files, file)
 								Tree = require("snacks.explorer.tree")
 								Tree:refresh(vim.fs.dirname(file))
 							else
 								table.insert(failed_files, file .. "（" .. (err or "未知错误") .. "）")
 							end
 						end
-					end
 
-					-- 清除剪切模式标记
-					_G.explorer_cut_mode = false
+						-- 处理有冲突的文件（覆盖）
+						for _, c in ipairs(conflicts) do
+							local file = c.from
+							local target = c.to
+							local ok, err
 
-					-- 刷新目标目录
-					Tree = require("snacks.explorer.tree")
-					Tree:refresh(dir)
-					Tree:open(dir)
-					Actions.update(picker, { target = dir })
-
-					-- 显示结果，区分文件和目录
-					if success_count > 0 then
-						local moved_dirs = {}
-						local moved_files = {}
-						for _, path in ipairs(moved_files) do
-							local stat = uv.fs_stat(path)
-							if stat and stat.type == "directory" then
-								table.insert(moved_dirs, path)
+							if is_cut then
+								-- 先删除目标，再移动
+								if vim.fn.isdirectory(target) == 1 then
+									vim.fn.system("rm -rf -- " .. vim.fn.shellescape(target))
+								else
+									vim.fn.system("rm -f -- " .. vim.fn.shellescape(target))
+								end
+								local recursive = vim.fn.isdirectory(file) == 1 and " -R" or ""
+								local full_cmd = "mv" .. recursive .. " -- " .. vim.fn.shellescape(file) .. " " .. vim.fn.shellescape(dir)
+								local result = vim.fn.system(full_cmd)
+								if vim.v.shell_error == 0 then
+									ok = true
+								else
+									ok, err = false, result
+								end
 							else
-								table.insert(moved_files, path)
+								-- 复制模式：先删除目标，再复制
+								if vim.fn.isdirectory(target) == 1 then
+									vim.fn.system("rm -rf -- " .. vim.fn.shellescape(target))
+								else
+									vim.fn.system("rm -f -- " .. vim.fn.shellescape(target))
+								end
+								local recursive = vim.fn.isdirectory(file) == 1 and " -R" or ""
+								local full_cmd = "cp" .. recursive .. " -- " .. vim.fn.shellescape(file) .. " " .. vim.fn.shellescape(dir)
+								local result = vim.fn.system(full_cmd)
+								if vim.v.shell_error == 0 then
+									ok = true
+								else
+									ok, err = false, result
+								end
+							end
+
+							if ok then
+								success_count = success_count + 1
+								table.insert(processed_files, file)
+								Tree = require("snacks.explorer.tree")
+								Tree:refresh(vim.fs.dirname(file))
+							else
+								table.insert(failed_files, file .. "（" .. (err or "未知错误") .. "）")
 							end
 						end
-						local msg_parts = {}
-						if #moved_dirs > 0 then
-							table.insert(msg_parts, "已移动 " .. #moved_dirs .. " 个目录：\n- " .. table.concat(moved_dirs, "\n- "))
+
+						-- 清除剪切模式标记
+						_G.explorer_cut_mode = false
+
+						-- 刷新目标目录
+						Tree = require("snacks.explorer.tree")
+						Tree:refresh(dir)
+						Tree:open(dir)
+						Actions.update(picker, { target = dir })
+
+						-- 显示结果
+						if success_count > 0 then
+							local proc_dirs = {}
+							local proc_files = {}
+							for _, path in ipairs(processed_files) do
+								local stat = uv.fs_stat(path) or uv.fs_stat(dir .. "/" .. vim.fn.fnamemodify(path, ":t"))
+								if stat and stat.type == "directory" then
+									table.insert(proc_dirs, path)
+								else
+									table.insert(proc_files, path)
+								end
+							end
+							local msg_parts = {}
+							local action_text = is_cut and "已移动" or "已粘贴"
+							if #proc_dirs > 0 then
+								table.insert(msg_parts, action_text .. " " .. #proc_dirs .. " 个目录：\n- " .. table.concat(proc_dirs, "\n- "))
+							end
+							if #proc_files > 0 then
+								table.insert(msg_parts, action_text .. " " .. #proc_files .. " 个文件：\n- " .. table.concat(proc_files, "\n- "))
+							end
+							Snacks.notify.info(table.concat(msg_parts, "\n"))
 						end
-						if #moved_files > 0 then
-							table.insert(msg_parts, "已移动 " .. #moved_files .. " 个文件：\n- " .. table.concat(moved_files, "\n- "))
-						end
-						Snacks.notify.info(table.concat(msg_parts, "\n"))
-					end
-					if #failed_files > 0 then
-						vim.schedule(function()
-							Snacks.notify.warn("部分文件移动失败：\n- " .. table.concat(failed_files, "\n- "))
-						end)
-					end
-					return
-				end
-
-				-- 复制模式：复制文件
-				-- 检查是否在同目录粘贴，并计算副本名称
-				local same_dir_info = {}
-				local file_map = {} -- 记录原文件到副本文件的映射
-				for _, file in ipairs(files) do
-					local filename = vim.fn.fnamemodify(file, ":t")
-					local target_path = vim.fs.normalize(dir .. "/" .. filename)
-					local backup_name = Snacks.picker.util.get_backup_name(target_path)
-					local backup_filename = vim.fn.fnamemodify(backup_name, ":t")
-
-					file_map[file] = backup_name
-
-					local file_dir = vim.fn.fnamemodify(file, ":p:h")
-					if vim.fn.fnamemodify(file_dir, ":p") == vim.fn.fnamemodify(dir, ":p") then
-						table.insert(same_dir_info, {
-							original = filename,
-							backup = backup_filename
-						})
-					end
-				end
-
-				-- 如果有同目录文件，给出提示（显示副本名称）
-				if #same_dir_info > 0 then
-					local info_list = {}
-					for _, info in ipairs(same_dir_info) do
-						if info.original == info.backup then
-							table.insert(info_list, info.backup)
-						else
-							table.insert(info_list, info.original .. " → " .. info.backup)
+						if #failed_files > 0 then
+							vim.schedule(function()
+								Snacks.notify.warn("部分文件操作失败：\n- " .. table.concat(failed_files, "\n- "))
+							end)
 						end
 					end
-					Snacks.notify.warn("检测到同目录粘贴，将创建副本：\n- " .. table.concat(info_list, "\n- "))
-				end
 
-				Snacks.picker.util.copy(files, dir)
-				Tree = require("snacks.explorer.tree")
-				Tree:refresh(dir)
-				Tree:open(dir)
-				Actions.update(picker, { target = dir })
-
-				-- 构建成功提示：区分文件和目录显示
-				local result_dirs = {}
-				local result_files = {}
-				for _, file in ipairs(files) do
-					local result_path = file_map[file]
-					local stat = uv.fs_stat(file)
-					if stat and stat.type == "directory" then
-						table.insert(result_dirs, result_path)
-					else
-						table.insert(result_files, result_path)
-					end
-				end
-				local msg_parts = {}
-				if #result_dirs > 0 then
-					table.insert(msg_parts, "已粘贴 " .. #result_dirs .. " 个目录：\n- " .. table.concat(result_dirs, "\n- "))
-				end
-				if #result_files > 0 then
-					table.insert(msg_parts, "已粘贴 " .. #result_files .. " 个文件：\n- " .. table.concat(result_files, "\n- "))
-				end
-				Snacks.notify.info(table.concat(msg_parts, "\n"))
+					do_paste_with_overwrite()
+				end)
 			end
 
 			-- 新建文件/目录
