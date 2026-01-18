@@ -1035,12 +1035,34 @@ return {
 			--==============================================================================
 			-- 方案：将 q 键映射为关闭 buffer（而非窗口），避免布局重排导致 Explorer 消失
 
+			-------------------------------------------------------------------------------
+			-- Pinned 状态管理（方案 B：自己维护，不依赖 bufferline 内部 API）
+			-------------------------------------------------------------------------------
+			---@param buf number
+			---@return boolean
+			local function is_pinned(buf)
+				-- 优先检查我们自己的 pinned 状态
+				if vim.b[buf].pinned then
+					return true
+				end
+				-- 兼容其他人可能用的 buf var 名
+				if vim.b[buf].bufferline_pinned then
+					return true
+				end
+				return false
+			end
+
 			-- 1. 命令行模式 :q 和 :x 映射为保存后删除 buffer
 			vim.api.nvim_create_autocmd("VimEnter", {
 				once = true,
 				callback = function()
 					vim.api.nvim_create_user_command("Q", function(opts)
 						local buf = vim.api.nvim_get_current_buf()
+						-- 检查 pinned
+						if is_pinned(buf) then
+							vim.notify("Buffer 已 pinned，无法关闭", vim.log.levels.WARN)
+							return
+						end
 						local bufname = vim.api.nvim_buf_get_name(buf)
 						-- 先保存（如果有文件名且已修改）
 						if bufname ~= "" and vim.bo[buf].modified then
@@ -1058,7 +1080,7 @@ return {
 				end,
 			})
 
-			-- 2. 普通模式 q 键映射为 <leader>bd
+			-- 2. 普通模式 q 键映射
 			vim.api.nvim_create_autocmd("BufWinEnter", {
 				group = vim.api.nvim_create_augroup("SnacksExplorerQKey", { clear = true }),
 				callback = function(ev)
@@ -1075,15 +1097,21 @@ return {
 					end
 					-- 为这个 buffer 设置 q 键映射 (保存后删除 buffer)
 					vim.keymap.set("n", "q", function()
+						local buf = ev.buf
+						-- 检查 pinned
+						if is_pinned(buf) then
+							vim.notify("Buffer 已 pinned，无法关闭", vim.log.levels.WARN)
+							return
+						end
 						-- 先保存当前 buffer（如果有文件名且已修改）
-						local bufname = vim.api.nvim_buf_get_name(ev.buf)
-						if bufname ~= "" and vim.bo[ev.buf].modified then
-							vim.api.nvim_buf_call(ev.buf, function()
+						local bufname = vim.api.nvim_buf_get_name(buf)
+						if bufname ~= "" and vim.bo[buf].modified then
+							vim.api.nvim_buf_call(buf, function()
 								vim.cmd("write")
 							end)
 						end
 						-- 使用 Snacks.bufdelete 只删除当前 buffer
-						require("snacks").bufdelete(ev.buf)
+						require("snacks").bufdelete(buf)
 					end, {
 						buffer = ev.buf,
 						desc = "Write and delete buffer (keep window layout)",
@@ -1133,5 +1161,27 @@ return {
 				vim.cmd("normal! Gzz")
 			end, { desc = "Go to end of file and center" })
 		end,
+	},
+
+	--==============================================================================
+	-- 覆盖 LazyVim 的 bufferline 键位映射
+	--==============================================================================
+	{
+		"akinsho/bufferline.nvim",
+		keys = {
+			{
+				"<leader>bp",
+				function()
+					local buf = vim.api.nvim_get_current_buf()
+					-- 切换我们自己的 pinned 状态
+					vim.b[buf].pinned = not (vim.b[buf].pinned == true)
+					local status = vim.b[buf].pinned and "已固定" or "已取消固定"
+					vim.notify("Buffer " .. status, vim.log.levels.INFO)
+					-- 同时调用 bufferline 的命令来更新显示
+					vim.cmd("BufferLineTogglePin")
+				end,
+				desc = "Toggle Pin",
+			},
+		},
 	},
 }

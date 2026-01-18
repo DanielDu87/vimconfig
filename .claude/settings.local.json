@@ -10,7 +10,8 @@
       "Bash(find:*)",
       "Bash(pkill:*)",
       "Bash(grep:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(~/.local/share/nvim/lazy/)"
     ]
   }
 }
