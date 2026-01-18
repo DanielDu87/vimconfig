@@ -893,6 +893,56 @@ return {
 			opts.picker.sources.explorer.win.input.keys["<Esc>"] = { "explorer_focus_list", mode = { "i" } }
 
 			--==============================================================================
+			-- 配置诊断图标显示在 git 状态图标左边
+			--==============================================================================
+			opts.picker.sources.explorer.formatters = opts.picker.sources.explorer.formatters or {}
+			opts.picker.sources.explorer.formatters.severity = {
+				pos = "right",
+				icons = true,
+				level = false,
+			}
+
+			-- 覆盖 severity 格式化器，支持 col 参数
+			local format_mod = require("snacks.picker.format")
+			local original_severity = format_mod.severity
+			format_mod.severity = function(item, picker)
+				local ret = {} ---@type snacks.picker.Highlight[]
+				local severity = item.severity
+				severity = type(severity) == "number" and vim.diagnostic.severity[severity] or severity
+				if not severity or type(severity) == "number" then
+					return ret
+				end
+				---@cast severity string
+				local lower = severity:lower()
+				local cap = severity:sub(1, 1):upper() .. lower:sub(2)
+
+				if picker.opts.formatters.severity.pos == "right" then
+					-- 使用配置的 col 值，默认为 2（在 git 图标左边）
+					local col_offset = picker.opts.formatters.severity.col or 2
+					return {
+						{
+							col = col_offset,
+							virt_text = { { picker.opts.icons.diagnostics[cap], "Diagnostic" .. cap } },
+							virt_text_pos = "right_align",
+							hl_mode = "combine",
+						},
+					}
+				end
+
+				if picker.opts.formatters.severity.icons then
+					ret[#ret + 1] = { picker.opts.icons.diagnostics[cap], "Diagnostic" .. cap, virtual = true }
+					ret[#ret + 1] = { " ", virtual = true }
+				end
+
+				if picker.opts.formatters.severity.level then
+					ret[#ret + 1] = { lower:upper(), "Diagnostic" .. cap, virtual = true }
+					ret[#ret + 1] = { " ", virtual = true }
+				end
+
+				return ret
+			end
+
+			--==============================================================================
 			-- 处理目录参数启动
 			--==============================================================================
 			-- 检测是否以目录参数启动
@@ -904,6 +954,27 @@ return {
 					break
 				end
 			end
+
+			--==============================================================================
+			-- 修改 Git 文件颜色
+			--==============================================================================
+			vim.api.nvim_create_autocmd("ColorScheme", {
+				group = vim.api.nvim_create_augroup("SnacksExplorerHighlight", { clear = true }),
+				callback = function()
+					-- 未跟踪文件：绿色
+					vim.api.nvim_set_hl(0, "SnacksPickerGitStatusUntracked", { link = "String" })
+					-- 已添加文件：黄色
+					vim.api.nvim_set_hl(0, "SnacksPickerGitStatusAdded", { link = "DiagnosticWarn" })
+					-- 已暂存修改：蓝色
+					vim.api.nvim_set_hl(0, "SnacksPickerGitStatusStaged", { link = "DiagnosticInfo" })
+				end,
+			})
+			-- 立即应用一次（防止 ColorScheme 已经加载过）
+			vim.schedule(function()
+				vim.api.nvim_set_hl(0, "SnacksPickerGitStatusUntracked", { link = "String" })
+				vim.api.nvim_set_hl(0, "SnacksPickerGitStatusAdded", { link = "DiagnosticWarn" })
+				vim.api.nvim_set_hl(0, "SnacksPickerGitStatusStaged", { link = "DiagnosticInfo" })
+			end)
 
 			--==============================================================================
 			-- 启动时自动打开 Explorer（仅当非目录参数启动时）
