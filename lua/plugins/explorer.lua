@@ -1029,6 +1029,68 @@ return {
 					desc = "启动时自动打开 Snacks Explorer",
 				})
 			end
+
+			--==============================================================================
+			-- 修复 Explorer 在文件切换后消失的问题
+			--==============================================================================
+			-- 方案：将 q 键映射为关闭 buffer（而非窗口），避免布局重排导致 Explorer 消失
+
+			-- 1. 命令行模式 :q 和 :x 映射为保存后删除 buffer
+			vim.api.nvim_create_autocmd("VimEnter", {
+				once = true,
+				callback = function()
+					vim.api.nvim_create_user_command("Q", function(opts)
+						local buf = vim.api.nvim_get_current_buf()
+						local bufname = vim.api.nvim_buf_get_name(buf)
+						-- 先保存（如果有文件名且已修改）
+						if bufname ~= "" and vim.bo[buf].modified then
+							vim.api.nvim_buf_call(buf, function()
+								vim.cmd("write")
+							end)
+						end
+						-- 使用 Snacks.bufdelete 只删除当前 buffer
+						require("snacks").bufdelete(buf, opts.bang)
+					end, { bang = true, desc = "Write and delete buffer" })
+					vim.cmd("cnoreabbrev q Q")
+					vim.cmd("cnoreabbrev q! Q!")
+					vim.cmd("cnoreabbrev x Q")
+					vim.cmd("cnoreabbrev x! Q!")
+				end,
+			})
+
+			-- 2. 普通模式 q 键映射为 <leader>bd
+			vim.api.nvim_create_autocmd("BufWinEnter", {
+				group = vim.api.nvim_create_augroup("SnacksExplorerQKey", { clear = true }),
+				callback = function(ev)
+					-- 只对普通文件生效
+					local buftype = vim.bo[ev.buf].buftype
+					local filetype = vim.bo[ev.buf].filetype
+					-- 排除特殊缓冲区
+					if buftype ~= "" then
+						return
+					end
+					-- 排除 Explorer 和 picker 等特殊类型
+					if filetype == "snacks_explorer" or filetype == "snacks_picker" or filetype == "snacks_input" then
+						return
+					end
+					-- 为这个 buffer 设置 q 键映射 (保存后删除 buffer)
+					vim.keymap.set("n", "q", function()
+						-- 先保存当前 buffer（如果有文件名且已修改）
+						local bufname = vim.api.nvim_buf_get_name(ev.buf)
+						if bufname ~= "" and vim.bo[ev.buf].modified then
+							vim.api.nvim_buf_call(ev.buf, function()
+								vim.cmd("write")
+							end)
+						end
+						-- 使用 Snacks.bufdelete 只删除当前 buffer
+						require("snacks").bufdelete(ev.buf)
+					end, {
+						buffer = ev.buf,
+						desc = "Write and delete buffer (keep window layout)",
+					})
+				end,
+				desc = "将 q 键映射为关闭 buffer，保护 Explorer 窗口布局",
+			})
 		end,
 	},
 }

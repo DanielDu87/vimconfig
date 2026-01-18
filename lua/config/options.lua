@@ -83,3 +83,16 @@ vim.opt.softtabstop = 4
 --     vim.opt_local.tabstop = 4
 --   end,
 -- })
+
+--==============================================================================
+-- 折叠设置（修复 LSP folding 错误）
+--==============================================================================
+
+-- 使用 treesitter 折叠（而非 LSP folding）
+vim.opt.foldmethod = "expr"
+vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+vim.opt.foldtext = ""
+
+-- 默认展开所有折叠
+vim.opt.foldenable = true
+vim.opt.foldlevel = 99
