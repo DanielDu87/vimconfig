@@ -43,7 +43,7 @@ return {
 				width = 0.75,
 				height = { min = 4, max = math.huge },
 				col = 0.5,
-				row = 0.4,
+				row = 0.8,
 				border = "rounded",
 				title = "  ◈ 操作菜单 ◈  ",
 				title_pos = "center",
@@ -76,6 +76,7 @@ return {
 			},
 			replace = {
 				desc = {
+					{ "Keywordprg", "关键词查询" },
 					{ "Explorer", "文件浏览器" },
 					{ "Notification History", "通知历史" },
 					{ "Buffers", "缓冲区列表" },
