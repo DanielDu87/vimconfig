@@ -1199,10 +1199,29 @@ return {
 	},
 
 	--==============================================================================
-	-- 覆盖 LazyVim 的 bufferline 键位映射
+	-- 覆盖 LazyVim 的 bufferline 配置
 	--==============================================================================
 	{
 		"akinsho/bufferline.nvim",
+		opts = function(_, opts)
+			opts.options = opts.options or {}
+			opts.options.always_show_bufferline = true
+			return opts
+		end,
+		config = function(_, opts)
+			require("bufferline").setup(opts)
+			-- 使用 ColorScheme 事件确保在主题加载后设置高亮
+			vim.api.nvim_create_autocmd("ColorScheme", {
+				group = vim.api.nvim_create_augroup("BufferlineHighlights", { clear = true }),
+				callback = function()
+					-- 设置未激活标签页的文字颜色（更亮）
+					vim.api.nvim_set_hl(0, "BufferLineBackground", { fg = "#9aa5ce", bold = true })
+					vim.api.nvim_set_hl(0, "BufferLineBufferVisible", { fg = "#9aa5ce", bold = true })
+				end,
+			})
+			-- 立即执行一次
+			vim.cmd("doautocmd ColorScheme")
+		end,
 		keys = {
 			{
 				"<leader>bp",
