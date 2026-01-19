@@ -195,10 +195,8 @@ return {
 							else
 								local ok, err
 								if is_move then
-									-- 使用系统命令移动文件，支持覆盖
-									local cmd = is_move and "mv" or "cp"
-									local recursive = vim.fn.isdirectory(file) == 1 and " -R" or ""
-									local full_cmd = cmd .. recursive .. " -- " .. vim.fn.shellescape(file) .. " " .. vim.fn.shellescape(dir)
+									-- 使用系统命令移动文件（mv 本身就是递归的，不需要 -R）
+									local full_cmd = "mv -- " .. vim.fn.shellescape(file) .. " " .. vim.fn.shellescape(dir)
 									local result = vim.fn.system(full_cmd)
 									if vim.v.shell_error == 0 then
 										ok = true
@@ -206,7 +204,7 @@ return {
 										ok, err = false, result
 									end
 								else
-									-- 复制模式
+									-- 复制模式（cp 需要 -R 来递归复制目录）
 									local recursive = vim.fn.isdirectory(file) == 1 and " -R" or ""
 									local full_cmd = "cp" .. recursive .. " -- " .. vim.fn.shellescape(file) .. " " .. vim.fn.shellescape(dir)
 									local result = vim.fn.system(full_cmd)
@@ -353,8 +351,8 @@ return {
 							local ok, err
 
 							if is_cut then
-								local recursive = vim.fn.isdirectory(file) == 1 and " -R" or ""
-								local full_cmd = "mv" .. recursive .. " -- " .. vim.fn.shellescape(file) .. " " .. vim.fn.shellescape(dir)
+								-- mv 命令本身就是递归的，不需要 -R
+								local full_cmd = "mv -- " .. vim.fn.shellescape(file) .. " " .. vim.fn.shellescape(dir)
 								local result = vim.fn.system(full_cmd)
 								if vim.v.shell_error == 0 then
 									ok = true
@@ -395,8 +393,8 @@ return {
 								else
 									vim.fn.system("rm -f -- " .. vim.fn.shellescape(target))
 								end
-								local recursive = vim.fn.isdirectory(file) == 1 and " -R" or ""
-								local full_cmd = "mv" .. recursive .. " -- " .. vim.fn.shellescape(file) .. " " .. vim.fn.shellescape(dir)
+								-- mv 命令本身就是递归的，不需要 -R
+								local full_cmd = "mv -- " .. vim.fn.shellescape(file) .. " " .. vim.fn.shellescape(dir)
 								local result = vim.fn.system(full_cmd)
 								if vim.v.shell_error == 0 then
 									ok = true
