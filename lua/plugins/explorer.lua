@@ -816,75 +816,70 @@ return {
 					Snacks.notify.info(table.concat(msg_parts, "\n"))
 				end
 
-				if #paths == 1 then
-					-- 单个文件：简单确认
-					local type_text = dir_count > 0 and "目录" or "文件"
-					Snacks.picker.util.confirm("是否删除" .. type_text .. " " .. filenames[1] .. "？", do_delete)
-				else
-					-- 多个文件：创建预览窗口显示文件列表
-					-- 计算最大文件名长度来确定窗口宽度
-					local max_name_len = 0
-					for _, name in ipairs(filenames) do
-						max_name_len = math.max(max_name_len, vim.api.nvim_strwidth(name))
+				-- 统一使用预览窗口确认对话框（单个和多个文件都使用相同界面）
+				-- 创建预览窗口显示文件列表
+				-- 计算最大文件名长度来确定窗口宽度
+				local max_name_len = 0
+				for _, name in ipairs(filenames) do
+					max_name_len = math.max(max_name_len, vim.api.nvim_strwidth(name))
+				end
+				local width = math.max(20, math.min(max_name_len + 8, 35))
+				local function center_text(text, width)
+					local padding = math.floor((width - vim.api.nvim_strwidth(text)) / 2)
+					return string.rep(" ", math.max(0, padding)) .. text
+				end
+				local file_list_lines = {}
+				for i, name in ipairs(filenames) do
+					local stat = uv.fs_stat(paths[i])
+					local display_name = name
+					if stat and stat.type == "directory" then
+						display_name = name .. "（目录）"
 					end
-					local width = math.max(20, math.min(max_name_len + 8, 35))
-					local function center_text(text, width)
-						local padding = math.floor((width - vim.api.nvim_strwidth(text)) / 2)
-						return string.rep(" ", math.max(0, padding)) .. text
+					table.insert(file_list_lines, center_text(display_name, width))
+				end
+				-- 预览窗口放在确认对话框下方
+				local dialog_height = 2 -- 确认对话框大约高度
+				local gap = 0 -- 对话框和预览窗口之间的间距
+				local bottom_margin = 2 -- 底部边距
+				local max_height = math.max(5, vim.o.lines - vim.o.lines / 2 - dialog_height / 2 - gap - bottom_margin)
+				local height = math.min(#filenames, max_height)
+				-- 如果文件列表超过预览窗口高度，截断显示
+				local display_lines = file_list_lines
+				if #filenames > max_height then
+					display_lines = { unpack(file_list_lines, 1, max_height - 1) }
+					table.insert(display_lines, center_text("...（还有 " .. (#filenames - max_height + 1) .. " 项）", width))
+				end
+				local buf = vim.api.nvim_create_buf(false, true)
+				vim.api.nvim_buf_set_lines(buf, 0, -1, false, display_lines)
+				vim.api.nvim_buf_set_option(buf, "modifiable", false)
+				-- 预览窗口放在确认对话框下方
+				local row = math.floor(vim.o.lines / 2 + dialog_height / 2 + gap)
+				local preview_win = vim.api.nvim_open_win(buf, false, {
+					relative = "editor",
+					row = row,
+					col = math.floor((vim.o.columns - width) / 2),
+					width = width,
+					height = height,
+					style = "minimal",
+					border = "rounded",
+					zindex = 50,
+					anchor = "NW",
+				})
+				-- 去掉背景色
+				vim.api.nvim_win_set_option(preview_win, "winblend", 0)
+				vim.api.nvim_win_set_option(preview_win, "winhl", "Normal:NormalFloat,NormalNC:NormalFloat")
+				-- 显示确认对话框
+				Snacks.picker.select({ "取消", "删除" }, {
+					prompt = get_confirm_text(),
+					layout = { preset = "select", layout = { max_width = 60 } },
+				}, function(item, idx)
+					if preview_win and vim.api.nvim_win_is_valid(preview_win) then
+						vim.api.nvim_win_close(preview_win, true)
 					end
-					local file_list_lines = {}
-					for i, name in ipairs(filenames) do
-						local stat = uv.fs_stat(paths[i])
-						local display_name = name
-						if stat and stat.type == "directory" then
-							display_name = name .. "（目录）"
-						end
-						table.insert(file_list_lines, center_text(display_name, width))
+					if idx == 2 then
+						do_delete()
 					end
-					-- 先显示文件列表通知
-					-- 预览窗口放在确认对话框下方
-					local dialog_height = 2 -- 确认对话框大约高度（prompt + 选项 + 边框）
-					local gap = 0 -- 对话框和预览窗口之间的间距
-					local bottom_margin = 2 -- 底部边距
-					local max_height = math.max(5, vim.o.lines - vim.o.lines / 2 - dialog_height / 2 - gap - bottom_margin)
-					local height = math.min(#filenames, max_height)
-					-- 如果文件列表超过预览窗口高度，截断显示
-					local display_lines = file_list_lines
-					if #filenames > max_height then
-						display_lines = { unpack(file_list_lines, 1, max_height - 1) }
-						table.insert(display_lines, center_text("...（还有 " .. (#filenames - max_height + 1) .. " 项）", width))
-					end
-					local buf = vim.api.nvim_create_buf(false, true)
-					vim.api.nvim_buf_set_lines(buf, 0, -1, false, display_lines)
-					vim.api.nvim_buf_set_option(buf, "modifiable", false)
-					-- 预览窗口放在确认对话框下方
-					local row = math.floor(vim.o.lines / 2 + dialog_height / 2 + gap)
-					local preview_win = vim.api.nvim_open_win(buf, false, {
-						relative = "editor",
-						row = row,
-						col = math.floor((vim.o.columns - width) / 2),
-						width = width,
-						height = height,
-						style = "minimal",
-						border = "rounded",
-						zindex = 50,
-						anchor = "NW",
-					})
-					-- 去掉背景色
-					vim.api.nvim_win_set_option(preview_win, "winblend", 0)
-					vim.api.nvim_win_set_option(preview_win, "winhl", "Normal:NormalFloat,NormalNC:NormalFloat")
-					-- 显示确认对话框
-					Snacks.picker.select({ "取消", "删除" }, {
-						prompt = get_confirm_text(),
-						layout = { preset = "select", layout = { max_width = 60 } },
-					}, function(item, idx)
-						if preview_win and vim.api.nvim_win_is_valid(preview_win) then
-							vim.api.nvim_win_close(preview_win, true)
-						end
-						if idx == 2 then
-							do_delete()
-						end
-					end)
+				end)
 				end
 			end
 
