@@ -39,7 +39,9 @@
       "Bash(chown:*)",
       "Bash(chmod:*)",
       "Bash(ln:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(GIT_SEQUENCE_EDITOR=\"sed -i '' 's/^pick 77c46c3/edit 77c46c3/'\" git rebase:*)",
+      "Bash(GIT_SEQUENCE_EDITOR=\"sed -i '''' ''s/^pick 77c46c3/edit 77c46c3/''\" git rebase -i 99619b2^)"
     ]
   }
 }
