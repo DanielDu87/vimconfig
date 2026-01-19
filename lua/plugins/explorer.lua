@@ -729,6 +729,17 @@ return {
 				if #paths == 0 then
 					return Snacks.notify.warn("未选择文件")
 				end
+
+				-- 检查是否尝试删除 nvim 启动时的根目录
+				local init_dir = vim.fn.getcwd() -- nvim 启动时的工作目录
+				for _, path in ipairs(paths) do
+					local normalized_path = vim.fs.normalize(path)
+					local normalized_init = vim.fs.normalize(init_dir)
+					if normalized_path == normalized_init then
+						return Snacks.notify.warn("不能删除项目根目录")
+					end
+				end
+
 				-- 获取文件名列表
 				local filenames = vim.tbl_map(function(p)
 					local name = vim.fn.fnamemodify(p, ":t")
@@ -760,6 +771,13 @@ return {
 				end
 
 				local function do_delete()
+					-- 在删除前保存文件类型信息
+					local path_types = {}
+					for _, path in ipairs(paths) do
+						local stat = uv.fs_stat(path)
+						path_types[path] = stat and stat.type == "directory" and "dir" or "file"
+					end
+
 					for _, path in ipairs(paths) do
 						local ok, err = Actions.trash(path)
 						if ok then
@@ -768,17 +786,23 @@ return {
 							Snacks.notify.error("删除失败 `" .. path .. "`：\n" .. err)
 						end
 						Tree = require("snacks.explorer.tree")
-						Tree:refresh(vim.fs.dirname(path))
+						local parent_dir = vim.fs.dirname(path)
+						-- 检查父目录是否仍然存在
+						if vim.fn.isdirectory(parent_dir) == 1 then
+							Tree:refresh(parent_dir)
+						end
 					end
 					picker.list:set_selected()
-					Actions.update(picker)
-					-- 区分文件和目录显示
+					-- 检查当前目录是否仍然存在，再尝试更新
+					local current_dir = picker:dir()
+					if vim.fn.isdirectory(current_dir) == 1 then
+						pcall(Actions.update, picker)
+					end
+					-- 使用保存的类型信息区分文件和目录
 					local files = {}
 					local dirs = {}
 					for _, path in ipairs(paths) do
-						-- 使用 uv.fs_stat 检测目录
-						local stat = uv.fs_stat(path)
-						if stat and stat.type == "directory" then
+						if path_types[path] == "dir" then
 							table.insert(dirs, path)
 						else
 							table.insert(files, path)
