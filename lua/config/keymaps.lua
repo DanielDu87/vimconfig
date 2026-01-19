@@ -9,21 +9,36 @@
 -- 使用 :LazyKeys 命令或 <leader>sk 查看所有键位映射
 
 --==============================================================================
--- K 键关键词查询（中文化错误提示）
+-- 禁用 K 键 hover 功能
 --==============================================================================
-vim.keymap.set("n", "K", function()
-	local keyword = vim.fn.expand("<cword>")
-	local cmd = "man " .. vim.fn.shellescape(keyword) .. " 2>&1"
+vim.keymap.set("n", "K", "<nop>", { desc = "禁用 K 键" })
 
-	local output = vim.fn.system(cmd)
-	local exit_code = vim.v.shell_error
+--==============================================================================
+-- DevDocs 文档搜索
+--==============================================================================
+local function open_url(url)
+  local opener = (vim.fn.has("mac") == 1) and "open"
+    or (vim.fn.has("win32") == 1) and "start"
+    or "xdg-open"
+  vim.fn.jobstart({ opener, url }, { detach = true })
+end
 
-	if exit_code ~= 0 then
-		-- 翻译错误信息
-		local translated = output:gsub("no manual entry for", "未找到手册条目：")
-		vim.notify(translated, vim.log.levels.WARN, { title = "关键词查询" })
-	else
-		-- 正常显示手册页
-		vim.cmd("Man " .. keyword)
-	end
-end, { desc = "关键词查询" })
+local function devdocs_search(q)
+  q = (q or vim.fn.expand("<cword>")):gsub(" ", "%%20")
+  open_url("https://devdocs.io/#q=" .. q)
+end
+
+-- leader+k: 搜索当前单词
+vim.keymap.set("n", "<leader>k", function()
+  devdocs_search()
+end, { desc = "搜索 DevDocs (当前单词)" })
+
+-- leader+K: 输入查询
+vim.keymap.set("n", "<leader>K", function()
+  vim.ui.input({ prompt = "DevDocs 查询: " }, function(q)
+    if q and #q > 0 then
+      devdocs_search(q)
+    end
+  end)
+end, { desc = "搜索 DevDocs (输入查询)" })
+
