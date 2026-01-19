@@ -22,9 +22,6 @@ vim.opt.background = "dark"
 -- 启用真颜色支持
 vim.opt.termguicolors = true
 
--- 设置窗口边框样式（单字符）
-vim.opt.winborder = "single"
-
 -- 编辑器背景透明
 vim.api.nvim_create_autocmd("ColorScheme", {
   group = vim.api.nvim_create_augroup("TransparentBackground", { clear = true }),

@@ -207,6 +207,7 @@ return {
 
 			-- 列表窗口配置 - 禁用左侧列防止内容被遮挡
 			opts.picker.win.list = {
+				border = "rounded",
 				wo = {
 					statuscolumn = "",
 					signcolumn = "no",
@@ -217,6 +218,35 @@ return {
 				keys = {
 					-- Esc 清除多选，不关闭 picker
 					["<Esc>"] = { "list_clear_selected", mode = "n" },
+				},
+			}
+
+			-- 预览窗口配置
+			opts.picker.win.preview = {
+				border = "rounded",
+			}
+
+			--======================================================================
+			-- 源特定配置 - Command History 边框修复
+			--======================================================================
+			opts.picker.sources = opts.picker.sources or {}
+
+			-- 覆盖 command_history 布局，使用 custom 布局预设添加完整边框
+			opts.picker.sources.command_history = {
+				layout = {
+					preset = "custom",
+					-- 自定义布局：基于 vscode，但使用完整边框
+					layout = {
+						backdrop = false,
+						row = 1,
+						width = 0.4,
+						min_width = 80,
+						height = 0.4,
+						border = "none",
+						box = "vertical",
+						{ win = "input", height = 1, border = "rounded", title = "{title} {live} {flags}", title_pos = "center" },
+						{ win = "list", border = "rounded" },
+					},
 				},
 			}
 

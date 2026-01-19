@@ -64,6 +64,11 @@ require("lazy").setup({
 		{ import = "plugins" },
 	},
 
+	-- UI 配置
+	ui = {
+		border = "rounded",
+	},
+
 	-- 默认配置
 	defaults = {
 		-- 懒加载设置

@@ -8,6 +8,16 @@ return {
 		"snacks.nvim",
 		opts = function(_, opts)
 			--==============================================================================
+			-- 浮动窗口边框配置
+			--==============================================================================
+			opts.terminal = opts.terminal or {}
+			opts.terminal.border = "rounded"
+			opts.styles = opts.styles or {}
+			opts.styles.float = opts.styles.float or {}
+			opts.styles.float.border = "rounded"
+			opts.styles.float.backdrop = 100
+
+			--==============================================================================
 			-- 中文化 Explorer 操作提示
 			--==============================================================================
 			opts.picker = opts.picker or {}
