@@ -5,7 +5,7 @@
 
 return {
 	{
-		"folke/snacks.nvim",
+		"snacks.nvim",
 		opts = function(_, opts)
 			--==============================================================================
 			-- 中文化 Explorer 操作提示
@@ -42,14 +42,36 @@ return {
 					},
 				}
 			end
-			opts.picker.sources.explorer.on_close = function(picker)
-				local size = picker.layout.root:size()
-				local f = io.open(width_file, "w")
-				if f then
-					f:write(tostring(size.width))
-					f:close()
-				end
-			end
+
+			-- 使用 autocmd 在窗口调整大小时保存宽度
+			vim.api.nvim_create_autocmd("WinResized", {
+				group = vim.api.nvim_create_augroup("SnacksExplorerWidth", { clear = true }),
+				callback = function(ev)
+					-- 检查是否有 explorer picker 在运行
+					local ok, pickers = pcall(function()
+						return require("snacks.picker").get({ source = "explorer" })
+					end)
+					if not ok or not pickers or #pickers == 0 then
+						return
+					end
+					-- 获取第一个 explorer picker
+					local picker = pickers[1]
+					if picker.closed then
+						return
+					end
+					-- 保存当前宽度
+					local ok2, size = pcall(function()
+						return picker.layout.root:size()
+					end)
+					if ok2 and size and size.width then
+						local f = io.open(width_file, "w")
+						if f then
+							f:write(tostring(size.width))
+							f:close()
+						end
+					end
+				end,
+			})
 
 			-- 覆盖 actions 以中文化提示信息
 			local Actions = require("snacks.explorer.actions")
@@ -933,10 +955,6 @@ return {
 			--==============================================================================
 			-- 添加 explorer 键映射
 			--==============================================================================
-			-- 根据源代码，应该使用 opts.picker.sources.explorer 而不是 opts.picker.explorer
-			opts.picker = opts.picker or {}
-			opts.picker.sources = opts.picker.sources or {}
-			opts.picker.sources.explorer = opts.picker.sources.explorer or {}
 			opts.picker.sources.explorer.win = opts.picker.sources.explorer.win or {}
 			opts.picker.sources.explorer.win.list = opts.picker.sources.explorer.win.list or {}
 			opts.picker.sources.explorer.win.list.keys = opts.picker.sources.explorer.win.list.keys or {}
@@ -946,7 +964,6 @@ return {
 
 			-- 修复从输入模式退出后按键识别问题：确保退出输入模式时焦点返回列表
 			-- 添加自定义动作来聚焦到列表
-			opts.picker = opts.picker or {}
 			opts.picker.actions = opts.picker.actions or {}
 			opts.picker.actions.explorer_focus_list = function(picker)
 				-- 聚焦到列表
@@ -1233,6 +1250,8 @@ return {
 			vim.keymap.set({ "n", "i" }, "<M-z>", function()
 				vim.cmd("normal! Gzz")
 			end, { desc = "Go to end of file and center" })
+
+			return opts
 		end,
 	},
 
