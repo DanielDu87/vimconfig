@@ -4,14 +4,19 @@
 -- 覆盖 LazyVim 默认编辑器插件设置
 
 --==============================================================================
--- 禁用 LazyVim 默认的窗口分割快捷键（移到 <leader>w 组中）
+-- 禁用 LazyVim 默认快捷键（重新组织）
 --==============================================================================
 vim.api.nvim_create_autocmd("User", {
 	pattern = "LazyVimKeymaps",
 	callback = function()
+		-- 窗口分割快捷键移到 <leader>w 组
 		vim.keymap.del("n", "<leader>-")
 		vim.keymap.del("n", "<leader>|")
+		-- Toggle Scratch Buffer 移到 <leader>S 组
 		vim.keymap.del("n", "<leader>.")
+		-- 缓冲区快捷键重新组织
+		vim.keymap.del("n", "<leader>`")
+		vim.keymap.del("n", "<leader>,")
 	end,
 })
 
@@ -73,6 +78,10 @@ return {
 				{ "<leader>|", desc = "which_key_ignore" },
 				-- 隐藏 Toggle Scratch Buffer（已移到 <leader>S 组中）
 				{ "<leader>.", desc = "which_key_ignore" },
+				-- 隐藏 Switch to Other Buffer（移到 <leader>b 组中）
+				{ "<leader>`", desc = "which_key_ignore" },
+				-- 隐藏 Buffers（移到 <leader>bf 中）
+				{ "<leader>,", desc = "which_key_ignore" },
 				{ "<leader>c", group = "代码" },
 				{ "<leader>d", group = "调试" },
 				{ "<leader>dp", group = "性能分析" },
@@ -94,6 +103,13 @@ return {
 				{ "gs", group = "环绕" },
 				{ "z", group = "折叠" },
 				{ "<leader>b", group = "缓冲区" },
+				{ "<leader>bb", desc = "切换到其他缓冲区" },
+				{ "<leader>bd", desc = "关闭当前缓冲区" },
+				{ "<leader>bD", desc = "关闭缓冲区和窗口" },
+				{ "<leader>bf", desc = "缓冲区列表" },
+				{ "<leader>bh", desc = "上一个缓冲区" },
+				{ "<leader>bl", desc = "下一个缓冲区" },
+				{ "<leader>bo", desc = "关闭其他缓冲区" },
 				{ "<leader>w", group = "窗口" },
 				{ "<leader>w-", desc = "向下分割窗口" },
 				{ "<leader>w|", desc = "向右分割窗口" },
@@ -152,6 +168,13 @@ return {
 					{ "Goto Definition", "跳转到定义" },
 					{ "Goto Implementation", "跳转到实现" },
 					{ "Select Scratch Buffer", "选择临时缓冲区" },
+					-- 缓冲区相关
+					{ "Switch to Other Buffer", "切换到其他缓冲区" },
+					{ "Delete Buffer", "关闭当前缓冲区" },
+					{ "Delete Buffer and Window", "关闭缓冲区和窗口" },
+					{ "Delete Other Buffers", "关闭其他缓冲区" },
+					{ "Prev Buffer", "上一个缓冲区" },
+					{ "Next Buffer", "下一个缓冲区" },
 					-- 窗口相关
 					{ "Split Window Below", "向下分割窗口" },
 					{ "Split Window Right", "向右分割窗口" },
@@ -164,6 +187,58 @@ return {
 					{ "Decrease Window Height", "减少窗口高度" },
 					{ "Decrease Window Width", "减少窗口宽度" },
 					{ "Increase Window Width", "增加窗口宽度" },
+					-- 其他
+					{ "Save File", "保存文件" },
+					{ "Quit All", "全部退出" },
+					{ "Lazy", "插件管理器" },
+					{ "Lazy Log", "Lazy更新历史" },
+					{ "Open lazygit log", "打开 Lazygit 日志" },
+					{ "Vim Changelog", "更新历史" },
+					{ "Toggle Pin", "切换固定" },
+					{ "Delete Non-Pinned", "关闭未固定缓冲区" },
+					{ "Delete", "关闭" },
+					{ "Non-Pinned", "非固定" },
+					{ "Non", "非" },
+					{ "to the Right", "右侧" },
+					{ "to the Left", "左侧" },
+					{ "Delete Buffers", "关闭缓冲区" },
+					{ "Delete Buffers to the Right", "关闭右侧缓冲区" },
+					{ "Delete Buffers to the Left", "关闭左侧缓冲区" },
+					{ "缓冲区列表", "缓冲区列表" },
+					{ "Pinned", "固定" },
+					{ "Close", "关闭" },
+					{ "Buffers", "缓冲区" },
+					{ "Delete Non-Pinned Buffers", "关闭非固定缓冲区" },
+					{ "Ungrouped", "未分组" },
+					{ "New File", "新建文件" },
+					{ "Format", "格式化" },
+					{ "Line Diagnostics", "行诊断" },
+					{ "Next Diagnostic", "下一个诊断" },
+					{ "Prev Diagnostic", "上一个诊断" },
+					{ "Next Error", "下一个错误" },
+					{ "Prev Error", "上一个错误" },
+					{ "Next Warning", "下一个警告" },
+					{ "Prev Warning", "上一个警告" },
+					{ "Previous Quickfix", "上一个快速修复" },
+					{ "Next Quickfix", "下一个快速修复" },
+					{ "Next Search Result", "下一个搜索结果" },
+					{ "Prev Search Result", "上一个搜索结果" },
+					{ "Down", "向下移动" },
+					{ "Up", "向上移动" },
+					{ "Escape and Clear hlsearch", "取消并清除搜索高亮" },
+					{ "Add Comment Below", "在下方添加注释" },
+					{ "Add Comment Above", "在上方添加注释" },
+					{ "Run Lua", "运行 Lua" },
+					-- 文件/查找相关
+					{ "Find Files", "查找文件" },
+					{ "Find Files (Root Dir)", "查找文件 (根目录)" },
+					{ "Recent Files", "最近文件" },
+					{ "Current File Search", "当前文件搜索" },
+					{ "File Browser", "文件浏览器" },
+					{ "File Browser (Root Dir)", "文件浏览器 (根目录)" },
+					{ "File Browser (Cwd)", "文件浏览器 (当前目录)" },
+					{ "Config", "配置" },
+					{ "Explorer", "文件浏览器" },
 				},
 			},
 		},
@@ -235,6 +310,33 @@ return {
 				end,
 				desc = "选择/管理临时缓冲区",
 			},
+
+			--======================================================================
+			-- 缓冲区操作快捷键
+			--======================================================================
+			{
+				"<leader>bb",
+				"<cmd>e #<cr>",
+				desc = "切换到其他缓冲区",
+			},
+			{
+				"<leader>bh",
+				"<cmd>bprevious<cr>",
+				desc = "上一个缓冲区",
+			},
+			{
+				"<leader>bl",
+				"<cmd>bnext<cr>",
+				desc = "下一个缓冲区",
+			},
+			{
+				"<leader>bf",
+				function()
+					Snacks.picker.buffers()
+				end,
+				desc = "缓冲区列表",
+			},
+			-- bd, bD, bo 使用 LazyVim 默认配置
 
 			--======================================================================
 			-- 窗口操作快捷键
