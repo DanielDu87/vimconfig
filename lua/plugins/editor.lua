@@ -4,6 +4,18 @@
 -- 覆盖 LazyVim 默认编辑器插件设置
 
 --==============================================================================
+-- 禁用 LazyVim 默认的窗口分割快捷键（移到 <leader>w 组中）
+--==============================================================================
+vim.api.nvim_create_autocmd("User", {
+	pattern = "LazyVimKeymaps",
+	callback = function()
+		vim.keymap.del("n", "<leader>-")
+		vim.keymap.del("n", "<leader>|")
+		vim.keymap.del("n", "<leader>.")
+	end,
+})
+
+--==============================================================================
 -- Helper 函数：打开 Snacks 行搜索（无预览，纯列表，普通字符串搜索）
 --==============================================================================
 local function snacks_lines()
@@ -56,6 +68,11 @@ return {
 			spec = {
 				{ "<leader><tab>", group = "标签页" },
 				{ "<leader>/", desc = "文件内容查找" },
+				-- 隐藏默认的窗口分割快捷键（已移到 <leader>w 组中）
+				{ "<leader>-", desc = "which_key_ignore" },
+				{ "<leader>|", desc = "which_key_ignore" },
+				-- 隐藏 Toggle Scratch Buffer（已移到 <leader>S 组中）
+				{ "<leader>.", desc = "which_key_ignore" },
 				{ "<leader>c", group = "代码" },
 				{ "<leader>d", group = "调试" },
 				{ "<leader>dp", group = "性能分析" },
@@ -67,6 +84,7 @@ return {
 				{ "<leader>S", group = "临时缓冲区" },
 				{ "<leader>Ss", desc = "打开默认临时缓冲区" },
 				{ "<leader>Sn", desc = "新建命名临时缓冲区" },
+				{ "<leader>S.", desc = "打开默认临时缓冲区" },
 				{ "<leader>SS", desc = "选择/管理临时缓冲区" },
 				{ "<leader>u", group = "界面" },
 				{ "<leader>x", group = "诊断/修复" },
@@ -77,6 +95,20 @@ return {
 				{ "z", group = "折叠" },
 				{ "<leader>b", group = "缓冲区" },
 				{ "<leader>w", group = "窗口" },
+				{ "<leader>w-", desc = "向下分割窗口" },
+				{ "<leader>w|", desc = "向右分割窗口" },
+				{ "<leader>wd", desc = "关闭当前窗口" },
+				{ "<leader>wh", desc = "切换到左侧窗口" },
+				{ "<leader>wj", desc = "切换到下方窗口" },
+				{ "<leader>wk", desc = "切换到上方窗口" },
+				{ "<leader>wl", desc = "切换到右侧窗口" },
+				{ "<leader>wH", desc = "向左移动窗口" },
+				{ "<leader>wJ", desc = "向下移动窗口" },
+				{ "<leader>wK", desc = "向上移动窗口" },
+				{ "<leader>wL", desc = "向右移动窗口" },
+				{ "<leader>w=", desc = "均衡窗口大小" },
+				{ "<leader>wm", desc = "最大化/恢复窗口" },
+				{ "<leader>ww", desc = "切换到其他窗口" },
 			},
 			replace = {
 				desc = {
@@ -120,6 +152,18 @@ return {
 					{ "Goto Definition", "跳转到定义" },
 					{ "Goto Implementation", "跳转到实现" },
 					{ "Select Scratch Buffer", "选择临时缓冲区" },
+					-- 窗口相关
+					{ "Split Window Below", "向下分割窗口" },
+					{ "Split Window Right", "向右分割窗口" },
+					{ "Delete Window", "关闭当前窗口" },
+					{ "Go to Left Window", "切换到左侧窗口" },
+					{ "Go to Lower Window", "切换到下方窗口" },
+					{ "Go to Upper Window", "切换到上方窗口" },
+					{ "Go to Right Window", "切换到右侧窗口" },
+					{ "Increase Window Height", "增加窗口高度" },
+					{ "Decrease Window Height", "减少窗口高度" },
+					{ "Decrease Window Width", "减少窗口宽度" },
+					{ "Increase Window Width", "增加窗口宽度" },
 				},
 			},
 		},
@@ -178,11 +222,107 @@ return {
 				desc = "新建命名临时缓冲区",
 			},
 			{
+				"<leader>S.",
+				function()
+					Snacks.scratch()
+				end,
+				desc = "切换临时缓冲区",
+			},
+			{
 				"<leader>SS",
 				function()
 					Snacks.picker.scratch()
 				end,
 				desc = "选择/管理临时缓冲区",
+			},
+
+			--======================================================================
+			-- 窗口操作快捷键
+			--======================================================================
+			{
+				"<leader>w-",
+				"<C-W>s",
+				desc = "向下分割窗口",
+				remap = true,
+			},
+			{
+				"<leader>w|",
+				"<C-W>v",
+				desc = "向右分割窗口",
+				remap = true,
+			},
+			{
+				"<leader>wd",
+				"<C-W>c",
+				desc = "关闭当前窗口",
+				remap = true,
+			},
+			{
+				"<leader>wh",
+				"<C-W>h",
+				desc = "切换到左侧窗口",
+				remap = true,
+			},
+			{
+				"<leader>wj",
+				"<C-W>j",
+				desc = "切换到下方窗口",
+				remap = true,
+			},
+			{
+				"<leader>wk",
+				"<C-W>k",
+				desc = "切换到上方窗口",
+				remap = true,
+			},
+			{
+				"<leader>wl",
+				"<C-W>l",
+				desc = "切换到右侧窗口",
+				remap = true,
+			},
+			{
+				"<leader>wH",
+				"<C-W>H",
+				desc = "向左移动窗口",
+				remap = true,
+			},
+			{
+				"<leader>wJ",
+				"<C-W>J",
+				desc = "向下移动窗口",
+				remap = true,
+			},
+			{
+				"<leader>wK",
+				"<C-W>K",
+				desc = "向上移动窗口",
+				remap = true,
+			},
+			{
+				"<leader>wL",
+				"<C-W>L",
+				desc = "向右移动窗口",
+				remap = true,
+			},
+			{
+				"<leader>w=",
+				"<C-W>=",
+				desc = "均衡窗口大小",
+				remap = true,
+			},
+			{
+				"<leader>ww",
+				"<C-W>w",
+				desc = "切换到其他窗口",
+				remap = true,
+			},
+			{
+				"<leader>wm",
+				function()
+					Snacks.toggle.zoom()
+				end,
+				desc = "最大化/恢复窗口",
 			},
 
 			--======================================================================
