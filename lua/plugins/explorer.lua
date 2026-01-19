@@ -13,6 +13,44 @@ return {
 			opts.picker = opts.picker or {}
 			opts.picker.explorer = opts.picker.explorer or {}
 
+			--==============================================================================
+			-- Explorer 宽度持久化配置
+			--==============================================================================
+			local width_file = vim.fn.stdpath("config") .. "/.explorer_width"
+
+			-- 读取保存的宽度
+			local function load_width()
+				local f = io.open(width_file, "r")
+				if f then
+					local content = f:read("*a")
+					f:close()
+					return tonumber(content) or 30
+				end
+				return 30
+			end
+
+			-- 配置 Explorer 布局（使用官方推荐方式）
+			-- 参考: https://github.com/folke/snacks.nvim/discussions/2139
+			opts.picker.sources = opts.picker.sources or {}
+			opts.picker.sources.explorer = opts.picker.sources.explorer or {}
+			opts.picker.sources.explorer.layout = function()
+				return {
+					preset = "sidebar",
+					preview = false,
+					layout = {
+						width = load_width(),
+					},
+				}
+			end
+			opts.picker.sources.explorer.on_close = function(picker)
+				local size = picker.layout.root:size()
+				local f = io.open(width_file, "w")
+				if f then
+					f:write(tostring(size.width))
+					f:close()
+				end
+			end
+
 			-- 覆盖 actions 以中文化提示信息
 			local Actions = require("snacks.explorer.actions")
 			local uv = vim.uv or vim.loop
