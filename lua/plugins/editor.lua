@@ -64,6 +64,10 @@ return {
 				{ "<leader>gh", group = "变更" },
 				{ "<leader>q", group = "退出/会话" },
 				{ "<leader>s", group = "搜索" },
+				{ "<leader>S", group = "临时缓冲区" },
+				{ "<leader>Ss", desc = "打开默认临时缓冲区" },
+				{ "<leader>Sn", desc = "新建命名临时缓冲区" },
+				{ "<leader>SS", desc = "选择/管理临时缓冲区" },
 				{ "<leader>u", group = "界面" },
 				{ "<leader>x", group = "诊断/修复" },
 				{ "[", group = "上一个" },
@@ -115,6 +119,7 @@ return {
 					{ "LSP Workspace Symbols", "LSP 工作区符号" },
 					{ "Goto Definition", "跳转到定义" },
 					{ "Goto Implementation", "跳转到实现" },
+					{ "Select Scratch Buffer", "选择临时缓冲区" },
 				},
 			},
 		},
@@ -156,6 +161,31 @@ return {
 			},
 
 			--======================================================================
+			-- 临时缓冲区 (Scratch) 操作
+			--======================================================================
+			{
+				"<leader>Ss",
+				function()
+					Snacks.scratch({ ft = "" })
+				end,
+				desc = "打开默认临时缓冲区",
+			},
+			{
+				"<leader>Sn",
+				function()
+					Snacks.scratch({ name = vim.fn.input("名称: "), ft = "" })
+				end,
+				desc = "新建命名临时缓冲区",
+			},
+			{
+				"<leader>SS",
+				function()
+					Snacks.picker.scratch()
+				end,
+				desc = "选择/管理临时缓冲区",
+			},
+
+			--======================================================================
 			-- 当前文件搜索 - / 和 ? 键
 			--======================================================================
 			{
@@ -176,6 +206,11 @@ return {
 		-- Snacks.nvim opts 配置
 		--==========================================================================
 		opts = function(_, opts)
+			--======================================================================
+			-- Scratch 全局配置：默认不设置 filetype
+			--======================================================================
+			opts.scratch = { ft = "" }
+
 			--======================================================================
 			-- Picker 全局配置
 			--======================================================================
@@ -227,9 +262,22 @@ return {
 			}
 
 			--======================================================================
-			-- 源特定配置 - Command History 边框修复
+			-- 源特定配置 - Command History 边框修复 + Scratch 删除快捷键
 			--======================================================================
 			opts.picker.sources = opts.picker.sources or {}
+
+			-- Scratch picker 配置：确保删除快捷键生效 + 显示提示
+			opts.picker.sources.scratch = {
+				title = "Scratch [<C-x>删除 <C-n>新建]",
+				win = {
+					input = {
+						keys = {
+							["<c-x>"] = { "scratch_delete", mode = { "n", "i" } },
+							["<c-n>"] = { "scratch_new", mode = { "n", "i" } },
+						},
+					},
+				},
+			}
 
 			-- 覆盖 command_history 布局，使用 custom 布局预设添加完整边框
 			opts.picker.sources.command_history = {
