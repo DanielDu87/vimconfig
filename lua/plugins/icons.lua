@@ -6,7 +6,7 @@
 
 return {
 	{
-		"echasnovski/mini.icons",
+		"nvim-mini/mini.icons",
 		opts = function()
 			return {
 				-- 为特定文件名覆盖图标
