@@ -880,7 +880,6 @@ return {
 						do_delete()
 					end
 				end)
-				end
 			end
 
 			-- 打开文件（用于系统默认程序打开）
