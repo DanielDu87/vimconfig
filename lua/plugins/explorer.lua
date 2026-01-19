@@ -820,13 +820,26 @@ return {
 						table.insert(file_list_lines, center_text(display_name, width))
 					end
 					-- 先显示文件列表通知
+					-- 预览窗口放在确认对话框下方
+					local dialog_height = 2 -- 确认对话框大约高度（prompt + 选项 + 边框）
+					local gap = 0 -- 对话框和预览窗口之间的间距
+					local bottom_margin = 2 -- 底部边距
+					local max_height = math.max(5, vim.o.lines - vim.o.lines / 2 - dialog_height / 2 - gap - bottom_margin)
+					local height = math.min(#filenames, max_height)
+					-- 如果文件列表超过预览窗口高度，截断显示
+					local display_lines = file_list_lines
+					if #filenames > max_height then
+						display_lines = { unpack(file_list_lines, 1, max_height - 1) }
+						table.insert(display_lines, center_text("...（还有 " .. (#filenames - max_height + 1) .. " 项）", width))
+					end
 					local buf = vim.api.nvim_create_buf(false, true)
-					vim.api.nvim_buf_set_lines(buf, 0, -1, false, file_list_lines)
+					vim.api.nvim_buf_set_lines(buf, 0, -1, false, display_lines)
 					vim.api.nvim_buf_set_option(buf, "modifiable", false)
-					local height = #filenames
+					-- 预览窗口放在确认对话框下方
+					local row = math.floor(vim.o.lines / 2 + dialog_height / 2 + gap)
 					local preview_win = vim.api.nvim_open_win(buf, false, {
 						relative = "editor",
-						row = math.floor((vim.o.lines - height) / 2) - 1,
+						row = row,
 						col = math.floor((vim.o.columns - width) / 2),
 						width = width,
 						height = height,
