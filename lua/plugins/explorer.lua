@@ -980,7 +980,7 @@ return {
 			--==============================================================================
 			-- 只有在不以目录参数启动时才自动打开 Explorer
 			if not start_with_dir then
-				vim.api.nvim_create_autocmd("VimEnter", {
+				vim.api.nvim_create_autocmd("UiEnter", {
 					group = vim.api.nvim_create_augroup("SnacksExplorerAutoStart", { clear = true }),
 					once = true,
 					callback = function()
@@ -1002,25 +1002,32 @@ return {
 							end
 
 							if not has_explorer then
+								-- 检测是否有文件参数
+								local has_file_arg = false
+								for _, a in ipairs(vim.fn.argv()) do
+									if not vim.startswith(a, "-") and vim.fn.isdirectory(a) == 0 and a ~= "" then
+										has_file_arg = true
+										break
+									end
+								end
+
 								local root = vim.g.root_dir
 									or (_G.LazyVim and _G.LazyVim.root and _G.LazyVim.root.get and _G.LazyVim.root.get())
 									or vim.fn.getcwd()
 								Snacks.explorer.open({ cwd = root })
 
-								-- 如果打开了文件，焦点回到文件窗口
-								local argv = vim.fn.argv()
-								local has_file = false
-								for _, a in ipairs(argv) do
-									if not vim.startswith(a, "-") and vim.fn.isdirectory(a) == 0 then
-										has_file = true
-										break
-									end
-								end
-
-								if has_file then
-									vim.schedule(function()
-										vim.cmd("wincmd p") -- 切换到上一个窗口
-									end)
+								-- 只有在带文件参数启动时才切换到编辑器窗口
+								if has_file_arg then
+									vim.defer_fn(function()
+										for _, win in ipairs(vim.api.nvim_list_wins()) do
+											local buf = vim.api.nvim_win_get_buf(win)
+											local filetype = vim.bo[buf].filetype
+											if filetype ~= "snacks_explorer" and filetype ~= "snacks_picker" and filetype ~= "snacks_input" then
+												pcall(vim.api.nvim_set_current_win, win)
+												break
+											end
+										end
+									end, 10)
 								end
 							end
 						end)
