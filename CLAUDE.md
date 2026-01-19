@@ -116,3 +116,4 @@ The `q` key is remapped to close buffers (not windows) to preserve the explorer 
 
 始终使用中文回答
 始终严格遵守Lazyvim官方配置文件格式和规范，符合官方配置文件目录结构
+帮我提交时严格使用2026-01-19 23:29 内容这种格式的提交信息
