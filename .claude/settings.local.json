@@ -11,7 +11,9 @@
       "Bash(pkill:*)",
       "Bash(grep:*)",
       "Bash(tree:*)",
-      "Bash(~/.local/share/nvim/lazy/)"
+      "Bash(~/.local/share/nvim/lazy/)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }
