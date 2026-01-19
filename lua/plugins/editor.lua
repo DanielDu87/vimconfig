@@ -184,6 +184,12 @@ return {
 			-- 清空提示符
 			opts.picker.prompt = ""
 
+			-- 添加清除选择的动作
+			opts.picker.actions = opts.picker.actions or {}
+			opts.picker.actions.list_clear_selected = function(picker)
+				picker.list:set_selected({})
+			end
+
 			opts.picker.win = opts.picker.win or {}
 
 			-- 输入框配置（居中显示）
@@ -207,6 +213,10 @@ return {
 					number = false,
 					foldcolumn = "0",
 					conceallevel = 0,
+				},
+				keys = {
+					-- Esc 清除多选，不关闭 picker
+					["<Esc>"] = { "list_clear_selected", mode = "n" },
 				},
 			}
 
