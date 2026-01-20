@@ -14,6 +14,28 @@
 vim.keymap.set("n", "K", "<nop>", { desc = "禁用 K 键" })
 
 --==============================================================================
+-- gl 切换诊断浮窗（复用同一个窗口，减少遮挡）
+--==============================================================================
+local diag_float = nil
+
+vim.keymap.set("n", "gl", function()
+	if diag_float and vim.api.nvim_win_is_valid(diag_float) then
+		vim.api.nvim_win_close(diag_float, true)
+		diag_float = nil
+		return
+	end
+	diag_float = vim.diagnostic.open_float(nil, {
+		focus = false,
+		focusable = false,
+		scope = "cursor",
+		border = "rounded",
+		source = "if_many",
+		header = "",
+		prefix = "",
+	})
+end, { desc = "Line Diagnostics (toggle float)" })
+
+--==============================================================================
 -- DevDocs 文档搜索
 --==============================================================================
 local function open_url(url)

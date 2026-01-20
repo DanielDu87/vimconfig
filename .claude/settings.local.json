@@ -47,7 +47,8 @@
       "Bash(xxd:*)",
       "Bash(echo:*)",
       "Bash(curl:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(npm install:*)"
     ]
   }
 }
