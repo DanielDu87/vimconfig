@@ -1079,6 +1079,8 @@ return {
 					vim.api.nvim_set_hl(0, "SnacksPickerGitStatusAdded", { link = "DiagnosticWarn" })
 					-- 已暂存修改：蓝色
 					vim.api.nvim_set_hl(0, "SnacksPickerGitStatusStaged", { link = "DiagnosticInfo" })
+					-- 目录树光标行颜色（链接到 CursorLine，自动跟随主题）
+					vim.api.nvim_set_hl(0, "SnacksPickerListCursorLine", { link = "CursorLine" })
 				end,
 			})
 			-- 立即应用一次（防止 ColorScheme 已经加载过）
@@ -1086,6 +1088,7 @@ return {
 				vim.api.nvim_set_hl(0, "SnacksPickerGitStatusUntracked", { link = "String" })
 				vim.api.nvim_set_hl(0, "SnacksPickerGitStatusAdded", { link = "DiagnosticWarn" })
 				vim.api.nvim_set_hl(0, "SnacksPickerGitStatusStaged", { link = "DiagnosticInfo" })
+				vim.api.nvim_set_hl(0, "SnacksPickerListCursorLine", { link = "CursorLine" })
 			end)
 
 			--==============================================================================

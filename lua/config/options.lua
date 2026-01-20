@@ -35,16 +35,66 @@ local function set_transparent_highlights()
 	vim.api.nvim_set_hl(0, "VertSplit", { bg = "none" })
 	vim.api.nvim_set_hl(0, "TabLine", { bg = "none" })
 	vim.api.nvim_set_hl(0, "TabLineFill", { bg = "none" })
+	-- WinBar 透明
+	vim.api.nvim_set_hl(0, "WinBar", { bg = "none" })
+	vim.api.nvim_set_hl(0, "WinBarNC", { bg = "none" })
+	-- 浮动窗口和侧边栏透明（兼容不同主题）
+	vim.api.nvim_set_hl(0, "NormalFloat", { bg = "none" })
+	vim.api.nvim_set_hl(0, "FloatBorder", { bg = "none" })
+	vim.api.nvim_set_hl(0, "FloatTitle", { bg = "none" })
+	-- Snacks explorer 透明
+	vim.api.nvim_set_hl(0, "SnacksPickerNormal", { bg = "none" })
+	vim.api.nvim_set_hl(0, "SnacksPickerNormalNC", { bg = "none" })
+	vim.api.nvim_set_hl(0, "SnacksPickerBorder", { bg = "none" })
+	-- Snacks picker WinBar 透明
+	vim.api.nvim_set_hl(0, "SnacksPickerWinBar", { bg = "none" })
+	vim.api.nvim_set_hl(0, "SnacksPickerWinBarNC", { bg = "none" })
 end
 
 -- 主题加载时应用
 vim.api.nvim_create_autocmd("ColorScheme", {
 	group = vim.api.nvim_create_augroup("TransparentBackground", { clear = true }),
-	callback = set_transparent_highlights,
+	callback = function()
+		set_transparent_highlights()
+		-- 光标行固定颜色（所有主题）
+		vim.api.nvim_set_hl(0, "CursorLine", { bg = "#3d4458" })
+		vim.api.nvim_set_hl(0, "SnacksPickerListCursorLine", { link = "CursorLine" })
+		-- WinBar 强制透明（所有主题）- 使用 default=true 强制覆盖
+		vim.cmd("highlight! clear WinBar")
+		vim.cmd("highlight! WinBar guibg=none ctermbg=none")
+		vim.cmd("highlight! clear WinBarNC")
+		vim.cmd("highlight! WinBarNC guibg=none ctermbg=none")
+		-- 延迟再次应用，确保覆盖主题的后续设置
+		vim.schedule(function()
+			set_transparent_highlights()
+			vim.api.nvim_set_hl(0, "CursorLine", { bg = "#3d4458" })
+			vim.api.nvim_set_hl(0, "SnacksPickerListCursorLine", { link = "CursorLine" })
+			vim.cmd("highlight! clear WinBar")
+			vim.cmd("highlight! WinBar guibg=none ctermbg=none")
+			vim.cmd("highlight! clear WinBarNC")
+			vim.cmd("highlight! WinBarNC guibg=none ctermbg=none")
+		end)
+	end,
 })
 
 -- 立即应用一次
 set_transparent_highlights()
+vim.api.nvim_set_hl(0, "CursorLine", { bg = "#3d4458" })
+vim.api.nvim_set_hl(0, "SnacksPickerListCursorLine", { link = "CursorLine" })
+vim.cmd("highlight! clear WinBar")
+vim.cmd("highlight! WinBar guibg=none ctermbg=none")
+vim.cmd("highlight! clear WinBarNC")
+vim.cmd("highlight! WinBarNC guibg=none ctermbg=none")
+-- 延迟再次应用
+vim.schedule(function()
+	set_transparent_highlights()
+	vim.api.nvim_set_hl(0, "CursorLine", { bg = "#3d4458" })
+	vim.api.nvim_set_hl(0, "SnacksPickerListCursorLine", { link = "CursorLine" })
+	vim.cmd("highlight! clear WinBar")
+	vim.cmd("highlight! WinBar guibg=none ctermbg=none")
+	vim.cmd("highlight! clear WinBarNC")
+	vim.cmd("highlight! WinBarNC guibg=none ctermbg=none")
+end)
 
 --==============================================================================
 -- Tab 和缩进设置
