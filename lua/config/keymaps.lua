@@ -31,7 +31,7 @@ end
 -- leader+k: 搜索当前单词
 vim.keymap.set("n", "<leader>k", function()
   devdocs_search()
-end, { desc = "搜索 DevDocs (当前单词)" })
+end, { desc = "查询DevDocs（当前关键词）" })
 
 -- leader+K: 输入查询
 vim.keymap.set("n", "<leader>K", function()
@@ -40,5 +40,54 @@ vim.keymap.set("n", "<leader>K", function()
       devdocs_search(q)
     end
   end)
-end, { desc = "搜索 DevDocs (输入查询)" })
+end, { desc = "搜索DevDocs (输入查询)" })
+
+--==============================================================================
+-- 历史记录键位重新组织到 <leader>h 组
+--==============================================================================
+vim.api.nvim_create_autocmd("User", {
+  pattern = "LazyVimKeymaps",
+  callback = function()
+    -- 删除旧的历史相关键位
+    vim.keymap.del("n", "<leader>n")
+    vim.keymap.del("n", "<leader>:")
+    vim.keymap.del("n", "<leader>s/")
+    vim.keymap.del("n", "<leader>sc")
+  end,
+})
+
+local Snacks = require("snacks")
+
+-- leader+hn: 通知历史
+vim.keymap.set("n", "<leader>hn", function()
+  Snacks.picker.notifications()
+end, { desc = "通知历史" })
+
+-- leader+hc: 命令历史
+vim.keymap.set("n", "<leader>hc", function()
+  Snacks.picker.command_history()
+end, { desc = "命令历史" })
+
+-- leader+hs: 搜索历史
+vim.keymap.set("n", "<leader>hs", function()
+  Snacks.picker.search_history()
+end, { desc = "搜索历史" })
+
+-- leader+H: 切换显示隐藏文件
+vim.keymap.set("n", "<leader>H", function()
+  local ok, pickers = pcall(function()
+    return require("snacks.picker").get({ source = "explorer" })
+  end)
+  if ok and pickers and #pickers > 0 then
+    local picker = pickers[1]
+    if not picker.closed then
+      picker.opts.hidden = not picker.opts.hidden
+      picker.list:set_target()
+      picker:find()
+      return
+    end
+  end
+  local LazyVim = require("lazyvim.util")
+  Snacks.explorer({ cwd = LazyVim.root() })
+end, { desc = "切换显示隐藏文件" })
 
