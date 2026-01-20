@@ -44,7 +44,10 @@
       "Bash(GIT_SEQUENCE_EDITOR=\"sed -i '''' ''s/^pick 77c46c3/edit 77c46c3/''\" git rebase -i 99619b2^)",
       "Bash(GIT_SEQUENCE_EDITOR=\"sed -i 's/^pick 10540e9/reword 10540e9/'\" git rebase:*)",
       "Bash(GIT_SEQUENCE_EDITOR=\"sed -i ''s/^pick 10540e9/reword 10540e9/''\" git rebase -i 8f08949)",
-      "Bash(xxd:*)"
+      "Bash(xxd:*)",
+      "Bash(echo:*)",
+      "Bash(curl:*)",
+      "Bash(python3:*)"
     ]
   }
 }
