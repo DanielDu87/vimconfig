@@ -4,7 +4,7 @@
 -- 覆盖 LazyVim 默认编辑器插件设置
 
 --==============================================================================
--- 禁用 LazyVim 默认快捷键（重新组织）
+-- 覆盖 LazyVim 默认快捷键（重新组织）
 --==============================================================================
 vim.api.nvim_create_autocmd("User", {
 	pattern = "LazyVimKeymaps",
@@ -17,6 +17,120 @@ vim.api.nvim_create_autocmd("User", {
 		-- 缓冲区快捷键重新组织
 		vim.keymap.del("n", "<leader>`")
 		vim.keymap.del("n", "<leader>,")
+	end,
+})
+
+--==============================================================================
+-- 覆盖 <leader>bP：关闭非 pinned 缓冲区，保持 snacks_picker_list 宽度
+--==============================================================================
+vim.api.nvim_create_autocmd("User", {
+	pattern = "LazyVimKeymaps",
+	callback = function()
+		local SIDE_FT = "snacks_picker_list"
+
+		local function find_side_wins()
+			local wins = {}
+			for _, win in ipairs(vim.api.nvim_list_wins()) do
+				local buf = vim.api.nvim_win_get_buf(win)
+				if vim.bo[buf].filetype == SIDE_FT then
+					wins[#wins + 1] = win
+				end
+			end
+			return wins
+		end
+
+		local function snapshot_side_width()
+			local wins = find_side_wins()
+			if #wins == 0 then
+				return nil
+			end
+			return vim.api.nvim_win_get_width(wins[1])
+		end
+
+		local function set_side_fixed_width(on)
+			for _, win in ipairs(find_side_wins()) do
+				vim.wo[win].winfixwidth = on
+			end
+		end
+
+		local function restore_side_width(width)
+			if not width then
+				return
+			end
+			for _, win in ipairs(find_side_wins()) do
+				pcall(vim.api.nvim_win_set_width, win, width)
+			end
+		end
+
+		local function get_pinned_buffers()
+			local pinned = {}
+
+			local ok_groups, groups = pcall(require, "bufferline.groups")
+			local ok_state, state = pcall(require, "bufferline.state")
+
+			if not ok_groups or not ok_state or not state.components then
+				return pinned
+			end
+
+			-- 使用 bufferline groups 模块的 _is_pinned 方法
+			for _, element in ipairs(state.components) do
+				if groups._is_pinned(element) then
+					pinned[element.id] = true
+				end
+			end
+
+			return pinned
+		end
+
+		local function close_non_pinned_buffers_preserve_side_width()
+			local side_width = snapshot_side_width()
+
+			-- 获取 pinned buffers
+			local pinned = get_pinned_buffers()
+			local pinned_count = 0
+			for _ in pairs(pinned) do
+				pinned_count = pinned_count + 1
+			end
+
+			-- 锁住左侧宽度 + 避免均分
+			set_side_fixed_width(true)
+			local ea = vim.o.equalalways
+			vim.o.equalalways = false
+
+			-- 关闭所有非 pinned buffers（包括当前缓冲区）
+			local keep = pinned
+
+			local snacks = require("snacks")
+			for _, b in ipairs(vim.api.nvim_list_bufs()) do
+				if vim.api.nvim_buf_is_valid(b)
+					and vim.api.nvim_get_option_value("buflisted", { buf = b })
+					and vim.bo[b].buftype == ""
+					and not keep[b]
+				then
+					snacks.bufdelete(b)
+				end
+			end
+
+			vim.o.equalalways = ea
+
+			-- 多次回写宽度
+			vim.schedule(function()
+				restore_side_width(side_width)
+				vim.defer_fn(function() restore_side_width(side_width) end, 50)
+				vim.defer_fn(function() restore_side_width(side_width) end, 150)
+				vim.defer_fn(function()
+					restore_side_width(side_width)
+					set_side_fixed_width(false)
+				end, 300)
+			end)
+
+			vim.notify(string.format("已关闭，保留了 %d 个固定缓冲区", pinned_count), vim.log.levels.INFO)
+		end
+
+		-- 覆盖 <leader>bP
+		vim.keymap.set("n", "<leader>bP", close_non_pinned_buffers_preserve_side_width, {
+			desc = "关闭非 pinned 缓冲区（保持侧边栏宽度）",
+		})
 	end,
 })
 
@@ -56,6 +170,9 @@ return {
 		"folke/which-key.nvim",
 		---@diagnostic disable-next-line: missing-fields
 		opts = {
+			layout = {
+				columns = 8,
+			},
 			win = {
 				width = 0.75,
 				height = { min = 4, max = math.huge },
@@ -90,9 +207,10 @@ return {
 				{ "<leader>bd", desc = "关闭当前缓冲区", icon = "❌" },
 				{ "<leader>bD", desc = "关闭缓冲区和窗口", icon = "❌" },
 				{ "<leader>bf", desc = "缓冲区列表", icon = "📋" },
-				{ "<leader>bh", desc = "上一个缓冲区", icon = "◀" },
-				{ "<leader>bl", desc = "下一个缓冲区", icon = "▶" },
+				{ "<leader>bh", desc = "上一个缓冲区", icon = "⬅️" },
+				{ "<leader>bl", desc = "下一个缓冲区", icon = "➡️" },
 				{ "<leader>bo", desc = "关闭其他缓冲区", icon = "🗑️" },
+				{ "<leader>bp", desc = "切换固定", icon = "📌" },
 				{ "<leader>c", group = "代码", icon = "🛠️" },
 				{ "<leader>d", group = "调试", icon = "🔧" },
 				{ "<leader>dp", group = "性能分析", icon = "📊" },

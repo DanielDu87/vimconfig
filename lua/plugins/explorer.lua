@@ -8,6 +8,16 @@ return {
 		"snacks.nvim",
 		opts = function(_, opts)
 			--==============================================================================
+			-- 一劳永逸锁定 Snacks 侧边栏宽度
+			--==============================================================================
+			vim.api.nvim_create_autocmd("FileType", {
+				pattern = { "snacks_picker*" },
+				callback = function()
+					vim.wo.winfixwidth = true
+				end,
+			})
+
+			--==============================================================================
 			-- 浮动窗口边框配置
 			--==============================================================================
 			opts.terminal = opts.terminal or {}
@@ -49,6 +59,8 @@ return {
 					preview = false,
 					layout = {
 						width = load_width(),
+						-- 锁定宽度，防止窗口重排时被拉伸
+						win_options = { winfixwidth = true },
 					},
 				}
 			end
@@ -1182,7 +1194,7 @@ return {
 						local buf = vim.api.nvim_get_current_buf()
 						-- 检查 pinned
 						if is_pinned(buf) then
-							vim.notify("Buffer 已 pinned，无法关闭", vim.log.levels.WARN)
+							vim.notify("Buffer 已固定，无法关闭", vim.log.levels.WARN)
 							return
 						end
 						local bufname = vim.api.nvim_buf_get_name(buf)
@@ -1222,7 +1234,7 @@ return {
 						local buf = ev.buf
 						-- 检查 pinned
 						if is_pinned(buf) then
-							vim.notify("Buffer 已 pinned，无法关闭", vim.log.levels.WARN)
+							vim.notify("Buffer 已固定，无法关闭", vim.log.levels.WARN)
 							return
 						end
 						-- 先保存当前 buffer（如果有文件名且已修改）
@@ -1292,6 +1304,7 @@ return {
 	--==============================================================================
 	{
 		"akinsho/bufferline.nvim",
+		event = "VeryLazy",
 		opts = function(_, opts)
 			opts.options = opts.options or {}
 			opts.options.always_show_bufferline = true
@@ -1315,15 +1328,9 @@ return {
 			{
 				"<leader>bp",
 				function()
-					local buf = vim.api.nvim_get_current_buf()
-					-- 切换我们自己的 pinned 状态
-					vim.b[buf].pinned = not (vim.b[buf].pinned == true)
-					local status = vim.b[buf].pinned and "已固定" or "已取消固定"
-					vim.notify("Buffer " .. status, vim.log.levels.INFO)
-					-- 同时调用 bufferline 的命令来更新显示
 					vim.cmd("BufferLineTogglePin")
 				end,
-				desc = "Toggle Pin",
+				desc = "切换固定",
 			},
 		},
 	},
