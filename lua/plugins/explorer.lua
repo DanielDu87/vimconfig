@@ -53,7 +53,30 @@ return {
 				}
 			end
 
-			-- 使用 autocmd 在窗口调整大小时保存宽度
+			--==============================================================================
+			-- Explorer 宽度持久化配置（带防抖）
+			--==============================================================================
+			local width_save_timer = nil
+			local function save_width_debounced(width)
+				-- 取消之前的定时器
+				if width_save_timer then
+					width_save_timer:stop()
+					width_save_timer:close()
+				end
+				-- 创建新的定时器（500ms 后执行）
+				width_save_timer = vim.loop.new_timer()
+				width_save_timer:start(500, 0, vim.schedule_wrap(function()
+					local f = io.open(width_file, "w")
+					if f then
+						f:write(tostring(width))
+						f:close()
+					end
+					width_save_timer:close()
+					width_save_timer = nil
+				end))
+			end
+
+			-- 使用 autocmd 在窗口调整大小时保存宽度（带防抖）
 			vim.api.nvim_create_autocmd("WinResized", {
 				group = vim.api.nvim_create_augroup("SnacksExplorerWidth", { clear = true }),
 				callback = function(ev)
@@ -69,16 +92,12 @@ return {
 					if picker.closed then
 						return
 					end
-					-- 保存当前宽度
+					-- 延迟保存当前宽度
 					local ok2, size = pcall(function()
 						return picker.layout.root:size()
 					end)
 					if ok2 and size and size.width then
-						local f = io.open(width_file, "w")
-						if f then
-							f:write(tostring(size.width))
-							f:close()
-						end
+						save_width_debounced(size.width)
 					end
 				end,
 			})

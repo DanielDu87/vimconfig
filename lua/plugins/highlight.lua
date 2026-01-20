@@ -10,8 +10,6 @@ return {
 	-------------------------------------------------------------------------
 	{
 		"nvim-treesitter/nvim-treesitter",
-		-- 确保 Treesitter 在打开文件时加载
-		event = { "BufReadPost", "BufNewFile" },
 		build = ":TSUpdate",
 		opts = {
 			-- 启用所有核心功能
@@ -140,35 +138,11 @@ return {
 	-------------------------------------------------------------------------
 	{
 		"brenoprata10/nvim-highlight-colors",
-		event = "BufRead",
+		event = "BufReadPost",
 		opts = {
 			render = "background",  -- 或 'foreground' 或 'virtual'
 			enable_named_colors = true,
 			enable_tailwind = true,
-		},
-	},
-
-	-------------------------------------------------------------------------
-	-- CSS 颜色预览（Tailwind, CSS 变量等）
-	-------------------------------------------------------------------------
-	{
-		"norcalli/nvim-colorizer.lua",
-		event = "BufRead",
-		opts = {
-			filetypes = {
-				"css",
-				"scss",
-				"sass",
-				"html",
-				"javascript",
-				"typescript",
-				"tsx",
-				"vue",
-			},
-			user_default_options = {
-				mode = "background",
-				tailwind = true,
-			},
 		},
 	},
 

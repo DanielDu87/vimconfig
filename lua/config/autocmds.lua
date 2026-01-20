@@ -23,11 +23,3 @@ vim.filetype.add({
 		[".*[Dd][Kk].*"] = "dockerfile",
 	},
 })
-
--- 示例：高亮复制（yank）的文本（根据需要取消注释）
--- vim.api.nvim_create_autocmd("TextYankPost", {
---   callback = function()
---     vim.highlight.on_yank({ higroup = "Visual", timeout = 200 })
---   end,
---   desc = "高亮被复制的文本",
--- })

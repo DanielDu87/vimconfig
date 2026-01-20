@@ -140,7 +140,7 @@ require("lazy").setup({
 				"gzip",          -- 禁用 gzip 压缩支持
 				-- "matchit",     -- 保持启用（提供 % 命令的增强功能）
 				-- "matchparen",  -- 保持启用（高亮匹配的括号）
-				-- "netrwPlugin", -- 保持启用（内置文件浏览器，LazyVim 使用其他文件浏览器替代）
+				"netrwPlugin",   -- 禁用内置文件浏览器（LazyVim 使用 snacks.explorer）
 				"tarPlugin",     -- 禁用 tar 归档文件支持
 				"tohtml",        -- 禁用语法高亮导出为 HTML
 				"tutor",         -- 禁用 Vim 教程
