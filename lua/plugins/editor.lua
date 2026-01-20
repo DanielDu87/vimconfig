@@ -72,7 +72,9 @@ return {
 			},
 			spec = {
 				{ "<leader><tab>", group = "标签页" },
+				{ "<leader><space>", desc = "查找文件", icon = "🔍" },
 				{ "<leader>/", desc = "文件内容查找", icon = "🔍" },
+				{ "<leader>?", desc = "Buffer快捷键查询", icon = "⌨️" },
 				-- 隐藏默认的窗口分割快捷键（已移到 <leader>w 组中）
 				{ "<leader>-", desc = "which_key_ignore" },
 				{ "<leader>|", desc = "which_key_ignore" },
@@ -86,6 +88,7 @@ return {
 				{ "<leader>d", group = "调试" },
 				{ "<leader>dp", group = "性能分析" },
 				{ "<leader>f", group = "文件/查找" },
+				{ "<leader>ff", desc = "查找文件", icon = "🔍" },
 				{ "<leader>g", group = "Git" },
 				{ "<leader>gh", group = "变更" },
 				{ "<leader>q", group = "退出/会话" },
