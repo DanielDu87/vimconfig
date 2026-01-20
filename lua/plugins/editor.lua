@@ -185,6 +185,7 @@ return {
 				no_overlap = false,
 				wo = {
 					conceallevel = 0,
+					winhighlight = "Normal:WhichKeyNormal,FloatBorder:WhichKeyBorder",
 				},
 			},
 			spec = {
@@ -385,6 +386,16 @@ return {
 				},
 			},
 		},
+		config = function(_, opts)
+			-- 设置 which-key 边框颜色为白色（与 Snacks 弹窗一致）
+			vim.api.nvim_set_hl(0, "WhichKeyBorder", { fg = "#2b85b7", default = true })
+			vim.api.nvim_set_hl(0, "WhichKeyNormal", { bg = "#1a1b26", default = true })
+			-- 设置图标和分组颜色（避免白色直射，保持对比）
+			vim.api.nvim_set_hl(0, "WhichKeyIcon", { fg = "#9aa5ce", default = true })
+			vim.api.nvim_set_hl(0, "WhichKeyGroup", { fg = "#9aa5ce", default = true })
+			vim.api.nvim_set_hl(0, "WhichKeySeparator", { fg = "#565f89", default = true })
+			require("which-key").setup(opts)
+		end,
 	},
 
 	--==============================================================================
