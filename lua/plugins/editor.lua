@@ -17,6 +17,86 @@ vim.api.nvim_create_autocmd("User", {
 		-- 缓冲区快捷键重新组织
 		vim.keymap.del("n", "<leader>`")
 		vim.keymap.del("n", "<leader>,")
+		-- 删除 LazyVim 默认的 br/bl（用 bH/bL 代替）
+		vim.keymap.del("n", "<leader>br")
+		vim.keymap.del("n", "<leader>bl")
+
+		-- 设置缓冲区导航快捷键（小写 h/l）
+		vim.keymap.set("n", "<leader>bh", "<cmd>bprevious<cr>", { desc = "上一个缓冲区" })
+		vim.keymap.set("n", "<leader>bl", "<cmd>bnext<cr>", { desc = "下一个缓冲区" })
+
+		-- 关闭左侧/右侧非 pinned 缓冲区的辅助函数
+		local function get_pinned_set()
+			local pinned = {}
+			local ok_groups, groups = pcall(require, "bufferline.groups")
+			local ok_state, state = pcall(require, "bufferline.state")
+			if ok_groups and ok_state and state.components then
+				for _, element in ipairs(state.components) do
+					if groups._is_pinned(element) then
+						pinned[element.id] = true
+					end
+				end
+			end
+			return pinned
+		end
+
+		local function close_left_non_pinned()
+			local current = vim.api.nvim_get_current_buf()
+			local bufs = vim.api.nvim_list_bufs()
+			local current_idx = 0
+			for i, buf in ipairs(bufs) do
+				if buf == current then
+					current_idx = i
+					break
+				end
+			end
+			local pinned = get_pinned_set()
+			local snacks = require("snacks")
+			local closed = 0
+			for i = 1, current_idx - 1 do
+				local buf = bufs[i]
+				if vim.api.nvim_buf_is_valid(buf)
+					and vim.api.nvim_get_option_value("buflisted", { buf = buf })
+					and vim.bo[buf].buftype == ""
+					and not pinned[buf]
+				then
+					snacks.bufdelete(buf)
+					closed = closed + 1
+				end
+			end
+			vim.notify(string.format("已关闭左侧 %d 个缓冲区（跳过固定）", closed), vim.log.levels.INFO)
+		end
+
+		local function close_right_non_pinned()
+			local current = vim.api.nvim_get_current_buf()
+			local bufs = vim.api.nvim_list_bufs()
+			local current_idx = 0
+			for i, buf in ipairs(bufs) do
+				if buf == current then
+					current_idx = i
+					break
+				end
+			end
+			local pinned = get_pinned_set()
+			local snacks = require("snacks")
+			local closed = 0
+			for i = current_idx + 1, #bufs do
+				local buf = bufs[i]
+				if vim.api.nvim_buf_is_valid(buf)
+					and vim.api.nvim_get_option_value("buflisted", { buf = buf })
+					and vim.bo[buf].buftype == ""
+					and not pinned[buf]
+				then
+					snacks.bufdelete(buf)
+					closed = closed + 1
+				end
+			end
+			vim.notify(string.format("已关闭右侧 %d 个缓冲区（跳过固定）", closed), vim.log.levels.INFO)
+		end
+
+		-- 设置关闭左侧/右侧缓冲区（大写 H/L，跳过 pinned）
+		vim.keymap.set("n", "<leader>bH", close_left_non_pinned, { desc = "关闭左侧缓冲区" })
+		vim.keymap.set("n", "<leader>bL", close_right_non_pinned, { desc = "关闭右侧缓冲区" })
 	end,
 })
 
@@ -129,7 +209,7 @@ vim.api.nvim_create_autocmd("User", {
 
 		-- 覆盖 <leader>bP
 		vim.keymap.set("n", "<leader>bP", close_non_pinned_buffers_preserve_side_width, {
-			desc = "关闭非 pinned 缓冲区（保持侧边栏宽度）",
+			desc = "关闭非pinned缓冲区",
 		})
 	end,
 })
@@ -172,9 +252,10 @@ return {
 		opts = {
 			layout = {
 				columns = 8,
+				align = "center",
 			},
 			win = {
-				width = 0.75,
+				width = 0.8,
 				height = { min = 4, max = math.huge },
 				col = 0.5,
 				row = 0.8,
@@ -202,6 +283,8 @@ return {
 				{ "<leader>`", desc = "which_key_ignore" },
 				-- 隐藏 Buffers（移到 <leader>bf 中）
 				{ "<leader>,", desc = "which_key_ignore" },
+				-- 隐藏 LazyVim 默认的 br（用 bL 代替）
+				{ "<leader>br", desc = "which_key_ignore" },
 				-- 按字母分组，大小写放在一起
 				{ "<leader>b", group = "缓冲区", icon = "🗂️" },
 				{ "<leader>bb", desc = "切换到其他缓冲区", icon = "🔄" },
@@ -212,6 +295,8 @@ return {
 				{ "<leader>bl", desc = "下一个缓冲区", icon = "➡️" },
 				{ "<leader>bo", desc = "关闭其他缓冲区", icon = "🗑️" },
 				{ "<leader>bp", desc = "切换固定", icon = "📌" },
+				{ "<leader>bH", desc = "关闭左侧缓冲区", icon = "🗑️" },
+				{ "<leader>bL", desc = "关闭右侧缓冲区", icon = "🗑️" },
 				{ "<leader>c", group = "代码", icon = "🛠️" },
 				{ "<leader>d", group = "调试", icon = "🔧" },
 				{ "<leader>dp", group = "性能分析", icon = "📊" },
@@ -264,7 +349,7 @@ return {
 					{ "Keywordprg", "关键词查询" },
 					{ "Explorer", "文件浏览器" },
 					{ "Notification History", "通知历史" },
-					{ "Buffers", "缓冲区列表" },
+					{ "Buffers", "缓冲区" },
 					{ "Git Diff", "Git 差异" },
 					{ "Git Status", "Git 状态" },
 					{ "Git Stash", "Git 暂存" },
@@ -333,15 +418,9 @@ return {
 					{ "Delete", "关闭" },
 					{ "Non-Pinned", "非固定" },
 					{ "Non", "非" },
-					{ "to the Right", "右侧" },
-					{ "to the Left", "左侧" },
-					{ "Delete Buffers", "关闭缓冲区" },
-					{ "Delete Buffers to the Right", "关闭右侧缓冲区" },
-					{ "Delete Buffers to the Left", "关闭左侧缓冲区" },
 					{ "缓冲区列表", "缓冲区列表" },
 					{ "Pinned", "固定" },
 					{ "Close", "关闭" },
-					{ "Buffers", "缓冲区" },
 					{ "Delete Non-Pinned Buffers", "关闭非固定缓冲区" },
 					{ "Ungrouped", "未分组" },
 					{ "New File", "新建文件" },
@@ -394,6 +473,7 @@ return {
 			vim.api.nvim_set_hl(0, "WhichKeyIcon", { fg = "#9aa5ce", default = true })
 			vim.api.nvim_set_hl(0, "WhichKeyGroup", { fg = "#9aa5ce", default = true })
 			vim.api.nvim_set_hl(0, "WhichKeySeparator", { fg = "#565f89", default = true })
+
 			require("which-key").setup(opts)
 		end,
 	},
@@ -474,22 +554,13 @@ return {
 				desc = "切换到其他缓冲区",
 			},
 			{
-				"<leader>bh",
-				"<cmd>bprevious<cr>",
-				desc = "上一个缓冲区",
-			},
-			{
-				"<leader>bl",
-				"<cmd>bnext<cr>",
-				desc = "下一个缓冲区",
-			},
-			{
 				"<leader>bf",
 				function()
 					Snacks.picker.buffers()
 				end,
 				desc = "缓冲区列表",
 			},
+			-- bh/bl/bH/bL 在 autocmd 中定义（避免与 LazyVim 冲突）
 			-- bd, bD, bo 使用 LazyVim 默认配置
 
 			--======================================================================
@@ -661,6 +732,35 @@ return {
 			-- 源特定配置 - Command History 边框修复 + Scratch 删除快捷键
 			--======================================================================
 			opts.picker.sources = opts.picker.sources or {}
+
+			-- Buffers picker 配置：显示 pinned 状态
+			opts.picker.sources.buffers = {
+				format = function(item, picker)
+					local buf = item.buf
+					local is_pinned = false
+
+					-- 检查 bufferline pinned 状态
+					local ok_groups, groups = pcall(require, "bufferline.groups")
+					local ok_state, state = pcall(require, "bufferline.state")
+					if ok_groups and ok_state and state.components then
+						for _, element in ipairs(state.components) do
+							if element.id == buf and groups._is_pinned(element) then
+								is_pinned = true
+								break
+							end
+						end
+					end
+
+					-- 获取默认格式
+					local snacks = require("snacks")
+					local formatted = snacks.picker.format.buffer(item, picker)
+					-- 在 pinned 的缓冲区前添加 📌 图标
+					if is_pinned then
+						table.insert(formatted, 1, { "📌 ", "Special" })
+					end
+					return formatted
+				end,
+			}
 
 			-- Scratch picker 配置：确保删除快捷键生效 + 显示提示
 			opts.picker.sources.scratch = {

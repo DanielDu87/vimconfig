@@ -1183,6 +1183,16 @@ return {
 				if vim.b[buf].bufferline_pinned then
 					return true
 				end
+				-- 检查 bufferline groups 的 pinned 状态
+				local ok_groups, groups = pcall(require, "bufferline.groups")
+				local ok_state, state = pcall(require, "bufferline.state")
+				if ok_groups and ok_state and state.components then
+					for _, element in ipairs(state.components) do
+						if element.id == buf and groups._is_pinned(element) then
+							return true
+						end
+					end
+				end
 				return false
 			end
 
