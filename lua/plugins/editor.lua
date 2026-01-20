@@ -72,7 +72,7 @@ return {
 			},
 			spec = {
 				{ "<leader><tab>", group = "标签页" },
-				{ "<leader>/", desc = "文件内容查找" },
+				{ "<leader>/", desc = "文件内容查找", icon = "\239\128\130" },
 				-- 隐藏默认的窗口分割快捷键（已移到 <leader>w 组中）
 				{ "<leader>-", desc = "which_key_ignore" },
 				{ "<leader>|", desc = "which_key_ignore" },
@@ -89,7 +89,7 @@ return {
 				{ "<leader>g", group = "Git" },
 				{ "<leader>gh", group = "变更" },
 				{ "<leader>q", group = "退出/会话" },
-				{ "<leader>s", group = "搜索" },
+				{ "<leader>s", group = "搜索", icon = "\239\128\130" },
 				{ "<leader>S", group = "临时缓冲区" },
 				{ "<leader>Ss", desc = "打开默认临时缓冲区" },
 				{ "<leader>Sn", desc = "新建命名临时缓冲区" },
