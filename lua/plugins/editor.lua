@@ -535,6 +535,13 @@ return {
 			-- Picker 全局视觉美化
 			opts.picker = opts.picker or {}
 			opts.picker.prompt = "" -- 严格还原原始设置
+
+			-- 添加清除选择的动作
+			opts.picker.actions = opts.picker.actions or {}
+			opts.picker.actions.list_clear_selected = function(picker)
+				picker.list:set_selected({})
+			end
+
 			opts.picker.win = opts.picker.win or {}
 
 			-- 输入框：居中并使用圆角
@@ -557,6 +564,15 @@ return {
 					foldcolumn = "0",
 					conceallevel = 0,
 				},
+				keys = {
+					-- Esc 清除多选，不关闭 picker
+					["<Esc>"] = { "list_clear_selected", mode = "n" },
+				},
+			}
+
+			-- 预览窗口配置
+			opts.picker.win.preview = {
+				border = "rounded",
 			}
 
 			-- 源特定增强
