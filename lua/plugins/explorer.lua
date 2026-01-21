@@ -134,6 +134,8 @@ return {
 
 			-- 设置 x 键映射到剪切操作
 			opts.picker.sources.explorer.win.list.keys["x"] = { "explorer_cut", mode = { "n", "x" } }
+			-- 设置 Esc 键映射到取消多选 (针对 explorer 源)
+			opts.picker.sources.explorer.win.list.keys["<Esc>"] = { "list_clear_selected", mode = { "n" } }
 
 			-- 修复从输入模式退出后按键识别问题：确保退出输入模式时焦点返回列表
 			-- 添加自定义动作来聚焦到列表
