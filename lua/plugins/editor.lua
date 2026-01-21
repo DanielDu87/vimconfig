@@ -252,7 +252,7 @@ return {
 				{ "<leader>,", desc = "which_key_ignore" },
 				{ "<leader>br", desc = "which_key_ignore" },
 			},
-			-- 批量描述替换 (将插件自带的英文描述翻译为中文)
+			-- 批量描述替换 (集成原配置与新配置的最佳实践)
 			replace = {
 				desc = {
 					-- 搜索与 Grep 相关
@@ -269,9 +269,10 @@ return {
 					{ "Recent Files", "最近打开文件" },
 					{ "Grep Open Buffers", "在已打开文件中搜索" },
 					{ "Live Grep", "实时全局搜索" },
-					{ "Select", "选择" },
+					{ "Buffer Lines", "搜索当前文件行" },
+					{ "picker_grep", "正则搜索 (Grep)" },
 
-					-- 核心操作
+					-- 核心操作与基础
 					{ "Keywordprg", "关键词查询" },
 					{ "Explorer", "文件浏览器" },
 					{ "Buffers", "缓冲区列表" },
@@ -284,6 +285,17 @@ return {
 					{ "Dismiss All", "清理所有通知" },
 					{ "Lazy", "插件管理器" },
 					{ "Mason", "工具/LSP管理器" },
+					{ "New File", "新建文件" },
+					{ "Registers", "寄存器列表" },
+					{ "Autocmds", "自动命令" },
+					{ "Commands", "命令列表" },
+					{ "Keymaps", "快捷键映射" },
+					{ "Marks", "标记列表" },
+					{ "Jumps", "跳转列表" },
+					{ "Highlights", "高亮组列表" },
+					{ "Icons", "图标列表" },
+					{ "Help Pages", "帮助文档" },
+					{ "Man Pages", "手册页" },
 
 					-- Git 版本控制
 					{ "Git Diff", "查看 Git 差异" },
@@ -296,15 +308,18 @@ return {
 					{ "Status", "查看状态" },
 					{ "Branches", "切换分支" },
 					{ "Diff (Split)", "分屏差异对比" },
+					{ "GitHub Issues", "GitHub 问题列表" },
+					{ "GitHub Pull Requests", "GitHub 拉取请求" },
 
 					-- LSP / 编程语言支持
 					{ "Diagnostics", "诊断信息面板" },
+					{ "Buffer Diagnostics", "文件诊断信息" },
 					{ "Goto Definition", "跳转到定义" },
 					{ "Goto References", "跳转到引用" },
 					{ "Goto Implementation", "跳转到实现" },
 					{ "Goto Type Definition", "跳转到类型定义" },
 					{ "Next Diagnostic", "下个诊断" },
-					{ "Prev Diagnostic", "上个诊断" },
+					{ "Prev Diagnostic", "上一个诊断" },
 					{ "Line Diagnostics", "显示当前行诊断" },
 					{ "Code Action", "显示代码操作" },
 					{ "Rename", "变量/函数重命名" },
@@ -336,11 +351,12 @@ return {
 					{ "Toggle Auto Format", "切换保存自动格式化" },
 					{ "Line Numbers", "显示行号" },
 					{ "Colorscheme with Preview", "预览并切换主题" },
+					{ "Colorschemes", "配色方案" },
 					{ "Color", "配色" },
 					{ "Inspect Pos", "检查光标处高亮组" },
 
 					-- 缓冲区管理
-					{ "Buffer Keymaps (which-key)", "显示当前缓冲区快捷键" },
+					{ "Buffer Keymaps (which-key)", "Buffer快捷键查询" },
 					{ "Delete Buffer", "关闭当前文件" },
 					{ "Delete Buffer (Force)", "强行关闭文件" },
 					{ "Delete Other Buffers", "关闭其他所有文件" },
@@ -350,22 +366,57 @@ return {
 					{ "Close All But Current", "关闭其他窗口" },
 					{ "Close All Left", "关闭左侧文件" },
 					{ "Close All Right", "关闭右侧文件" },
+					{ "Switch to Other Buffer", "切换到上个文件" },
+					{ "Toggle Pin", "切换固定" },
+					{ "Delete Non-Pinned", "关闭未固定缓冲区" },
+					{ "Delete Non-Pinned Buffers", "关闭非固定缓冲区" },
 
-					-- Trouble 插件相关
-					{ "Workspace Diagnostics", "项目诊断看板 (Trouble)" },
-					{ "Document Diagnostics", "文件诊断看板 (Trouble)" },
-					{ "Quickfix List", "快速修复列表 (Quickfix)" },
-					{ "Location List", "位置列表 (Location)" },
-					{ "Symbols", "符号导航" },
+					-- 窗口管理
+					{ "Split Window Below", "向下分割窗口" },
+					{ "Split Window Right", "向右分割窗口" },
+					{ "Delete Window", "关闭当前窗口" },
+					{ "Go to Left Window", "移至左侧窗口" },
+					{ "Go to Lower Window", "移至下方窗口" },
+					{ "Go to Upper Window", "移至上方窗口" },
+					{ "Go to Right Window", "移至右侧窗口" },
+					{ "Increase Window Height", "增加窗口高度" },
+					{ "Decrease Window Height", "减少窗口高度" },
+					{ "Decrease Window Width", "减少窗口宽度" },
+					{ "Increase Window Width", "增加窗口宽度" },
 
-					-- 其他功能
+					-- 搜索与列表
+					{ "Next Search Result", "下个搜索结果" },
+					{ "Prev Search Result", "上个搜索结果" },
+					{ "Escape and Clear hlsearch", "取消并清除搜索高亮" },
+					{ "Quickfix List", "快速修复列表" },
+					{ "Location List", "位置列表" },
+					{ "Resume", "恢复上一次搜索" },
+					{ "Undotree", "撤销树" },
+					{ "Todo", "待办事项" },
+
+					-- 提示与通知
+					{ "Notifications", "系统通知" },
+					{ "Noice", "通知记录" },
+					{ "Notification History", "查看通知历史" },
+					{ "Dismiss", "清除通知" },
+					{ "Dismiss All", "清理所有通知" },
+					{ "Forward", "转发" },
+					{ "Last", "最后一条" },
+					{ "Picker (Telescope)", "选择器 (Telescope)" },
+
+					-- 代码注释
+					{ "Add Comment Below", "在下方添加注释" },
+					{ "Add Comment Above", "在上方添加注释" },
+					{ "Run Lua", "运行 Lua 代码" },
+
+					-- 其他
 					{ "Terminal", "内建终端" },
 					{ "Terminal (cwd)", "内建终端 (当前目录)" },
 					{ "Updates", "查看更新详情" },
 					{ "Changelog", "版本更新日志" },
 					{ "Spelling", "查看拼写错误" },
-					{ "Notification History", "查看通知历史" },
 					{ "Select Scratch Buffer", "选择/管理临时缓冲区" },
+					{ "Config", "打开配置文件" },
 				},
 			},
 		},
