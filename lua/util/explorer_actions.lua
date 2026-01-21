@@ -291,7 +291,7 @@ function M.setup(Actions, Snacks)
 			else
 				file_count = file_count + 1
 			end
-			table.insert(display_paths, path:gsub("@$", ""))
+			table.insert(display_paths, (path:gsub("@$", "")))
 		end
 
 		local function get_confirm_text()
