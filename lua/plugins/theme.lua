@@ -45,7 +45,7 @@ vim.api.nvim_create_autocmd("ColorScheme", {
 })
 
 return {
-	-- 配置 Tokyo Night 主题（启用透明背景）
+	-- 配置 Tokyo Night 主题（启用透明背景和自定义高亮）
 	{
 		"folke/tokyonight.nvim",
 		lazy = false,
@@ -64,12 +64,47 @@ return {
 				sidebars = "transparent",
 				floats = "transparent",
 			},
-			-- 自定义高亮
+			-- 自定义高亮 - 统一管理所有界面颜色覆盖
 			on_highlights = function(hl, c)
-				hl.CursorLine = { bg = "#3d4458" }         -- 编辑器光标行（更暗的灰色）
+				-- 1. 编辑器基础颜色覆盖
+				hl.CursorLine = { bg = "#3d4458" }            -- 编辑器光标行（更暗的灰色）
 				hl.Comment = { fg = "#7a7a7a", italic = true } -- 注释颜色（纯浅灰色）
-				hl.WinBar = { bg = c.none, fg = c.fg }      -- WinBar 透明
-				hl.WinBarNC = { bg = c.none, fg = c.dark3 } -- WinbarNC 透明
+				
+				-- 2. 透明背景强制覆盖 (WinBar)
+				hl.WinBar = { bg = c.none, fg = c.fg }         -- WinBar 透明
+				hl.WinBarNC = { bg = c.none, fg = c.dark3 }    -- WinbarNC 透明
+				
+				-- 3. 浮动窗口边框颜色 (统一蓝色风格)
+				local border_color = "#2b85b7"
+				
+				-- 通用浮窗
+				hl.FloatBorder = { fg = border_color }
+				hl.FloatTitle = { fg = border_color }
+				hl.NormalFloat = { link = "Normal" }           -- 浮窗背景跟随 Normal（透明）
+				
+				-- Noice 弹窗
+				hl.NoiceConfirmBorder = { fg = border_color }
+				hl.NoicePopupBorder = { fg = border_color }
+				hl.NoiceCmdlinePopupBorder = { fg = border_color }
+				
+				-- Snacks 组件
+				hl.SnacksInputBorder = { fg = border_color }
+				hl.SnacksWinBorder = { fg = border_color }
+				hl.SnacksPickerBorder = { fg = border_color }
+				hl.SnacksPickerListCursorLine = { link = "CursorLine" } -- Picker 光标行
+				
+				-- 4. 强制所有背景透明 (覆盖可能漏掉的组件)
+				hl.Normal = { bg = "none" }
+				hl.NormalNC = { bg = "none" }
+				hl.NonText = { bg = "none" }
+				hl.EndOfBuffer = { bg = "none" }
+				hl.Folded = { bg = "none" }
+				hl.SignColumn = { bg = "none" }
+				hl.StatusLine = { bg = "none" }
+				hl.StatusLineNC = { bg = "none" }
+				hl.VertSplit = { bg = "none" }
+				hl.TabLine = { bg = "none" }
+				hl.TabLineFill = { bg = "none" }
 			end,
 		},
 	},
