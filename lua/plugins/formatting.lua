@@ -16,7 +16,7 @@ return {
 			{
 				"<leader>cf",
 				function()
-					_G.UniversalFormat()
+					require("util.format").format()
 				end,
 				desc = "格式化",
 			},
