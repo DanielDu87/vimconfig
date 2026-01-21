@@ -36,6 +36,7 @@ vim.api.nvim_create_autocmd("BufWritePre", {
 		"*.json", "*.md", "*.lua", "*.sh", "*.py",
 	},
 	callback = function()
+		vim.b.autoformat = false
 		require("util.format").format()
 	end,
 })

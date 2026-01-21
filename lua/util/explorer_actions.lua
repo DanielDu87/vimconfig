@@ -1,7 +1,7 @@
 local M = {}
 
--- 剪切模式标记（全局变量）
-_G.explorer_cut_mode = false
+-- 模块内状态变量（替代全局变量）
+local cut_mode = false
 
 ---@param Actions table Snacks explorer actions module
 ---@param Snacks table Snacks global object
@@ -86,8 +86,8 @@ function M.setup(Actions, Snacks)
 		local value = table.concat(files, "\n")
 		-- 使用特殊寄存器标记剪切操作（在寄存器值前加特殊前缀）
 		vim.fn.setreg(vim.v.register or "+", value, "l")
-		-- 使用全局变量标记为剪切模式
-		_G.explorer_cut_mode = true
+		-- 更新模块级变量
+		cut_mode = true
 		-- 区分文件和目录显示
 		local cut_dirs = {}
 		local cut_files = {}
@@ -124,8 +124,8 @@ function M.setup(Actions, Snacks)
 		picker.list:set_selected()
 		local value = table.concat(files, "\n")
 		vim.fn.setreg(vim.v.register or "+", value, "l")
-		-- 清除剪切模式标记
-		_G.explorer_cut_mode = false
+		-- 清除剪切模式
+		cut_mode = false
 		-- 区分文件和目录显示
 		local file_names = {}
 		local dir_names = {}
@@ -159,8 +159,8 @@ function M.setup(Actions, Snacks)
 		end
 		local dir = picker:dir()
 
-		-- 检查是否在剪切模式
-		local is_cut = _G.explorer_cut_mode == true
+		-- 使用模块级变量
+		local is_cut = cut_mode
 
 		-- 检查同名文件
 		local conflicts = {}
@@ -210,7 +210,7 @@ function M.setup(Actions, Snacks)
 						else
 							ok, err = false, result
 						end
-					end
+						end
 
 						if ok then
 						success_count = success_count + 1
@@ -221,7 +221,6 @@ function M.setup(Actions, Snacks)
 						table.insert(failed_files, file .. "（" .. (err or "未知错误") .. "）")
 					end
 					end
-				end
 
 				-- 刷新目标目录
 			local Tree = require("snacks.explorer.tree")
@@ -260,7 +259,7 @@ function M.setup(Actions, Snacks)
 
 			do_paste(files, is_cut)
 			if is_cut then
-				_G.explorer_cut_mode = false
+				cut_mode = false
 			end
 			return
 		end
@@ -357,15 +356,15 @@ function M.setup(Actions, Snacks)
 							ok, err = false, result
 						end
 					else
-					local recursive = vim.fn.isdirectory(file) == 1 and " -R" or ""
-					local full_cmd = "cp" .. recursive .. " -- " .. vim.fn.shellescape(file) .. " " .. vim.fn.shellescape(dir)
-					local result = vim.fn.system(full_cmd)
-					if vim.v.shell_error == 0 then
-						ok = true
-					else
-						ok, err = false, result
+						local recursive = vim.fn.isdirectory(file) == 1 and " -R" or ""
+						local full_cmd = "cp" .. recursive .. " -- " .. vim.fn.shellescape(file) .. " " .. vim.fn.shellescape(dir)
+						local result = vim.fn.system(full_cmd)
+						if vim.v.shell_error == 0 then
+							ok = true
+						else
+							ok, err = false, result
+						end
 					end
-				end
 
 					if ok then
 					success_count = success_count + 1
@@ -425,8 +424,8 @@ function M.setup(Actions, Snacks)
 			end
 			end
 
-			-- 清除剪切模式标记
-			_G.explorer_cut_mode = false
+			-- 清除剪切模式
+			cut_mode = false
 
 			-- 刷新目标目录
 			local Tree = require("snacks.explorer.tree")
@@ -546,7 +545,7 @@ function M.setup(Actions, Snacks)
 		if not item then
 			return Snacks.notify.warn("未选择文件")
 		end
-		--@type string[]
+		---@type string[]
 		local paths = vim.tbl_map(Snacks.picker.util.path, picker:selected())
 		-- 复制选中项
 		if #paths > 0 then
@@ -643,7 +642,7 @@ function M.setup(Actions, Snacks)
 
 	-- 移动/剪切文件
 	function Actions.actions.explorer_move(picker)
-		--@type string[]
+		---@type string[]
 		local paths = vim.tbl_map(Snacks.picker.util.path, picker:selected())
 		-- 如果没有选中文件，使用当前光标下的文件
 		if #paths == 0 then
@@ -672,24 +671,24 @@ function M.setup(Actions, Snacks)
 				local to = vim.fs.normalize(value)
 
 				-- 检查目标文件是否已存在
-				if uv.fs_stat(to) then
-					Snacks.notify.warn("目标文件已存在：\n- `" .. to .. "`")
-					return
-				end
+			if uv.fs_stat(to) then
+				Snacks.notify.warn("目标文件已存在：\n- `" .. to .. "`")
+				return
+			end
 
-				local ok, err = pcall(Snacks.rename.rename_file, { from = from, to = to })
-				if not ok then
-					Snacks.notify.error("移动失败 `" .. from .. "`：\n" .. (err or "未知错误"))
-					return
-				end
+			local ok, err = pcall(Snacks.rename.rename_file, { from = from, to = to })
+			if not ok then
+				Snacks.notify.error("移动失败 `" .. from .. "`：\n" .. (err or "未知错误"))
+				return
+			end
 
-				local Tree = require("snacks.explorer.tree")
-				Tree:refresh(vim.fs.dirname(from))
-				Tree:refresh(vim.fs.dirname(to))
-				picker.list:set_selected()
-				Actions.update(picker, { target = to })
-				Snacks.notify.info("已移动文件：\n- `" .. from .. "`\n到：\n- `" .. to .. "`")
-			end)
+			local Tree = require("snacks.explorer.tree")
+			Tree:refresh(vim.fs.dirname(from))
+			Tree:refresh(vim.fs.dirname(to))
+			picker.list:set_selected()
+			Actions.update(picker, { target = to })
+			Snacks.notify.info("已移动文件：\n- `" .. from .. "`\n到：\n- `" .. to .. "`")
+		end)
 			return
 		end
 
@@ -719,7 +718,7 @@ function M.setup(Actions, Snacks)
 
 	-- 删除文件
 	function Actions.actions.explorer_del(picker)
-		--@type string[]
+		---@type string[]
 		local paths = vim.tbl_map(Snacks.picker.util.path, picker:selected({ fallback = true }))
 		if #paths == 0 then
 			return Snacks.notify.warn("未选择文件")
@@ -736,7 +735,7 @@ function M.setup(Actions, Snacks)
 		end
 
 		-- 获取文件名列表
-		local filenames = vim.tbl_map(function(p)
+		local filenames = vim.tbl_map(function(p) 
 			local name = vim.fn.fnamemodify(p, ":t")
 			-- 移除 macOS 符号链接末尾的 @ 符号
 			return name:gsub("@$", "")

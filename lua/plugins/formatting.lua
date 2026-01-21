@@ -48,7 +48,7 @@ return {
 				graphql = { "prettier" },
 
 				-- Python
-				python = { "isort", "yapf" },
+				python = { "isort", "black" },
 
 				-- Lua
 				lua = { "stylua" },
@@ -83,7 +83,7 @@ return {
 				black = {
 					prepend_args = { "--fast" },
 					-- 使用 brew 安装的 black（比 Mason 的更快）
-					command = "black",
+					command = "/opt/homebrew/bin/black",
 				},
 				-- Isort 配置（Python 导入排序）
 				isort = {
