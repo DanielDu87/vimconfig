@@ -113,10 +113,10 @@ Snacks.nvim is heavily used throughout the configuration:
 - Scratch buffers - managed via `<leader>S` prefix
 - Picker (Telescope replacement) - used for file search, buffers, commands, etc.
 - Global picker config in `lua/plugins/editor.lua`:
-  - Empty prompt string
-  - Centered input box (30% width, at row 0.3)
-  - Disabled status/sign columns for cleaner UI
-  - Custom keybindings (Esc to clear selection, not close)
+    - Empty prompt string
+    - Centered input box (30% width, at row 0.3)
+    - Disabled status/sign columns for cleaner UI
+    - Custom keybindings (Esc to clear selection, not close)
 
 ### Keybinding Patterns
 
@@ -124,10 +124,10 @@ Custom keybindings are defined in:
 
 - `lua/config/keymaps.lua` - Global custom mappings
 - `lua/plugins/explorer.lua` - Explorer-specific mappings including:
-  - `<M-=>` / `<M-->` - Next/previous buffer
-  - `<M-h>` / `<M-l>` - Line start/end motion
-  - `<M-z>` - Jump to file end and center
-  - `<M-q>` - Toggle explorer
+    - `<M-=>` / `<M-->` - Next/previous buffer
+    - `<M-h>` / `<M-l>` - Line start/end motion
+    - `<M-z>` - Jump to file end and center
+    - `<M-q>` - Toggle explorer
 
 The `q` key is remapped to close buffers (not windows) to preserve the explorer layout.
 

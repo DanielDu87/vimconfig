@@ -29,10 +29,10 @@ local content = vim.fn.readfile(file)
 -- 遍历文件每一行，匹配被注释的 extras import 语句
 -- 匹配模式：行首有两个空格，然后是 --，接着是 { import = "lazyvim.plugins.extras...
 for i, line in ipairs(content) do
-  if line:match("^  -- { import = \"lazyvim%.plugins%.extras") then
-    -- 取消注释（删除行首的 "-- "）
-    content[i] = line:gsub("^  -- ", "  ")
-  end
+	if line:match('^  -- { import = "lazyvim%.plugins%.extras') then
+		-- 取消注释（删除行首的 "-- "）
+		content[i] = line:gsub("^  -- ", "  ")
+	end
 end
 
 --==============================================================================

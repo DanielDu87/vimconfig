@@ -77,15 +77,19 @@ return {
 				end
 				-- 创建新的定时器（500ms 后执行）
 				width_save_timer = vim.loop.new_timer()
-				width_save_timer:start(500, 0, vim.schedule_wrap(function()
-					local f = io.open(width_file, "w")
-					if f then
-						f:write(tostring(width))
-						f:close()
-					end
-					width_save_timer:close()
-					width_save_timer = nil
-				end))
+				width_save_timer:start(
+					500,
+					0,
+					vim.schedule_wrap(function()
+						local f = io.open(width_file, "w")
+						if f then
+							f:write(tostring(width))
+							f:close()
+						end
+						width_save_timer:close()
+						width_save_timer = nil
+					end)
+				)
 			end
 
 			-- 使用 autocmd 在窗口调整大小时保存宽度（带防抖）
@@ -251,7 +255,11 @@ return {
 							for _, win in ipairs(vim.api.nvim_list_wins()) do
 								local buf = vim.api.nvim_win_get_buf(win)
 								local buf_name = vim.api.nvim_buf_get_name(buf)
-								if buf_name:match("[Ee]xplorer") or buf_name:match("[Ss]nacks") or buf_name:match("picker") then
+								if
+									buf_name:match("[Ee]xplorer")
+									or buf_name:match("[Ss]nacks")
+									or buf_name:match("picker")
+								then
 									has_explorer = true
 									break
 								end
@@ -278,7 +286,11 @@ return {
 										for _, win in ipairs(vim.api.nvim_list_wins()) do
 											local buf = vim.api.nvim_win_get_buf(win)
 											local filetype = vim.bo[buf].filetype
-											if filetype ~= "snacks_explorer" and filetype ~= "snacks_picker" and filetype ~= "snacks_input" then
+											if
+												filetype ~= "snacks_explorer"
+												and filetype ~= "snacks_picker"
+												and filetype ~= "snacks_input"
+											then
 												pcall(vim.api.nvim_set_current_win, win)
 												break
 											end

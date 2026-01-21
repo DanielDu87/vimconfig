@@ -31,9 +31,19 @@ vim.filetype.add({
 -- 所有文件保存时：统一使用自定义格式化逻辑
 vim.api.nvim_create_autocmd("BufWritePre", {
 	pattern = {
-		"*.html", "*.htm",
-		"*.css", "*.js", "*.ts", "*.tsx", "*.jsx", "*.vue",
-		"*.json", "*.md", "*.lua", "*.sh", "*.py",
+		"*.html",
+		"*.htm",
+		"*.css",
+		"*.js",
+		"*.ts",
+		"*.tsx",
+		"*.jsx",
+		"*.vue",
+		"*.json",
+		"*.md",
+		"*.lua",
+		"*.sh",
+		"*.py",
 	},
 	callback = function()
 		vim.b.autoformat = false

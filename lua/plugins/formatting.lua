@@ -23,7 +23,7 @@ return {
 		},
 		opts = {
 			default_format_opts = {
-				lsp_format = "never",  -- 禁用 LSP 格式化，避免覆盖 conform 结果
+				lsp_format = "never", -- 禁用 LSP 格式化，避免覆盖 conform 结果
 			},
 			-- LazyVim 自动处理 format_on_save
 			-- 按文件类型配置格式化器
@@ -75,8 +75,10 @@ return {
 				prettier = {
 					prepend_args = {
 						"--use-tabs",
-						"--tab-width", "4",
-						"--print-width", "100",
+						"--tab-width",
+						"4",
+						"--print-width",
+						"100",
 					},
 				},
 				-- Black 配置（Python 社区强制使用空格，无法配置 tab）
@@ -88,7 +90,8 @@ return {
 				-- Isort 配置（Python 导入排序）
 				isort = {
 					prepend_args = {
-						"--profile", "black",  -- 兼容 Black 风格
+						"--profile",
+						"black", -- 兼容 Black 风格
 					},
 				},
 				-- Stylua 配置：使用 tab

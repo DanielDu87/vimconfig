@@ -14,7 +14,7 @@ return {
 		opts = {
 			-- 启用所有核心功能
 			highlight = {
-				enable = true,              -- 启用语法高亮
+				enable = true, -- 启用语法高亮
 				additional_vim_regex_highlighting = false,
 			},
 
@@ -97,7 +97,7 @@ return {
 		dependencies = { "nvim-treesitter/nvim-treesitter" },
 		opts = {
 			enable = true,
-			max_lines = 3,  -- 最多显示 3 行上下文
+			max_lines = 3, -- 最多显示 3 行上下文
 		},
 	},
 
@@ -140,7 +140,7 @@ return {
 		"brenoprata10/nvim-highlight-colors",
 		event = "BufReadPost",
 		opts = {
-			render = "background",  -- 或 'foreground' 或 'virtual'
+			render = "background", -- 或 'foreground' 或 'virtual'
 			enable_named_colors = true,
 			enable_tailwind = true,
 		},

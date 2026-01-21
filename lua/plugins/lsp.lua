@@ -12,8 +12,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
 				vim.lsp.inlay_hint.enable(true, { bufnr = args.buf })
 			end
 			-- 增强 inlay hints 显示（与之前 vtsls 配置一致）
-			client.config.settings =
-				vim.deepcopy(client.config.settings or {})
+			client.config.settings = vim.deepcopy(client.config.settings or {})
 			client.config.settings.typescript = client.config.settings.typescript or {}
 			client.config.settings.typescript.preferences = client.config.settings.typescript.preferences or {}
 			client.config.settings.typescript.preferences.includeInlayParameterNameHints = "all"

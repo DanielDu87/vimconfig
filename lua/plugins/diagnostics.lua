@@ -27,11 +27,11 @@ return {
 			opts.diagnostics = opts.diagnostics or {}
 			opts.diagnostics.virtual_text = false
 			opts.diagnostics.signs = true -- 启用左侧指示图标
-			
+
 			-- 只对 Error 显示下划线（减少视觉干扰，保留关键定位提示）
 			opts.diagnostics.underline = { severity = vim.diagnostic.severity.ERROR }
 			opts.diagnostics.update_in_insert = false
-			
+
 			-- 浮窗配置：不抢焦点，支持换行
 			opts.diagnostics.float = vim.tbl_deep_extend("force", opts.diagnostics.float or {}, {
 				header = "",

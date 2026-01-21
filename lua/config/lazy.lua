@@ -138,14 +138,14 @@ require("lazy").setup({
 			-- 禁用一些不需要的 Neovim 内置插件
 			-- 这些插件通常不需要，禁用它们可以提高启动速度
 			disabled_plugins = {
-				"gzip",          -- 禁用 gzip 压缩支持
+				"gzip", -- 禁用 gzip 压缩支持
 				-- "matchit",     -- 保持启用（提供 % 命令的增强功能）
 				-- "matchparen",  -- 保持启用（高亮匹配的括号）
-				"netrwPlugin",   -- 禁用内置文件浏览器（LazyVim 使用 snacks.explorer）
-				"tarPlugin",     -- 禁用 tar 归档文件支持
-				"tohtml",        -- 禁用语法高亮导出为 HTML
-				"tutor",         -- 禁用 Vim 教程
-				"zipPlugin",     -- 禁用 zip 压缩文件支持
+				"netrwPlugin", -- 禁用内置文件浏览器（LazyVim 使用 snacks.explorer）
+				"tarPlugin", -- 禁用 tar 归档文件支持
+				"tohtml", -- 禁用语法高亮导出为 HTML
+				"tutor", -- 禁用 Vim 教程
+				"zipPlugin", -- 禁用 zip 压缩文件支持
 			},
 		},
 	},
