@@ -17,11 +17,13 @@ function M.setup(Actions, Snacks)
 			return to
 		end
 		local counter = 1
+		-- 分离文件名和扩展名
 		local base, ext = to:match("^(.-)(%.[^.]+)$")
 		if not base then
 			base, ext = to, ""
 		end
 		local new_to = to
+		-- 循环查找直到找到一个不存在的文件名
 		while uv.fs_stat(new_to) do
 			new_to = base .. "~" .. counter .. ext
 			counter = counter + 1
@@ -30,13 +32,14 @@ function M.setup(Actions, Snacks)
 	end
 
 	--==============================================================================
-	-- 覆盖 copy_path
+	-- 覆盖 copy_path：智能复制文件或目录
 	--==============================================================================
 	function util.copy_path(from, to)
 		if not uv.fs_stat(from) then
 			Snacks.notify.error(("文件不存在：`%s`"):format(from))
 			return
 		end
+		-- 区分目录和文件调用不同的内部方法
 		if Snacks.util.path_type(from) == "directory" then
 			util.copy_dir(from, to)
 		else
@@ -45,18 +48,24 @@ function M.setup(Actions, Snacks)
 	end
 
 	--==============================================================================
-	-- 覆盖 copy_file
+	-- 覆盖 copy_file：带自动重命名的文件复制
 	--==============================================================================
 	function util.copy_file(from, to)
 		if vim.fn.filereadable(from) == 0 then
 			Snacks.notify.error(("文件不可读：`%s`"):format(from))
 			return
 		end
+
+		-- 如果目标文件已存在，自动计算新名称
 		if uv.fs_stat(to) then
 			to = util.get_backup_name(to)
 		end
+
+		-- 确保父目录存在
 		local dir = vim.fs.dirname(to)
 		vim.fn.mkdir(dir, "p")
+
+		-- 执行复制
 		local ok, err = uv.fs_copyfile(from, to, { excl = true, ficlone = true })
 		if not ok then
 			Snacks.notify.error(("复制文件失败：\n- 从：`%s`\n- 到：`%s`\n%s"):format(from, to, err))
@@ -64,20 +73,20 @@ function M.setup(Actions, Snacks)
 	end
 
 	--==============================================================================
-	-- 辅助函数：生成详细提示信息
+	-- 辅助函数：生成详细提示信息 (显示完整路径)
 	--==============================================================================
 	local function notify_files(action, files, dirs)
 		local msg_parts = {}
 		if #dirs > 0 then
 			table.insert(msg_parts, action .. " " .. #dirs .. " 个目录：")
 			for _, d in ipairs(dirs) do
-				table.insert(msg_parts, "- " .. vim.fn.fnamemodify(d, ":t"))
+				table.insert(msg_parts, "- " .. d)
 			end
 		end
 		if #files > 0 then
 			table.insert(msg_parts, action .. " " .. #files .. " 个文件：")
 			for _, f in ipairs(files) do
-				table.insert(msg_parts, "- " .. vim.fn.fnamemodify(f, ":t"))
+				table.insert(msg_parts, "- " .. f)
 			end
 		end
 		if #msg_parts > 0 then
@@ -90,18 +99,23 @@ function M.setup(Actions, Snacks)
 	--==============================================================================
 	function Actions.actions.explorer_cut(picker)
 		local files = {}
+		-- 视觉模式下获取选中项
 		if vim.fn.mode():find("^[vV]") then
 			picker.list:select()
 		end
+		-- 获取所有选中的文件路径
 		for _, item in ipairs(picker:selected({ fallback = true })) do
 			table.insert(files, Snacks.picker.util.path(item))
 		end
 		if #files == 0 then
 			return Snacks.notify.warn("未选择文件")
 		end
+		-- 清除选择状态
 		picker.list:set_selected()
+		-- 将文件列表放入系统剪贴板（特殊标记格式）
 		local value = table.concat(files, "\n")
 		vim.fn.setreg(vim.v.register or "+", value, "l")
+		-- 标记为剪切模式
 		cut_mode = true
 
 		local cut_dirs = {}
@@ -119,13 +133,13 @@ function M.setup(Actions, Snacks)
 		if #cut_dirs > 0 then
 			table.insert(msg_parts, "已剪切 " .. #cut_dirs .. " 个目录：")
 			for _, d in ipairs(cut_dirs) do
-				table.insert(msg_parts, "- " .. vim.fn.fnamemodify(d, ":t"))
+				table.insert(msg_parts, "- " .. d)
 			end
 		end
 		if #cut_files > 0 then
 			table.insert(msg_parts, "已剪切 " .. #cut_files .. " 个文件：")
 			for _, f in ipairs(cut_files) do
-				table.insert(msg_parts, "- " .. vim.fn.fnamemodify(f, ":t"))
+				table.insert(msg_parts, "- " .. f)
 			end
 		end
 		table.insert(msg_parts, "\n（粘贴后将移动原文件）")
@@ -149,6 +163,7 @@ function M.setup(Actions, Snacks)
 		picker.list:set_selected()
 		local value = table.concat(files, "\n")
 		vim.fn.setreg(vim.v.register or "+", value, "l")
+		-- 标记为非剪切模式
 		cut_mode = false
 
 		local file_names = {}
@@ -174,6 +189,7 @@ function M.setup(Actions, Snacks)
 			if not value or value:find("^%s$") then
 				return
 			end
+			-- 计算完整路径
 			local path = vim.fs.normalize(picker:dir() .. "/" .. value)
 			local is_file = value:sub(-1) ~= "/"
 			local dir = is_file and vim.fs.dirname(path) or path
@@ -182,11 +198,13 @@ function M.setup(Actions, Snacks)
 				return Snacks.notify.warn("文件已存在：\n" .. path)
 			end
 
+			-- 创建目录结构
 			local ok, err = pcall(vim.fn.mkdir, dir, "p")
 			if not ok then
 				return Snacks.notify.error("创建目录失败：\n" .. (err or "未知错误"))
 			end
 
+			-- 如果是文件，创建空文件
 			if is_file then
 				local f, open_err = io.open(path, "w")
 				if not f then
@@ -195,6 +213,7 @@ function M.setup(Actions, Snacks)
 				f:close()
 			end
 
+			-- 刷新并聚焦
 			local Tree = require("snacks.explorer.tree")
 			Tree:open(dir)
 			Tree:refresh(dir)
@@ -224,6 +243,7 @@ function M.setup(Actions, Snacks)
 				return Snacks.notify.warn("目标文件已存在，操作取消")
 			end
 
+			-- 执行重命名
 			Snacks.rename.rename_file({
 				from = item.file,
 				to = new_path,
@@ -232,7 +252,7 @@ function M.setup(Actions, Snacks)
 					Tree:refresh(vim.fs.dirname(old))
 					Tree:refresh(vim.fs.dirname(new))
 					Actions.update(picker, { target = new })
-					Snacks.notify.info("已重命名为：\n" .. new_name)
+					Snacks.notify.info("已重命名为：\n" .. new)
 				end,
 			})
 		end)
@@ -252,7 +272,6 @@ function M.setup(Actions, Snacks)
 			Tree:open(dir)
 			Actions.update(picker, { target = dir })
 
-			-- 统计并提示
 			local files = {}
 			local dirs = {}
 			for _, path in ipairs(paths) do
@@ -283,14 +302,14 @@ function M.setup(Actions, Snacks)
 			local actual_to = util.get_backup_name(to)
 
 			if actual_to ~= to then
-				Snacks.notify.warn("目标存在，自动重命名为：\n" .. vim.fn.fnamemodify(actual_to, ":t"))
+				Snacks.notify.warn("目标存在，自动重命名为：\n" .. actual_to)
 			end
 
 			util.copy_path(item.file, actual_to)
 			local Tree = require("snacks.explorer.tree")
 			Tree:refresh(dir)
 			Actions.update(picker, { target = actual_to })
-			Snacks.notify.info("已复制副本：\n" .. vim.fn.fnamemodify(actual_to, ":t"))
+			Snacks.notify.info("已复制副本：\n" .. actual_to)
 		end)
 	end
 
@@ -346,10 +365,10 @@ function M.setup(Actions, Snacks)
 			for _, from in ipairs(paths) do
 				local to = target .. "/" .. vim.fn.fnamemodify(from, ":t")
 				if uv.fs_stat(to) then
-					Snacks.notify.warn("跳过已存在文件：\n" .. vim.fn.fnamemodify(to, ":t"))
+					Snacks.notify.warn("跳过已存在文件：\n" .. to)
 				else
 					pcall(Snacks.rename.rename_file, { from = from, to = to })
-					table.insert(moved_files, from)
+					table.insert(moved_files, to)
 					Tree:refresh(vim.fs.dirname(from))
 				end
 			end
@@ -357,11 +376,11 @@ function M.setup(Actions, Snacks)
 			picker.list:set_selected()
 			Actions.update(picker, { target = target })
 
-			local msg = "已移动 " .. #moved_files .. " 个文件到当前目录"
+			local msg = "已批量移动到当前目录"
 			if #moved_files > 0 then
 				msg = msg .. "：\n"
 				for _, f in ipairs(moved_files) do
-					msg = msg .. "- " .. vim.fn.fnamemodify(f, ":t") .. "\n"
+					msg = msg .. "- " .. f .. "\n"
 				end
 			end
 			Snacks.notify.info(msg)
@@ -395,10 +414,9 @@ function M.setup(Actions, Snacks)
 				local is_dir = stat and stat.type == "directory"
 				local ok = false
 
-				-- 冲突检测
 				if uv.fs_stat(target) then
 					target = util.get_backup_name(target)
-					Snacks.notify.warn("同名自动重命名：\n" .. vim.fn.fnamemodify(target, ":t"))
+					Snacks.notify.warn("同名自动重命名：\n" .. target)
 				end
 
 				if is_move then
@@ -408,7 +426,7 @@ function M.setup(Actions, Snacks)
 					end
 				else
 					util.copy_path(file, target)
-					ok = true -- copy_path 内部有错误处理，这里假设成功以简化计数
+					ok = true
 				end
 
 				if ok then
