@@ -311,6 +311,14 @@ return {
 					{ "Toggle Pin", "固定缓冲区" },
 					{ "Color", "颜色" },
 					{ "Colorscheme with Preview", "预览配色方案" },
+					-- 缓冲区 (补充)
+					{ "Buffer Keymaps (which-key)", "当前缓冲区键位" },
+					{ "Delete Buffer", "关闭缓冲区" },
+					{ "Delete Buffer (Force)", "强制关闭缓冲区" },
+					{ "Close Current", "关闭当前" },
+					{ "Close All But Current", "关闭其他" },
+					{ "Close All Left", "关闭左侧" },
+					{ "Close All Right", "关闭右侧" },
 					-- 其他
 					{ "Terminal", "终端" },
 					{ "Terminal (cwd)", "终端 (当前目录)" },
