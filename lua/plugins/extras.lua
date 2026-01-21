@@ -11,7 +11,6 @@ return {
 	-------------------------------------------------------------------------
 
 	-- TypeScript/JavaScript/HTML/CSS 支持（包含 React）
-	-- 注意：LazyVim 将 HTML/CSS 支持包含在 typescript extra 中
 	{ import = "lazyvim.plugins.extras.lang.typescript" },
 
 	-- Tailwind CSS 支持

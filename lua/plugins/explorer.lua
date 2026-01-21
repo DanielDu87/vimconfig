@@ -319,7 +319,7 @@ return {
 								if ok then
 									success_count = success_count + 1
 									table.insert(processed_files, file)
-									Tree = require("snacks.explorer.tree")
+									local Tree = require("snacks.explorer.tree")
 									Tree:refresh(vim.fs.dirname(file))
 								else
 									table.insert(failed_files, file .. "（" .. (err or "未知错误") .. "）")
@@ -328,7 +328,7 @@ return {
 						end
 
 						-- 刷新目标目录
-						Tree = require("snacks.explorer.tree")
+						local Tree = require("snacks.explorer.tree")
 						Tree:refresh(dir)
 						Tree:open(dir)
 						Actions.update(picker, { target = dir })
@@ -474,7 +474,7 @@ return {
 							if ok then
 								success_count = success_count + 1
 								table.insert(processed_files, file)
-								Tree = require("snacks.explorer.tree")
+								local Tree = require("snacks.explorer.tree")
 								Tree:refresh(vim.fs.dirname(file))
 							else
 								table.insert(failed_files, file .. "（" .. (err or "未知错误") .. "）")
@@ -522,7 +522,7 @@ return {
 							if ok then
 								success_count = success_count + 1
 								table.insert(processed_files, file)
-								Tree = require("snacks.explorer.tree")
+								local Tree = require("snacks.explorer.tree")
 								Tree:refresh(vim.fs.dirname(file))
 							else
 								table.insert(failed_files, file .. "（" .. (err or "未知错误") .. "）")
@@ -533,7 +533,7 @@ return {
 						_G.explorer_cut_mode = false
 
 						-- 刷新目标目录
-						Tree = require("snacks.explorer.tree")
+						local Tree = require("snacks.explorer.tree")
 						Tree:refresh(dir)
 						Tree:open(dir)
 						Actions.update(picker, { target = dir })
@@ -599,7 +599,7 @@ return {
 						end
 						f:close()
 					end
-					Tree = require("snacks.explorer.tree")
+					local Tree = require("snacks.explorer.tree")
 					Tree:open(dir)
 					Tree:refresh(dir)
 					Actions.update(picker, { target = path })
@@ -635,7 +635,7 @@ return {
 						from = item.file,
 						to = new_path,
 						on_rename = function(new, old)
-							Tree = require("snacks.explorer.tree")
+							local Tree = require("snacks.explorer.tree")
 							Tree:refresh(vim.fs.dirname(old))
 							Tree:refresh(vim.fs.dirname(new))
 							Actions.update(picker, { target = new })
@@ -688,7 +688,7 @@ return {
 					end
 					Snacks.picker.util.copy(paths, dir)
 					picker.list:set_selected()
-					Tree = require("snacks.explorer.tree")
+					local Tree = require("snacks.explorer.tree")
 					Tree:refresh(dir)
 					Tree:open(dir)
 					Actions.update(picker, { target = dir })
@@ -737,7 +737,7 @@ return {
 						Snacks.notify.error("复制" .. type_name .. "失败：\n- `" .. item.file .. "`\n- " .. (err or "未知错误"))
 						return
 					end
-					Tree = require("snacks.explorer.tree")
+					local Tree = require("snacks.explorer.tree")
 					Tree:refresh(vim.fs.dirname(actual_to))
 					Actions.update(picker, { target = actual_to })
 					local type_name = Snacks.util.path_type(item.file) == "directory" and "目录" or "文件"
@@ -787,7 +787,7 @@ return {
 							return
 						end
 
-						Tree = require("snacks.explorer.tree")
+						local Tree = require("snacks.explorer.tree")
 						Tree:refresh(vim.fs.dirname(from))
 						Tree:refresh(vim.fs.dirname(to))
 						picker.list:set_selected()
@@ -809,10 +809,10 @@ return {
 						if not ok then
 							Snacks.notify.error("移动失败 `" .. from .. "`：\n" .. (err or "未知错误"))
 						end
-						Tree = require("snacks.explorer.tree")
+						local Tree = require("snacks.explorer.tree")
 						Tree:refresh(vim.fs.dirname(from))
 					end
-					Tree = require("snacks.explorer.tree")
+					local Tree = require("snacks.explorer.tree")
 					Tree:refresh(target)
 					picker.list:set_selected()
 					Actions.update(picker, { target = target })
@@ -884,7 +884,7 @@ return {
 						else
 							Snacks.notify.error("删除失败 `" .. path .. "`：\n" .. err)
 						end
-						Tree = require("snacks.explorer.tree")
+						local Tree = require("snacks.explorer.tree")
 						local parent_dir = vim.fs.dirname(path)
 						-- 检查父目录是否仍然存在
 						if vim.fn.isdirectory(parent_dir) == 1 then

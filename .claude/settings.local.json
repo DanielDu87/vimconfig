@@ -52,7 +52,13 @@
       "Bash(jq \".devDependencies | keys[] | select\\(contains\\(\"\"eslint\"\"\\)\\)\")",
       "Bash(./node_modules/.bin/eslint:*)",
       "Bash(~/.local/share/nvim/mason/bin/typescript-language-server:*)",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "Bash(brew install:*)",
+      "Bash(brew:*)",
+      "Bash(black:*)",
+      "Bash(js-beautify:*)",
+      "Bash(isort:*)",
+      "Bash(/opt/homebrew/bin/isort:*)"
     ]
   }
 }
