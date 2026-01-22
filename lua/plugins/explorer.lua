@@ -64,6 +64,8 @@ return {
 					},
 				}
 			end
+			opts.picker.sources.explorer.ignored = true -- 默认显示被 git 忽略的文件 (如 db.sqlite3)
+			opts.picker.sources.explorer.hidden = false -- 默认不显示隐藏文件 (如 .env)
 
 			--==============================================================================
 			-- Explorer 宽度持久化配置（带防抖）

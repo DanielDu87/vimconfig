@@ -270,8 +270,6 @@ return {
 				{ "<leader>cS", desc = "查找引用/定义", icon = "🔍" },
 				{ "<leader>cF", desc = "格式化注入语言", icon = "🛠️" },
 				{ "<leader>d", group = "调试", icon = "🔧" },
-				{ "<leader>D", desc = "数据库管理器", icon = "🗄️" },
-				{ "<leader>R", group = "HTTP 请求", icon = "🌐" },
 				{ "<leader>dp", group = "性能分析", icon = "📊" },
 				{ "<leader>e", group = "文件浏览器", icon = "📂" },
 				{ "<leader>f", group = "文件/查找", icon = "📁" },
