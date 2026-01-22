@@ -1,51 +1,97 @@
 --==============================================================================
 -- 统一运行中心配置 (Runner)
 --==============================================================================
--- 特色：后台静默运行 + 公共只读日志中心，彻底解决报错与拉伸
+-- 核心理念：后台静默运行 + 实时 Tail 直播出口
+-- 特色：三阶段异步宽度校准 + 智能滚动 + 自定义语法高亮
 
 local M = {}
 
-M.html_job_id = nil
--- 定义全局通用的日志路径
+-- 配置
+local CONFIG = {
+	port = 3000,
+	browser_beta = "Google Chrome Beta",
+	browser_stable = "Google Chrome",
+	bs_path_brew = "/opt/homebrew/bin/browser-sync",
+}
+
+M.active_jobs = {}
 local common_log_file = vim.fn.stdpath("cache") .. "/runner_common.log"
+
+--- 写日志
+function M.write_log(msg, raw)
+	local f = io.open(common_log_file, "a")
+	if f then
+		if raw then
+			f:write(msg .. "\n")
+		else
+			f:write(string.format("[%s] %s\n", os.date("%H:%M:%S"), msg))
+		end
+		f:close()
+	end
+end
+
+--- 辅助函数：去除 ANSI 颜色代码
+local function strip_ansi(str)
+	return str:gsub("\27%[[0-9;]*m", "")
+end
+
+--- 通用输出处理
+local function on_output(chan_id, data, name)
+	for _, line in ipairs(data) do
+		if line ~= "" then
+			-- 某些工具可能会输出 ANSI 颜色，为了日志可读性，这里简单去除
+			local clean_line = strip_ansi(line)
+			M.write_log(clean_line, true)
+		end
+	end
+end
+
+--- 打印统一分界线
+function M.write_separator()
+	local separator = string.rep("=<>= ", 20):gsub(" ", "")
+	M.write_log(separator, true)
+end
 
 --- 获取侧边栏状态
 function M.get_sidebar()
 	for _, win in ipairs(vim.api.nvim_list_wins()) do
 		local buf = vim.api.nvim_win_get_buf(win)
-		local ft = vim.bo[buf].filetype
-		if ft == "snacks_explorer" or ft == "snacks_picker_list" then
-			return {
-				win = win,
-				width = vim.api.nvim_win_get_width(win),
-			}
+		if vim.bo[buf].filetype == "snacks_explorer" then
+			return { win = win, width = vim.api.nvim_win_get_width(win) }
 		end
 	end
 	return nil
 end
 
---- 将信息写入公共日志
-function M.write_log(msg)
-	local f = io.open(common_log_file, "a")
-	if f then
-		f:write(string.format("[%s] %s\n", os.date("%H:%M:%S"), msg))
-		f:close()
+--- 获取浏览器打开命令 (带回退机制)
+function M.get_browser_cmd(url)
+	-- 1. 尝试 Chrome Beta
+	-- 2. 尝试 Chrome 正式版
+	-- 3. 使用默认 open
+	local cmd = string.format(
+		'open -a "%s" "%s" 2>/dev/null || open -a "%s" "%s" 2>/dev/null || open "%s"',
+		CONFIG.browser_beta,
+		url,
+		CONFIG.browser_stable,
+		url,
+		url
+	)
+	return cmd
+end
+
+--- 获取 browser-sync 命令
+function M.get_bs_cmd()
+	if vim.fn.executable("browser-sync") == 1 then
+		return "browser-sync"
+	elseif vim.fn.executable(CONFIG.bs_path_brew) == 1 then
+		return CONFIG.bs_path_brew
+	else
+		return nil
 	end
 end
 
--- 启动时自动清空日志
-vim.api.nvim_create_autocmd("VimEnter", {
-	callback = function()
-		local f = io.open(common_log_file, "w")
-		if f then
-			f:write(string.format("[%s] --- 新的会话开始 ---\n", os.date("%Y-%m-%d %H:%M:%S")))
-			f:close()
-		end
-	end,
-})
-
---- 停止并清理 HTML 预览
-function M.stop_html_preview()
+--- 清理所有进程
+function M.stop_all_jobs()
 	local state = M.get_sidebar()
 	local old_ea = vim.o.equalalways
 	vim.o.equalalways = false
@@ -53,26 +99,38 @@ function M.stop_html_preview()
 		vim.wo[state.win].winfixwidth = true
 	end
 
-	-- 终止进程
-	if M.html_job_id then
-		vim.fn.jobstop(M.html_job_id)
-		M.html_job_id = nil
+	-- 1. 停止记录的 Job
+	for name, id in pairs(M.active_jobs) do
+		pcall(vim.fn.jobstop, id)
+		M.active_jobs[name] = nil
 	end
-	os.execute("pkill -f browser-sync")
-	M.write_log("HTML 预览服务已停止")
 
-	-- 恢复布局
+	-- 2. 强力杀死相关进程
+	os.execute("pkill -9 -f browser-sync 2>/dev/null")
+	os.execute("pkill -9 -f 'manage.py runserver' 2>/dev/null")
+	os.execute("pkill -9 -f uvicorn 2>/dev/null")
+
+	-- 3. 释放端口
+	local kill_port_cmd = string.format("lsof -ti:%d | xargs kill -9 2>/dev/null", CONFIG.port)
+	os.execute(kill_port_cmd)
+	vim.fn.jobstart("sleep 0.1 && " .. kill_port_cmd, {
+		detach = true,
+		on_exit = function() end,
+	})
+
+	-- 4. 恢复窗口状态
 	if state and vim.api.nvim_win_is_valid(state.win) then
-		local function fix() 
+		local function fix()
 			if vim.api.nvim_win_is_valid(state.win) then
 				vim.api.nvim_win_set_width(state.win, state.width)
 			end
 		end
-	vim.schedule(fix)
-	vim.defer_fn(fix, 100)
-	vim.defer_fn(function()
+		vim.schedule(fix)
+		vim.defer_fn(function()
 			fix()
-			if vim.api.nvim_win_is_valid(state.win) then vim.wo[state.win].winfixwidth = false end
+			if vim.api.nvim_win_is_valid(state.win) then
+				vim.wo[state.win].winfixwidth = false
+			end
 			vim.o.equalalways = old_ea
 		end, 400)
 	else
@@ -80,79 +138,218 @@ function M.stop_html_preview()
 	end
 end
 
+--- 启动 HTML 预览
+function M.run_html_preview()
+	if vim.bo.filetype ~= "html" then
+		return vim.notify("非 HTML 文件", 3)
+	end
+
+	M.stop_all_jobs()
+	local file_rel = vim.fn.expand("%:.")
+	M.write_separator()
+	M.write_log(string.format("启动 HTML 预览: %s", file_rel))
+
+	local bs_cmd = M.get_bs_cmd()
+	if not bs_cmd then
+		return vim.notify("未找到 browser-sync，请先安装: npm i -g browser-sync", 4)
+	end
+
+	local cmd = {
+		bs_cmd,
+		"start",
+		"--server",
+		"--port",
+		tostring(CONFIG.port),
+		"--files",
+		"**/*.html, **/*.css, **/*.js",
+		"--startPath",
+		file_rel,
+		"--no-open", -- 禁止 browser-sync 自动打开，由我们手动控制
+	}
+
+	M.active_jobs["html"] = vim.fn.jobstart(cmd, {
+		stdout_buffered = false,
+		stderr_buffered = false,
+		on_stdout = on_output,
+		on_stderr = on_output,
+		on_exit = function(_, code)
+			if code ~= 0 and code ~= 143 then
+				M.write_log(">>> 进程异常退出，状态码: " .. code)
+			end
+		end,
+	})
+
+	-- 智能等待
+	vim.defer_fn(function()
+		local check_cmd = string.format("lsof -ti:%d", CONFIG.port)
+		local function try_open_browser(try_count)
+			local result = vim.fn.system(check_cmd)
+			if #result > 0 then
+				local url = string.format("http://localhost:%d/%s", CONFIG.port, file_rel)
+				local browser_cmd = M.get_browser_cmd(url)
+				vim.fn.jobstart(browser_cmd, { detach = true })
+				M.write_log(">>> 已尝试打开浏览器: " .. url)
+				vim.notify("HTML 预览已启动", 2)
+			elseif try_count < 10 then
+				vim.defer_fn(function()
+					try_open_browser(try_count + 1)
+				end, 500)
+			else
+				M.write_log(">>> 等待超时，请手动打开 http://localhost:" .. CONFIG.port .. "/" .. file_rel)
+				vim.notify("服务启动中，请稍后手动访问", 3)
+			end
+		end
+		try_open_browser(0)
+	end, 1000)
+end
+
+-- 启动时清空日志
+vim.api.nvim_create_autocmd("VimEnter", {
+	callback = function()
+		local f = io.open(common_log_file, "w")
+		if f then
+			f:close()
+		end
+	end,
+})
+
 return {
 	{
 		"snacks.nvim",
 		keys = {
-			-- 1. HTML 实时预览
 			{
 				"<leader>rh",
 				function()
-					M.stop_html_preview()
-					M.write_log("正在启动 HTML 实时预览...")
-					local cmd = string.format(
-						"browser-sync start --server --files '**/*.html, **/*.css, **/*.js' --no-notify --browser '%s' >> %s 2>&1",
-						vim.g.browser_path,
-						common_log_file
-					)
-					M.html_job_id = vim.fn.jobstart(cmd, {
-						on_exit = function() 
-							M.html_job_id = nil 
-							M.write_log("HTML 预览服务已退出")
+					M.run_html_preview()
+				end,
+				desc = "启动 HTML 预览",
+			},
+			{
+				"<leader>rp",
+				function()
+					if vim.bo.filetype ~= "python" then
+						return vim.notify("非 Python 文件", 3)
+					end
+					M.stop_all_jobs()
+					local file = vim.api.nvim_buf_get_name(0)
+					local python_path = "python3"
+
+					M.write_separator()
+					local run_cmd = string.format("%s -u '%s'", python_path, file)
+					M.write_log(">>> 运行指令: " .. run_cmd)
+
+					M.active_jobs["python"] = vim.fn.jobstart(run_cmd, {
+						stdout_buffered = false,
+						stderr_buffered = false,
+						on_stdout = on_output,
+						on_stderr = on_output,
+						on_exit = function(_, code)
+							M.write_log(">>> 执行结束 (状态码: " .. code .. ")\n")
+							M.active_jobs["python"] = nil
+							-- 滚动到底部
+							vim.schedule(function()
+								for _, win in ipairs(vim.api.nvim_list_wins()) do
+									local buf = vim.api.nvim_win_get_buf(win)
+									local buf_name = vim.api.nvim_buf_get_name(buf)
+								if buf_name:match("runner_common%.log$") then
+										vim.api.nvim_buf_call(buf, function()
+												vim.cmd("checktime")
+										end)
+										local count = vim.api.nvim_buf_line_count(buf)
+										pcall(vim.api.nvim_win_set_cursor, win, { count, 0 })
+										break
+								end
+								end
+							end)
 						end,
 					})
-					vim.notify("HTML 预览已启动 (查看日志: <leader>rl)", vim.log.levels.INFO)
+					vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<leader>rl", true, true, true), "m", true)
 				end,
-				desc = "启动 HTML 后台预览",
+				desc = "运行 Python 脚本",
 			},
-			-- 2. 查看运行日志
 			{
 				"<leader>rl",
 				function()
 					require("snacks").win({
 						file = common_log_file,
 						show = true,
-						width = 0.6,
-						height = 0.6,
+						width = 0.7,
+						height = 0.7,
 						border = "rounded",
-						title = " 🚀 运行日志 (按 q 退出) ",
+						title = " 📋 运行日志 (只读 | 自动刷新) ",
 						wo = {
 							wrap = true,
+							cursorline = true,
 						},
-						on_buf = function(self)
-							-- 关键：必须在 buffer 加载后对其进行只读设置
+					on_buf = function(self)
+							vim.schedule(function()
+								if not vim.api.nvim_buf_is_valid(self.buf) then
+									return
+							end
 							vim.bo[self.buf].modifiable = false
-						end,
-						keys = {
-							q = "close",
-						},
+							vim.bo[self.buf].readonly = true
+
+							-- 注入语法高亮
+							vim.api.nvim_buf_call(self.buf, function()
+									vim.cmd([[ 
+									syn match RunnerLogHeader /^>>>.*/
+										syn match RunnerLogSeparator /^=<>=.*/
+										syn match RunnerLogError /Error.*|Exception.*|Traceback.*|Failed.*|状态码: [1-9].*/
+										syn match RunnerLogSuccess /Success.*|Completed.*|状态码: 0/
+										syn match RunnerLogInfo /\[INFO\].*/
+										syn match RunnerLogTime /^\[\d{2}:\d{2}:\d{2}\]/
+										hi link RunnerLogHeader Function
+										hi link RunnerLogSeparator Comment
+										hi link RunnerLogError DiagnosticError
+										hi link RunnerLogSuccess DiagnosticOk
+										hi link RunnerLogInfo DiagnosticInfo
+										hi link RunnerLogTime Comment
+							]])
+							end)
+
+							-- 开启智能滚动
+						local timer = vim.loop.new_timer()
+						timer:start(
+								500,
+								500,
+								vim.schedule_wrap(function()
+											if not vim.api.nvim_buf_is_valid(self.buf) then
+												timer:stop()
+												return
+										end
+										vim.cmd("checktime")
+										local has_active = false
+										for _, id in pairs(M.active_jobs) do
+											if id then
+												has_active = true
+												break
+										end
+										end
+										if has_active and self.win and vim.api.nvim_win_is_valid(self.win) then
+											local curr_line = vim.api.nvim_win_get_cursor(self.win)[1]
+											local total_lines = vim.api.nvim_buf_line_count(self.buf)
+											if total_lines - curr_line <= 10 then
+												pcall(vim.api.nvim_win_set_cursor, self.win, { total_lines, 0 })
+											end
+										end
+								end)
+							)
+						end)
+					end,
+						keys = { q = "close" },
 					})
 				end,
-				desc = "查看运行日志",
+				desc = "查看实时控制台",
 			},
-			-- 3. 停止所有预览
 			{
 				"<leader>rs",
 				function()
-					M.stop_html_preview()
-					vim.fn.jobstart({ "pkill", "-f", "manage.py runserver" })
-				vim.fn.jobstart({ "pkill", "-f", "uvicorn" })
-				M.write_log("所有后台任务已强制清理")
-				vim.notify("预览服务已停止", vim.log.levels.WARN)
-				end,
-				desc = "停止所有预览",
-			},
-			-- 4. Python 脚本运行
-			{
-				"<leader>rp",
-				function()
-					local file = vim.api.nvim_buf_get_name(0)
-					M.write_log("运行 Python 脚本: " .. file)
-					require("snacks").terminal.get("python3 '" .. file .. "'", {
-						win = { position = "float", title = " Python 执行中 " },
-					})
-				end,
-				desc = "运行 Python 脚本",
+					M.stop_all_jobs()
+					M.write_separator()
+					M.write_log("!!! 手动终止所有后台任务")
+				vim.notify("任务已终止", 3)
+			end,
+			desc = "停止所有任务",
 			},
 		},
 	},
