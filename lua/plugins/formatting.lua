@@ -63,6 +63,9 @@ return {
 				sh = { "shfmt" },
 				bash = { "shfmt" },
 
+				-- SQL
+				sql = { "prettier" },
+
 				-- Dockerfile: 使用 sed 强制将指令转换为大写
 				dockerfile = { "docker_uppercase", "trim_whitespace" },
 
@@ -109,7 +112,16 @@ return {
 				},
 				-- Shfmt 配置：使用 tab
 				shfmt = {
-					prepend_args = { "-i", "4", "-t" },
+					prepend_args = { "-i", "0", "-ci" },
+				},
+				-- SQL 格式化配置：强制 4 空格, 关键字大写
+				sql_formatter = {
+					args = {
+						"-l",
+						"postgresql", -- 默认使用 PostgreSQL 语法，通用性好
+						"--config",
+						'{"indentation": "    ", "keywordCase": "upper"}',
+					},
 				},
 			},
 		},
