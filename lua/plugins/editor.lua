@@ -213,7 +213,7 @@ return {
 		opts = {
 			layout = { columns = 8, align = "center" },
 			win = {
-				width = 0.8,
+				width = 0.65,
 				height = { min = 4, max = math.huge },
 				col = 0.5,
 				row = 0.8,
@@ -253,6 +253,22 @@ return {
 				{ "<leader>bH", desc = "关闭左侧缓冲区", icon = "🗑️" },
 				{ "<leader>bL", desc = "关闭右侧缓冲区", icon = "🗑️" },
 				{ "<leader>c", group = "代码", icon = "🛠️" },
+				{ "<leader>ca", desc = "代码操作", icon = "💡" },
+				{ "<leader>cA", desc = "源码操作", icon = "⚛️" },
+				{ "<leader>cc", desc = "运行代码透镜", icon = "💎" },
+				{ "<leader>cC", desc = "刷新并显示代码透镜", icon = "🔄" },
+				{ "<leader>cd", desc = "行诊断信息", icon = "🔍" },
+				{ "<leader>cl", desc = "LSP 信息", icon = "ℹ️" },
+				{ "<leader>cm", desc = "Mason 管理", icon = "📦" },
+				{ "<leader>co", desc = "整理导入", icon = "📦" },
+				{ "<leader>cu", desc = "删除未使用的导入", icon = "🗑️" },
+				{ "<leader>cV", desc = "选择 TS 工作区版本", icon = "🏷️" },
+				{ "<leader>ci", desc = "添加缺失导入", icon = "📥" },
+				{ "<leader>cX", desc = "修复所有诊断", icon = "🛠️" },
+				{ "<leader>cr", desc = "重命名", icon = "✏️" },
+				{ "<leader>cs", desc = "显示符号结构", icon = "🔍" },
+				{ "<leader>cS", desc = "查找引用/定义", icon = "🔍" },
+				{ "<leader>cF", desc = "格式化注入语言", icon = "🛠️" },
 				{ "<leader>d", group = "调试", icon = "🔧" },
 				{ "<leader>dp", group = "性能分析", icon = "📊" },
 				{ "<leader>e", group = "文件浏览器", icon = "📂" },
@@ -341,7 +357,10 @@ return {
 					{ "LSP Symbols", "LSP 符号" },
 					{ "LSP Workspace Symbols", "LSP 工作区符号" },
 					{ "Goto Definition", "跳转到定义" },
+					{ "Goto Declaration", "跳转到声明" },
 					{ "Goto Implementation", "跳转到实现" },
+					{ "Goto Type Definition", "跳转到类型定义" },
+					{ "Keyword Index", "关键词索引" },
 					{ "Select Scratch Buffer", "选择临时缓冲区" },
 					-- 缓冲区相关
 					{ "Switch to Other Buffer", "切换到其他缓冲区" },
@@ -381,6 +400,32 @@ return {
 					{ "Ungrouped", "未分组" },
 					{ "New File", "新建文件" },
 					{ "Format", "格式化" },
+					{ "Format Injected Langs", "格式化注入语言" },
+					{ "Code Action", "代码操作" },
+					{ "Source Action", "源码操作" },
+					{ "Rename", "重命名" },
+					{ "Rename File", "重命名文件" },
+					{ "Lsp Info", "LSP 信息" },
+					{ "Lsp Log", "LSP 日志" },
+					{ "Mason", "Mason 插件管理" },
+					{ "Conform Info", "格式化信息" },
+					{ "Call Hierarchy", "调用层次" },
+					{ "Incoming Calls", "输入调用" },
+					{ "Outgoing Calls", "输出调用" },
+					{ "Fix all diagnostics", "修复所有诊断" },
+					{ "Add missing imports", "添加缺失导入" },
+					{ "Organize Imports", "整理导入" },
+					{ "Remove unused imports", "删除未使用的导入" },
+					{ "Select TS workspace version", "选择 TS 工作区版本" },
+					{ "Code Lens", "代码透镜" },
+					{ "Refresh & Display Codelens", "刷新并显示代码透镜" },
+					{ "Refresh", "刷新" },
+					{ "References", "引用" },
+					{ "Definitions", "定义" },
+					{ "Implementations", "实现" },
+					{ "Type Definitions", "类型定义" },
+					{ "Symbols (Trouble)", "符号（Trouble）" },
+					{ "LSP references/definitions/... (Trouble)", "引用/定义/...（Trouble）" },
 					{ "Line Diagnostics", "行诊断" },
 					{ "Next Diagnostic", "下一个诊断" },
 					{ "Prev Diagnostic", "上一个诊断" },
@@ -401,7 +446,10 @@ return {
 					-- 文件/查找相关
 					{ "Find Files", "查找文件" },
 					{ "Find Files (Root Dir)", "查找文件 (根目录)" },
+					{ "Find Files (cwd)", "查找文件 (当前目录)" },
+					{ "Find Files (git-files)", "查找文件 (Git)" },
 					{ "Recent Files", "最近文件" },
+					{ "Recent (cwd)", "最近文件 (当前目录)" },
 					{ "Current File Search", "当前文件搜索" },
 					{ "File Browser", "文件浏览器" },
 					{ "File Browser (Root Dir)", "文件浏览器 (根目录)" },
@@ -418,6 +466,11 @@ return {
 					{ "All", "全部" },
 					{ "Config", "配置" },
 					{ "Explorer", "文件浏览器" },
+					-- GitHub 相关
+					{ "GitHub Issues (all)", "GitHub 问题 (全部)" },
+					{ "GitHub Issues (open)", "GitHub 问题 (打开)" },
+					{ "GitHub Pull Requests (all)", "GitHub 拉取请求 (全部)" },
+					{ "GitHub Pull Requests (open)", "GitHub 拉取请求 (打开)" },
 					-- 缺失补全项 (采用原始风格)
 					{ "picker_grep", "正则搜索" },
 					{ "picker_files", "查找文件" },
@@ -439,6 +492,28 @@ return {
 
 			require("which-key").setup(opts)
 		end,
+	},
+
+	-- ---------------------------------------------------------------------------
+	-- Trouble：更优雅的诊断/列表显示 (强制开启自动聚焦)
+	-- ---------------------------------------------------------------------------
+	{
+		"folke/trouble.nvim",
+		opts = {
+			focus = true, -- 全局设置自动聚焦
+		},
+		keys = {
+			{
+				"<leader>cs",
+				"<cmd>Trouble symbols toggle focus=true<cr>",
+				desc = "显示符号结构",
+			},
+			{
+				"<leader>cS",
+				"<cmd>Trouble lsp toggle focus=true<cr>",
+				desc = "查找引用/定义",
+			},
+		},
 	},
 
 	-- ---------------------------------------------------------------------------
@@ -530,8 +605,8 @@ return {
 			{ "/", snacks_lines, desc = "当前文件搜索", mode = { "n", "v" } },
 			{ "?", snacks_lines, desc = "当前文件搜索", mode = { "n", "v" } },
 		},
-
 		opts = function(_, opts)
+			-- ... (rest of snacks opts)
 			-- Picker 全局视觉美化
 			opts.picker = opts.picker or {}
 			opts.picker.prompt = "" -- 严格还原原始设置
