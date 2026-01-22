@@ -39,8 +39,9 @@ end, { desc = "Line Diagnostics (toggle float)" })
 -- DevDocs 文档搜索
 --==============================================================================
 local function open_url(url)
-	local opener = (vim.fn.has("mac") == 1) and "open" or (vim.fn.has("win32") == 1) and "start" or "xdg-open"
-	vim.fn.jobstart({ opener, url }, { detach = true })
+	-- 使用全局定义的浏览器路径打开 URL
+	local browser = vim.g.browser_path or "open"
+	vim.fn.jobstart({ "open", "-a", browser, url }, { detach = true })
 end
 
 local function devdocs_search(q)

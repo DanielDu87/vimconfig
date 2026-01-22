@@ -1,155 +1,158 @@
 --==============================================================================
 -- 统一运行中心配置 (Runner)
 --==============================================================================
--- 快捷键：<leader>r 组
--- 特色：支持自动清理残留进程，保证系统性能
+-- 特色：后台静默运行 + 公共只读日志中心，彻底解决报错与拉伸
 
 local M = {}
 
--- 用于存储当前正在运行的预览进程对象
-M.html_preview_job = nil
+M.html_job_id = nil
+-- 定义全局通用的日志路径
+local common_log_file = vim.fn.stdpath("cache") .. "/runner_common.log"
 
---- 停止并清理之前的 HTML 预览进程
-local function stop_html_preview()
-	-- 1. 记录当前目录树的宽度
-	local sidebar_win = nil
-	local sidebar_width = 30 -- 默认回退值
+--- 获取侧边栏状态
+function M.get_sidebar()
 	for _, win in ipairs(vim.api.nvim_list_wins()) do
 		local buf = vim.api.nvim_win_get_buf(win)
-		if vim.bo[buf].filetype == "snacks_explorer" then
-			sidebar_win = win
-			sidebar_width = vim.api.nvim_win_get_width(win)
-			break
+		local ft = vim.bo[buf].filetype
+		if ft == "snacks_explorer" or ft == "snacks_picker_list" then
+			return {
+				win = win,
+				width = vim.api.nvim_win_get_width(win),
+			}
 		end
 	end
+	return nil
+end
 
-	-- 2. 保护性锁定
+--- 将信息写入公共日志
+function M.write_log(msg)
+	local f = io.open(common_log_file, "a")
+	if f then
+		f:write(string.format("[%s] %s\n", os.date("%H:%M:%S"), msg))
+		f:close()
+	end
+end
+
+-- 启动时自动清空日志
+vim.api.nvim_create_autocmd("VimEnter", {
+	callback = function()
+		local f = io.open(common_log_file, "w")
+		if f then
+			f:write(string.format("[%s] --- 新的会话开始 ---\n", os.date("%Y-%m-%d %H:%M:%S")))
+			f:close()
+		end
+	end,
+})
+
+--- 停止并清理 HTML 预览
+function M.stop_html_preview()
+	local state = M.get_sidebar()
 	local old_ea = vim.o.equalalways
 	vim.o.equalalways = false
-	if sidebar_win and vim.api.nvim_win_is_valid(sidebar_win) then
-		vim.wo[sidebar_win].winfixwidth = true
+	if state then
+		vim.wo[state.win].winfixwidth = true
 	end
 
-	-- 3. 彻底清理进程
-	vim.fn.jobstart({ "pkill", "-f", "browser-sync" })
-	if M.html_preview_job then
-		pcall(function()
-			M.html_preview_job:close()
-		end)
-		M.html_preview_job = nil
+	-- 终止进程
+	if M.html_job_id then
+		vim.fn.jobstop(M.html_job_id)
+		M.html_job_id = nil
 	end
+	os.execute("pkill -f browser-sync")
+	M.write_log("HTML 预览服务已停止")
 
-	-- 4. 关键：分阶段强制恢复宽度（解决 Neovim 异步布局重排问题）
-	if sidebar_win and vim.api.nvim_win_is_valid(sidebar_win) then
-		local function force_fix()
-			if vim.api.nvim_win_is_valid(sidebar_win) then
-				vim.api.nvim_win_set_width(sidebar_win, sidebar_width)
+	-- 恢复布局
+	if state and vim.api.nvim_win_is_valid(state.win) then
+		local function fix() 
+			if vim.api.nvim_win_is_valid(state.win) then
+				vim.api.nvim_win_set_width(state.win, state.width)
 			end
 		end
-
-		vim.schedule(force_fix)
-		vim.defer_fn(force_fix, 50)
-		vim.defer_fn(force_fix, 150)
-		vim.defer_fn(function()
-			force_fix()
-			if sidebar_win and vim.api.nvim_win_is_valid(sidebar_win) then
-				vim.wo[sidebar_win].winfixwidth = false -- 释放锁定
-			end
-			vim.o.equalalways = old_ea -- 最后恢复均衡设置
-		end, 300)
+	vim.schedule(fix)
+	vim.defer_fn(fix, 100)
+	vim.defer_fn(function()
+			fix()
+			if vim.api.nvim_win_is_valid(state.win) then vim.wo[state.win].winfixwidth = false end
+			vim.o.equalalways = old_ea
+		end, 400)
 	else
 		vim.o.equalalways = old_ea
 	end
 end
 
--- 注册退出清理自动命令
-vim.api.nvim_create_autocmd("VimLeavePre", {
-	group = vim.api.nvim_create_augroup("RunnerCleanup", { clear = true }),
-	callback = function()
-		stop_html_preview()
-		os.execute("pkill -f 'manage.py runserver'")
-		os.execute("pkill -f uvicorn")
-	end,
-})
-
 return {
 	{
 		"snacks.nvim",
 		keys = {
-			-- HTML 实时预览
+			-- 1. HTML 实时预览
 			{
 				"<leader>rh",
 				function()
-					stop_html_preview()
-					-- 监听当前目录及子目录下所有的 html, css, js 文件
-					vim.defer_fn(function()
-						M.html_preview_job = require("snacks").terminal.get(
-							"browser-sync start --server --files '**/*.html, **/*.css, **/*.js'",
-							{
-								win = {
-									position = "float",
-									border = "rounded",
-									title = " HTML 实时预览 ",
-									width = 0.5, -- 占据屏幕宽度的 50%
-									height = 0.5, -- 占据屏幕高度的 50%
-									keys = {
-										q = function()
-											stop_html_preview()
-											vim.cmd("close")
-										end,
-									},
-								},
-								on_exit = function()
-									M.html_preview_job = nil
-								end,
-							}
-						)
-					end, 200)
-					vim.notify("HTML 预览服务器已重置", vim.log.levels.INFO)
+					M.stop_html_preview()
+					M.write_log("正在启动 HTML 实时预览...")
+					local cmd = string.format(
+						"browser-sync start --server --files '**/*.html, **/*.css, **/*.js' --no-notify --browser '%s' >> %s 2>&1",
+						vim.g.browser_path,
+						common_log_file
+					)
+					M.html_job_id = vim.fn.jobstart(cmd, {
+						on_exit = function() 
+							M.html_job_id = nil 
+							M.write_log("HTML 预览服务已退出")
+						end,
+					})
+					vim.notify("HTML 预览已启动 (查看日志: <leader>rl)", vim.log.levels.INFO)
 				end,
-				desc = "HTML 实时预览",
+				desc = "启动 HTML 后台预览",
 			},
-			-- 停止所有运行任务
+			-- 2. 查看运行日志
+			{
+				"<leader>rl",
+				function()
+					require("snacks").win({
+						file = common_log_file,
+						show = true,
+						width = 0.6,
+						height = 0.6,
+						border = "rounded",
+						title = " 🚀 运行日志 (按 q 退出) ",
+						wo = {
+							wrap = true,
+						},
+						on_buf = function(self)
+							-- 关键：必须在 buffer 加载后对其进行只读设置
+							vim.bo[self.buf].modifiable = false
+						end,
+						keys = {
+							q = "close",
+						},
+					})
+				end,
+				desc = "查看运行日志",
+			},
+			-- 3. 停止所有预览
 			{
 				"<leader>rs",
 				function()
-					stop_html_preview()
+					M.stop_html_preview()
 					vim.fn.jobstart({ "pkill", "-f", "manage.py runserver" })
-					vim.fn.jobstart({ "pkill", "-f", "uvicorn" })
-					vim.notify("所有运行任务已停止并清理", vim.log.levels.WARN)
+				vim.fn.jobstart({ "pkill", "-f", "uvicorn" })
+				M.write_log("所有后台任务已强制清理")
+				vim.notify("预览服务已停止", vim.log.levels.WARN)
 				end,
-				desc = "停止所有任务",
+				desc = "停止所有预览",
 			},
-			-- Python 一键运行
+			-- 4. Python 脚本运行
 			{
 				"<leader>rp",
 				function()
 					local file = vim.api.nvim_buf_get_name(0)
+					M.write_log("运行 Python 脚本: " .. file)
 					require("snacks").terminal.get("python3 '" .. file .. "'", {
-						win = { position = "float", border = "rounded" },
+						win = { position = "float", title = " Python 执行中 " },
 					})
 				end,
 				desc = "运行 Python 脚本",
-			},
-			-- Django 服务启动
-			{
-				"<leader>rd",
-				function()
-					require("snacks").terminal.get("python3 manage.py runserver", {
-						win = { position = "float", border = "rounded" },
-					})
-				end,
-				desc = "启动 Django 服务",
-			},
-			-- FastAPI 服务启动
-			{
-				"<leader>rf",
-				function()
-					require("snacks").terminal.get("uvicorn main:app --reload", {
-						win = { position = "float", border = "rounded" },
-					})
-				end,
-				desc = "启动 FastAPI 服务",
 			},
 		},
 	},

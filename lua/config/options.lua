@@ -79,3 +79,10 @@ vim.lsp.inlay_hint.enable(true)
 
 -- 始终开启自动换行
 vim.opt.wrap = true
+
+--==============================================================================
+-- 全局自定义变量
+--==============================================================================
+
+-- 指定默认浏览器路径 (Google Chrome Beta)
+vim.g.browser_path = "/Applications/Google Chrome Beta.app"
