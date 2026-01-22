@@ -251,6 +251,49 @@ function M.run_html_preview()
 	end, 1000)
 end
 
+--- 运行当前文件（自动识别类型）
+function M.run_current_file()
+	local ft = vim.bo.filetype
+
+	-- HTML 文件
+	if ft == "html" then
+		M.run_html_preview()
+		return
+	end
+
+	-- Python 文件
+	if ft == "python" then
+		M.stop_all_jobs()
+		local file = vim.api.nvim_buf_get_name(0)
+		local python_path = "python3"
+
+		M.write_separator()
+		local run_cmd = string.format("%s -u '%s'", python_path, file)
+		M.write_log(">>> 运行指令: " .. run_cmd)
+
+		local job_id = vim.fn.jobstart(run_cmd, {
+			stdout_buffered = false,
+			stderr_buffered = false,
+			on_stdout = on_output,
+			on_stderr = on_output,
+			on_exit = function(_, code)
+				M.write_log(">>> 执行结束 (状态码: " .. code .. ")\n")
+				M.active_jobs["python"] = nil
+				-- on_complete 模式：完成后滚动到底部
+				vim.defer_fn(function()
+					M.scroll_to_bottom()
+				end, 100)
+			end,
+		})
+		M.active_jobs["python"] = { id = job_id, scroll_mode = get_scroll_mode("python") }
+		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<leader>rl", true, true, true), "m", true)
+		return
+	end
+
+	-- 不支持的文件类型
+	vim.notify("不支持的文件类型: " .. ft .. "\n支持的类型: html, python", 3)
+end
+
 -- 启动时清空日志
 vim.api.nvim_create_autocmd("VimEnter", {
 	callback = function()
@@ -266,44 +309,11 @@ return {
 		"snacks.nvim",
 		keys = {
 			{
-				"<leader>rh",
+				"<leader>rr",
 				function()
-					M.run_html_preview()
+					M.run_current_file()
 				end,
-				desc = "启动 HTML 预览",
-			},
-			{
-				"<leader>rp",
-				function()
-					if vim.bo.filetype ~= "python" then
-						return vim.notify("非 Python 文件", 3)
-					end
-					M.stop_all_jobs()
-					local file = vim.api.nvim_buf_get_name(0)
-					local python_path = "python3"
-
-					M.write_separator()
-					local run_cmd = string.format("%s -u '%s'", python_path, file)
-					M.write_log(">>> 运行指令: " .. run_cmd)
-
-					local job_id = vim.fn.jobstart(run_cmd, {
-						stdout_buffered = false,
-						stderr_buffered = false,
-						on_stdout = on_output,
-						on_stderr = on_output,
-						on_exit = function(_, code)
-							M.write_log(">>> 执行结束 (状态码: " .. code .. ")\n")
-							M.active_jobs["python"] = nil
-							-- on_complete 模式：完成后滚动到底部（延迟确保日志窗口已打开）
-							vim.defer_fn(function()
-								M.scroll_to_bottom()
-							end, 100)
-						end,
-					})
-					M.active_jobs["python"] = { id = job_id, scroll_mode = get_scroll_mode("python") }
-					vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<leader>rl", true, true, true), "m", true)
-				end,
-				desc = "运行 Python 脚本",
+				desc = "运行当前文件",
 			},
 			{
 				"<leader>rl",
@@ -332,87 +342,36 @@ return {
 
 							-- 注入语法高亮
 							vim.api.nvim_buf_call(self.buf, function()
-									vim.cmd([[
-									" ========== 分隔线和标题 ==========
+									pcall(vim.cmd, [[
 									syn match RunnerLogSeparator /^=<>=.*/
 									syn match RunnerLogHeader /^>>>.*/
 									syn match RunnerLogTime /^\[\d\{2}:\d\{2}:\d\{2}\]/ contains=RunnerLogTimeContent
-
-									" ========== 错误行整行高亮（红色背景）==========
 									syn match RunnerLogErrorLine /\c.*\<Error\>.*/
 									syn match RunnerLogErrorLine /\c.*\<Exception\>.*/
 									syn match RunnerLogErrorLine /\c.*\<Traceback\>.*/
 									syn match RunnerLogErrorLine /\c.*\<Failed\>.*/
-									syn match RunnerLogErrorLine /\c.*\<Failure\>.*/
-									syn match RunnerLogErrorLine /\c.*E\(ACCESS\|PERM\|NOENT\|CONNREFUSED\|ADDRINUSE\|TIMEOUT\).*/
 									syn match RunnerLogErrorLine /状态码: [1-9].*/
-
-									" Python 错误行
 									syn match RunnerLogErrorLine /^\s*File .*, line \d\+.*/
-									syn match RunnerLogErrorLine /\c.*\<\(NameError\|SyntaxError\|IndentationError\|TypeError\|ValueError\|AttributeError\|ImportError\|KeyError\|AssertionError\)\>.*/
-
-									" JavaScript/TypeScript 错误行
-									syn match RunnerLogErrorLine /\c.*\<\(SyntaxError\|TypeError\|ReferenceError\|RangeError\|URIError\)\>.*/
-									syn match RunnerLogErrorLine /.*Cannot find module.*/
-
-									" Node.js 错误行
-									syn match RunnerLogErrorLine /.*Error: Cannot find module.*/
-									syn match RunnerLogErrorLine /.*Error: ENOSPC\|.*Error: EACCES\|.*Error: EPERM.*/
-
-									" 构建错误行
-									syn match RunnerLogErrorLine /\c.*Failed to compile.*/
-
-									" HTTP 错误
-									syn match RunnerLogErrorLine /.*404 Not Found.*/
-									syn match RunnerLogErrorLine /.*500 Internal Server Error.*/
-
-									" ========== 警告行整行高亮（黄色背景）==========
 									syn match RunnerLogWarnLine /\c.*\<Warning\>.*/
-									syn match RunnerLogWarnLine /\c.*\<Warn\>.*/
 									syn match RunnerLogWarnLine /.*WARN.*/
-
-									" ========== 成功行整行高亮（绿色背景）==========
 									syn match RunnerLogSuccessLine /\c.*\<Success\>.*/
 									syn match RunnerLogSuccessLine /\c.*\<Completed\>.*/
-									syn match RunnerLogSuccessLine /\c.*\<Done\>.*/
-
-									" ========== 时间戳内容（紫色）==========
 									syn match RunnerLogTimeContent /\[\d\{2}:\d\{2}:\d\{2}\]/ contained
-
-									" ========== URL 下划线 ==========
 									syn match RunnerLogUrl /https\?:\/\/\S\+/ containedin=ALL
 									syn match RunnerLogUrl /localhost:\d\+\/\S\+/ containedin=ALL
-									syn match RunnerLogUrl /127\.0\.0\.1:\d\+\/\S\+/ containedin=ALL
-
-									" ========== 文件路径 ==========
-									syn match RunnerLogPath /\f\+\.\(js\|ts\|jsx\|tsx\|vue\|css\|scss\|html\|py\|java\|go\|rs\|php\)/ containedin=ALL
-
-									" ========== 信息标签 ==========
-									syn match RunnerLogInfo /\[INFO\]\|\[info\]\|\[debug\]\|\[DEBUG\]/ contained
+									syn match RunnerLogPath /\f\+\.\(js\|ts\|jsx\|tsx\|vue\|css\|scss\|html\|py\)/ containedin=ALL
+									syn match RunnerLogInfo /\[INFO\]/ contained
 									syn match RunnerLogInfo /\[Browsersync\]/ contained
-
-									" ========== 颜色定义 ==========
 									hi link RunnerLogSeparator Comment
 									hi link RunnerLogHeader Function
 									hi link RunnerLogTimeContent Special
-
-									" 整行高亮（使用前景色，不修改背景）
 									hi link RunnerLogErrorLine DiagnosticError
 									hi link RunnerLogWarnLine DiagnosticWarn
 									hi link RunnerLogSuccessLine DiagnosticOk
-
 									hi link RunnerLogUrl Underlined
 									hi link RunnerLogPath Directory
 									hi link RunnerLogInfo DiagnosticInfo
-							]])
-
-									-- 添加窗口级别的匹配（更精确）
-									vim.fn.matchadd('RunnerLogErrorLine', '\\c.*\\<Error\\>.*')
-									vim.fn.matchadd('RunnerLogErrorLine', '\\c.*\\<Exception\\>.*')
-									vim.fn.matchadd('RunnerLogErrorLine', '\\c.*\\<Traceback\\>.*')
-									vim.fn.matchadd('RunnerLogErrorLine', '\\c.*\\<Failed\\>.*')
-									vim.fn.matchadd('RunnerLogErrorLine', '.*状态码: [1-9].*')
-									vim.fn.matchadd('RunnerLogErrorLine', '^\\s*File .*, line \\d\\+.*')
+									]])
 							end)
 
 							-- 开启智能滚动
@@ -449,10 +408,10 @@ return {
 							)
 						end)
 					end,
-						keys = { q = "close" },
+						keys = { q = "close", ["<esc>"] = "close" },
 					})
 				end,
-				desc = "查看实时控制台",
+				desc = "日志",
 			},
 			{
 				"<leader>rs",
@@ -462,7 +421,7 @@ return {
 					M.write_log("!!! 手动终止所有后台任务")
 				vim.notify("任务已终止", 3)
 			end,
-			desc = "停止所有任务",
+			desc = "停止",
 			},
 		},
 	},

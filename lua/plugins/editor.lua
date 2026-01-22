@@ -242,6 +242,10 @@ return {
 				{ "<leader>br", desc = "which_key_ignore" },
 				-- 按字母分组，大小写放在一起
 				{ "<leader>b", group = "缓冲区", icon = "🗂️" },
+				{ "<leader>r", group = "运行", icon = "" },
+				{ "<leader>rr", desc = "运行当前文件", icon = "▶️" },
+				{ "<leader>rl", desc = "查看日志", icon = "📋" },
+				{ "<leader>rs", desc = "停止任务", icon = "🛑" },
 				{ "<leader>bb", desc = "切换到其他缓冲区", icon = "🔄" },
 				{ "<leader>bd", desc = "关闭当前缓冲区", icon = "❌" },
 				{ "<leader>bD", desc = "关闭缓冲区和窗口", icon = "❌" },
