@@ -44,6 +44,9 @@ vim.api.nvim_create_autocmd("BufWritePre", {
 		"*.lua",
 		"*.sh",
 		"*.py",
+		"Dockerfile*",
+		"*dockerfile*",
+		"dockerfile",
 	},
 	callback = function()
 		vim.b.autoformat = false

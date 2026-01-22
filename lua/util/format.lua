@@ -8,6 +8,8 @@ local ft_configs = {
 	html = { lsp_format = "fallback", clean_blank_lines = true },
 	-- Python: 禁用 LSP 格式化，完全信任 conform (black/isort)
 	python = { lsp_format = "never" },
+	-- Dockerfile: 禁用 LSP (dockerls 不做大写转换)，强制使用 conform (perl)
+	dockerfile = { lsp_format = "never" },
 	-- 默认配置
 	["_"] = { lsp_format = "fallback" },
 }

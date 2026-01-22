@@ -177,6 +177,13 @@ function M.setup(Actions, Snacks)
 		for _, from in ipairs(sources) do
 			local basename = vim.fn.fnamemodify(from, ":t")
 			local to = vim.fs.normalize(dest_dir .. "/" .. basename)
+
+			-- 特殊处理：如果尝试将目录粘贴到自己里面（例如光标聚焦在目录上时）
+			-- 强制视为在当前位置创建副本（触发下面的 Case 1 逻辑）
+			if vim.fs.normalize(from) == vim.fs.normalize(dest_dir) then
+				to = from
+			end
+
 			local stat = uv.fs_stat(from)
 			local is_dir = stat and stat.type == "directory"
 			local success = false

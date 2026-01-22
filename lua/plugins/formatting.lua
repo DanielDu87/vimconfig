@@ -63,14 +63,23 @@ return {
 				sh = { "shfmt" },
 				bash = { "shfmt" },
 
-				-- Dockerfile
-				dockerfile = { "hadolint" },
+				-- Dockerfile: 使用 sed 强制将指令转换为大写
+				dockerfile = { "docker_uppercase", "trim_whitespace" },
 
 				-- 其他
 				["_"] = { "trim_whitespace" }, -- 其他文件类型去除空白
 			},
 			-- 格式化器配置：统一使用 Tab，宽度 4
 			formatters = {
+				-- 自定义 Docker 格式化器 (使用 Perl 确保跨平台兼容性)
+				docker_uppercase = {
+					command = "perl",
+					args = {
+						"-pe",
+						-- 1. 将指令转为大写 2. 将指令后的多个空格压缩为一个
+						"s/^\\s*(from|run|cmd|label|maintainer|expose|env|add|copy|entrypoint|volume|user|workdir|arg|onbuild|stopsignal|healthcheck|shell)(\\s+)/\\U$1 /ig",
+					},
+				},
 				-- Prettier 配置：使用 tab
 				prettier = {
 					prepend_args = {
