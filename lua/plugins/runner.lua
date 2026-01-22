@@ -333,19 +333,86 @@ return {
 							-- 注入语法高亮
 							vim.api.nvim_buf_call(self.buf, function()
 									vim.cmd([[
+									" ========== 分隔线和标题 ==========
+									syn match RunnerLogSeparator /^=<>=.*/
 									syn match RunnerLogHeader /^>>>.*/
-										syn match RunnerLogSeparator /^=<>=.*/
-										syn match RunnerLogError /Error.*|Exception.*|Traceback.*|Failed.*|状态码: [1-9].*/
-										syn match RunnerLogSuccess /Success.*|Completed.*|状态码: 0/
-										syn match RunnerLogInfo /\[INFO\].*/
-										syn match RunnerLogTime /^\[\d{2}:\d{2}:\d{2}\]/
-										hi link RunnerLogHeader Function
-										hi link RunnerLogSeparator Comment
-										hi link RunnerLogError DiagnosticError
-										hi link RunnerLogSuccess DiagnosticOk
-										hi link RunnerLogInfo DiagnosticInfo
-										hi link RunnerLogTime Comment
+									syn match RunnerLogTime /^\[\d\{2}:\d\{2}:\d\{2}\]/ contains=RunnerLogTimeContent
+
+									" ========== 错误行整行高亮（红色背景）==========
+									syn match RunnerLogErrorLine /\c.*\<Error\>.*/
+									syn match RunnerLogErrorLine /\c.*\<Exception\>.*/
+									syn match RunnerLogErrorLine /\c.*\<Traceback\>.*/
+									syn match RunnerLogErrorLine /\c.*\<Failed\>.*/
+									syn match RunnerLogErrorLine /\c.*\<Failure\>.*/
+									syn match RunnerLogErrorLine /\c.*E\(ACCESS\|PERM\|NOENT\|CONNREFUSED\|ADDRINUSE\|TIMEOUT\).*/
+									syn match RunnerLogErrorLine /状态码: [1-9].*/
+
+									" Python 错误行
+									syn match RunnerLogErrorLine /^\s*File .*, line \d\+.*/
+									syn match RunnerLogErrorLine /\c.*\<\(NameError\|SyntaxError\|IndentationError\|TypeError\|ValueError\|AttributeError\|ImportError\|KeyError\|AssertionError\)\>.*/
+
+									" JavaScript/TypeScript 错误行
+									syn match RunnerLogErrorLine /\c.*\<\(SyntaxError\|TypeError\|ReferenceError\|RangeError\|URIError\)\>.*/
+									syn match RunnerLogErrorLine /.*Cannot find module.*/
+
+									" Node.js 错误行
+									syn match RunnerLogErrorLine /.*Error: Cannot find module.*/
+									syn match RunnerLogErrorLine /.*Error: ENOSPC\|.*Error: EACCES\|.*Error: EPERM.*/
+
+									" 构建错误行
+									syn match RunnerLogErrorLine /\c.*Failed to compile.*/
+
+									" HTTP 错误
+									syn match RunnerLogErrorLine /.*404 Not Found.*/
+									syn match RunnerLogErrorLine /.*500 Internal Server Error.*/
+
+									" ========== 警告行整行高亮（黄色背景）==========
+									syn match RunnerLogWarnLine /\c.*\<Warning\>.*/
+									syn match RunnerLogWarnLine /\c.*\<Warn\>.*/
+									syn match RunnerLogWarnLine /.*WARN.*/
+
+									" ========== 成功行整行高亮（绿色背景）==========
+									syn match RunnerLogSuccessLine /\c.*\<Success\>.*/
+									syn match RunnerLogSuccessLine /\c.*\<Completed\>.*/
+									syn match RunnerLogSuccessLine /\c.*\<Done\>.*/
+
+									" ========== 时间戳内容（紫色）==========
+									syn match RunnerLogTimeContent /\[\d\{2}:\d\{2}:\d\{2}\]/ contained
+
+									" ========== URL 下划线 ==========
+									syn match RunnerLogUrl /https\?:\/\/\S\+/ containedin=ALL
+									syn match RunnerLogUrl /localhost:\d\+\/\S\+/ containedin=ALL
+									syn match RunnerLogUrl /127\.0\.0\.1:\d\+\/\S\+/ containedin=ALL
+
+									" ========== 文件路径 ==========
+									syn match RunnerLogPath /\f\+\.\(js\|ts\|jsx\|tsx\|vue\|css\|scss\|html\|py\|java\|go\|rs\|php\)/ containedin=ALL
+
+									" ========== 信息标签 ==========
+									syn match RunnerLogInfo /\[INFO\]\|\[info\]\|\[debug\]\|\[DEBUG\]/ contained
+									syn match RunnerLogInfo /\[Browsersync\]/ contained
+
+									" ========== 颜色定义 ==========
+									hi link RunnerLogSeparator Comment
+									hi link RunnerLogHeader Function
+									hi link RunnerLogTimeContent Special
+
+									" 整行高亮（使用前景色，不修改背景）
+									hi link RunnerLogErrorLine DiagnosticError
+									hi link RunnerLogWarnLine DiagnosticWarn
+									hi link RunnerLogSuccessLine DiagnosticOk
+
+									hi link RunnerLogUrl Underlined
+									hi link RunnerLogPath Directory
+									hi link RunnerLogInfo DiagnosticInfo
 							]])
+
+									-- 添加窗口级别的匹配（更精确）
+									vim.fn.matchadd('RunnerLogErrorLine', '\\c.*\\<Error\\>.*')
+									vim.fn.matchadd('RunnerLogErrorLine', '\\c.*\\<Exception\\>.*')
+									vim.fn.matchadd('RunnerLogErrorLine', '\\c.*\\<Traceback\\>.*')
+									vim.fn.matchadd('RunnerLogErrorLine', '\\c.*\\<Failed\\>.*')
+									vim.fn.matchadd('RunnerLogErrorLine', '.*状态码: [1-9].*')
+									vim.fn.matchadd('RunnerLogErrorLine', '^\\s*File .*, line \\d\\+.*')
 							end)
 
 							-- 开启智能滚动
