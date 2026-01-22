@@ -63,6 +63,10 @@ return {
 						},
 					},
 				},
+				-- 3. 配置 marksman
+				marksman = {
+					enabled = true,
+				},
 			},
 		},
 	},

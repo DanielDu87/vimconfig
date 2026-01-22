@@ -1,361 +1,78 @@
-# Neovim 配置
-
-基于 LazyVim 的个人 Neovim 配置，专注于 **前端 + Python + Docker** 开发。
-
-## 配置文件结构
-
-```
-~/.config/nvim/
-├── init.lua                    # 主入口文件
-├── lua/
-│   ├── config/                 # 核心配置目录
-│   │   ├── lazy.lua           # lazy.nvim 配置
-│   │   ├── options.lua        # 基础选项（透明度、缩进等）
-│   │   ├── keymaps.lua        # 键位映射
-│   │   └── autocmds.lua       # 自动命令
-│   └── plugins/               # 插件配置目录
-│       ├── extras.lua         # 所有 LazyVim extras
-│       ├── editor.lua         # Which-key、Snacks 全局配置
-│       ├── explorer.lua       # 文件浏览器（中文化）
-│       ├── theme.lua          # Tokyo Night 主题 + 透明度
-│       ├── highlight.lua      # Treesitter、彩虹括号等
-│       ├── icons.lua          # 自定义文件图标
-│       ├── lazy_ui.lua        # Lazy.nvim 中文界面
-│       └── line-number.lua    # 行号颜色配置
-```
-
-## 已启用的语言支持
-
-### 前端开发
-
-- **TypeScript/JavaScript** - 完整支持，包括 JSX/TSX
-- **Vue** - Vue 2/3 完整支持（Volar）
-- **Tailwind CSS** - 类名补全和颜色预览
-- **HTML/CSS** - 语法高亮、Emmet
-- **ESLint** - 代码检查
-- **Prettier** - 代码格式化
-
-### Python 开发
-
-- **Pyright** - 类型检查和智能补全
-- **Black** - 代码格式化
-- **Ruff** - 快速的 Python 检查和格式化
-- **Debugpy** - Python 调试器
-
-### Docker
-
-- **Dockerfile** - 语法高亮
-- **docker-compose** - 语法高亮
-- **Hadolint** - Dockerfile 检查
-
-### 配置文件
-
-- **JSON/YAML** - 语法高亮和验证
-
-## 快捷键
-
-### 文件操作（Snacks Picker）
-
-| 快捷键       | 说明                          |
-| ------------ | ----------------------------- |
-| `<leader>ff` | 查找文件                      |
-| `<leader>fg` | 查找文本                      |
-| `<leader>fc` | 查找已打开文件                |
-| `<leader>fr` | 最近文件                      |
-| `<leader>/`  | 文件内容查找                  |
-| `/` 或 `?`   | 当前文件搜索（非模糊匹配）    |
-| `<leader>fe` | 文件浏览器（根目录）          |
-| `<leader>fE` | 文件浏览器（当前目录）        |
-| `<leader>e`  | 文件浏览器（同 `<leader>fe`） |
-
-### 缓冲区操作
-
-| 快捷键       | 说明                       |
-| ------------ | -------------------------- |
-| `<leader>bb` | 切换到其他缓冲区           |
-| `<leader>bf` | 缓冲区列表                 |
-| `<leader>bd` | 关闭当前缓冲区             |
-| `<leader>bD` | 关闭缓冲区和窗口           |
-| `<leader>bh` | 上一个缓冲区               |
-| `<leader>bl` | 下一个缓冲区               |
-| `<leader>bo` | 关闭其他缓冲区             |
-| `<leader>bp` | 切换固定状态（Pin）        |
-| `<M-=>`      | 下一个缓冲区               |
-| `<M-->`      | 上一个缓冲区               |
-| `q`          | 关闭缓冲区（保持窗口布局） |
-
-### 窗口操作（`<leader>w` 组）
-
-| 快捷键        | 说明            |
-| ------------- | --------------- |
-| `<leader>w-`  | 向下分割窗口    |
-| `<leader>w\|` | 向右分割窗口    |
-| `<leader>wd`  | 关闭当前窗口    |
-| `<leader>wh`  | 切换到左侧窗口  |
-| `<leader>wj`  | 切换到下方窗口  |
-| `<leader>wk`  | 切换到上方窗口  |
-| `<leader>wl`  | 切换到右侧窗口  |
-| `<leader>wH`  | 向左移动窗口    |
-| `<leader>wJ`  | 向下移动窗口    |
-| `<leader>wK`  | 向上移动窗口    |
-| `<leader>wL`  | 向右移动窗口    |
-| `<leader>w=`  | 均衡窗口大小    |
-| `<leader>wm`  | 最大化/恢复窗口 |
-| `<leader>ww`  | 切换到其他窗口  |
-
-### 文件浏览器
-
-| 快捷键      | 说明               |
-| ----------- | ------------------ |
-| `<M-q>`     | 切换文件浏览器     |
-| `<leader>H` | 切换显示隐藏文件   |
-| `x`         | 剪切文件           |
-| `y`         | 复制文件           |
-| `p`         | 粘贴文件           |
-| `a`         | 新建文件/目录      |
-| `r`         | 重命名文件         |
-| `m`         | 移动文件           |
-| `d`         | 删除文件           |
-| `o`         | 用系统默认程序打开 |
-
-### 代码导航
-
-| 快捷键      | 说明                       |
-| ----------- | -------------------------- |
-| `gd`        | 跳转到定义                 |
-| `gD`        | 跳转到声明                 |
-| `gr`        | 查找引用                   |
-| `gi`        | 跳转到实现                 |
-| `K`         | 禁用（原本的 hover 功能）  |
-| `<leader>k` | 查询 DevDocs（当前关键词） |
-| `<leader>K` | 搜索 DevDocs（输入查询）   |
-
-### 诊断与修复
-
-| 快捷键       | 说明       |
-| ------------ | ---------- |
-| `[d`         | 上一个诊断 |
-| `]d`         | 下一个诊断 |
-| `[e`         | 上一个错误 |
-| `]e`         | 下一个错误 |
-| `[w`         | 上一个警告 |
-| `]w`         | 下一个警告 |
-| `<leader>cf` | 格式化代码 |
-| `<leader>ca` | 代码操作   |
-
-### Git 操作
-
-| 快捷键       | 说明         |
-| ------------ | ------------ |
-| `<leader>gg` | 打开 Lazygit |
-| `<leader>gb` | Git blame    |
-| `<leader>gs` | Git 状态     |
-| `<leader>gd` | Git diff     |
-| `<leader>gh` | 变更历史     |
-
-### 临时缓冲区（Scratch）
-
-| 快捷键       | 说明                |
-| ------------ | ------------------- |
-| `<leader>Ss` | 打开默认临时缓冲区  |
-| `<leader>Sn` | 新建命名临时缓冲区  |
-| `<leader>S.` | 切换临时缓冲区      |
-| `<leader>SS` | 选择/管理临时缓冲区 |
-
-### 历史记录（`<leader>h` 组）
-
-| 快捷键       | 说明     |
-| ------------ | -------- |
-| `<leader>hn` | 通知历史 |
-| `<leader>hc` | 命令历史 |
-| `<leader>hs` | 搜索历史 |
-
-### 标签页（`<leader><tab>` 组）
-
-| 快捷键               | 说明             |
-| -------------------- | ---------------- |
-| `<leader><tab>n`     | 新建标签页       |
-| `<leader><tab>l`     | 最后一个标签页   |
-| `<leader><tab>f`     | 第一个标签页     |
-| `<leader><tab><tab>` | 切换到其他标签页 |
-
-### 退出与会话
-
-| 快捷键       | 说明     |
-| ------------ | -------- |
-| `<leader>qq` | 退出     |
-| `<leader>qa` | 全部退出 |
-
-### 代码操作（`<leader>c` 组）
-
-| 快捷键       | 说明       |
-| ------------ | ---------- |
-| `<leader>ca` | 代码操作   |
-| `<leader>cr` | 重命名符号 |
-| `<leader>cf` | 格式化代码 |
-
-### 选项与界面（`<leader>u` 组）
-
-| 快捷键       | 说明             |
-| ------------ | ---------------- |
-| `<leader>un` | 切换行号         |
-| `<leader>ur` | 切换相对行号     |
-| `<leader>uw` | 切换换行显示     |
-| `<leader>uh` | 切换高亮搜索结果 |
-
-### 其他快捷键
-
-| 快捷键      | 说明                 |
-| ----------- | -------------------- |
-| `<M-h>`     | 跳转到行首           |
-| `<M-l>`     | 跳转到行尾           |
-| `<M-z>`     | 跳转到文件末尾并居中 |
-| `<leader>l` | 打开插件管理器       |
-| `<leader>L` | Lazy 更新历史        |
-
-## Treesitter 文本对象
-
-| 快捷键 | 说明         |
-| ------ | ------------ |
-| `af`   | 选择函数     |
-| `if`   | 选择函数内容 |
-| `ac`   | 选择类       |
-| `ic`   | 选择类内容   |
-| `aa`   | 选择参数     |
-| `ia`   | 选择参数内容 |
-
-## 常用命令
-
-| 命令           | 说明             |
-| -------------- | ---------------- |
-| `:Lazy`        | 插件管理器       |
-| `:Mason`       | LSP/工具管理器   |
-| `:Lazy sync`   | 同步并更新插件   |
-| `:Lazy clean`  | 清理未使用的插件 |
-| `:MasonUpdate` | 更新 Mason 工具  |
-| `<leader>sk`   | 搜索快捷键       |
-| `:TSUpdate`    | 更新 Treesitter  |
-| `:ConformInfo` | 查看格式化器状态 |
-| `:LspInfo`     | 查看 LSP 状态    |
-
-## 主题配置
-
-- **默认主题**: Tokyo Night（透明背景）
-- **样式**: Night 风格
-- **透明度**: 完全透明（编辑器、浮动窗口、侧边栏）
-- **光标行**: `#3d4458`（深灰色）
-- **主题持久化**: 选择的主题会保存，重启后保持
-
-## 自动安装的工具
-
-### 前端
-
-- `typescript-language-server` - JS/TS LSP
-- `vue-language-server` - Vue LSP（Volar）
-- `vscode-html-language-server` - HTML LSP
-- `vscode-css-language-server` - CSS LSP
-- `tailwindcss-language-server` - Tailwind 支持
-- `emmet-language-server` - Emmet
-- `prettierd` - 代码格式化
-- `eslint_d` - 代码检查
-
-### Python
-
-- `pyright` - Python LSP
-- `black` - 格式化
-- `ruff` - 检查和格式化
-- `debugpy` - 调试器
-
-### Docker
-
-- `docker-compose-language-service`
-- `hadolint` - Dockerfile 检查
-
-### 配置文件
-
-- `vscode-json-language-server` - JSON LSP
-- `yaml-language-server` - YAML LSP
-
-## 可选 Extras
-
-在 `lua/plugins/extras.lua` 中可启用的额外功能：
-
-```lua
--- Svelte 框架
-{ import = "lazyvim.plugins.extras.lang.svelte" }
-
--- Angular 框架
-{ import = "lazyvim.plugins.extras.lang.angular" }
-
--- Go 语言
-{ import = "lazyvim.plugins.extras.lang.go" }
-
--- Rust 语言
-{ import = "lazyvim.plugins.extras.lang.rust" }
-
--- AI 辅助（Codeium - 免费）
-{ import = "lazyvim.plugins.extras.ai.codeium" }
-
--- GitHub Copilot（需订阅）
-{ import = "lazyvim.plugins.extras.ai.copilot" }
-```
-
-## 特色功能
-
-### 中文化界面
-
-- 文件浏览器操作提示全部中文
-- Which-key 菜单中文标签
-- Lazy.nvim 界面中文翻译
-
-### 智能文件操作
-
-- 复制文件时自动重命名（`file~1`, `file~2`...）
-- 粘贴时冲突检测和确认
-- 剪切/复制模式区分
-
-### 语法高亮增强
-
-- 彩虹括号
-- 颜色代码预览（`#fff`, `rgb()` 等）
-- Tailwind 类名颜色预览
-- 缩进参考线
-- 当前代码上下文显示
-- 自动闭合标签
-
-### 编辑器优化
-
-- 使用 tab 缩进（4 空格宽度）
-- 相对行号
-- Treesitter 折叠
-- 透明背景
-
-## 故障排查
-
-### LSP 不工作
-
-1. `:Mason` 检查工具是否已安装
-2. `:LspInfo` 查看 LSP 状态
-3. `:LspRestart` 重启 LSP
-
-### 格式化不工作
-
-1. `:Mason` 检查格式化器
-2. `:ConformInfo` 查看格式化器状态
-
-### 语法高亮问题
-
-1. `:TSUpdate` 更新 Treesitter
-2. `:TSInstallInfo` 查看 parsers
-
-### 插件错误
-
-1. `:Lazy` 查看插件日志
-2. `:messages` 查看错误信息
-
-## 参考资源
-
-- [LazyVim 官方文档](https://lazyvim.github.io/)
-- [LazyVim Extras](https://lazyvim.github.io/extras)
-- [Snacks.nvim 文档](https://github.com/folke/snacks.nvim)
-- [CLAUDE.md](./CLAUDE.md) - 配置架构说明
+# Neovim 旗舰配置手册 (Frontend & Backend)
+
+本配置基于 **LazyVim** 框架，旨在为 **前端 (React/Vue/TS)**、**Python (Django/FastAPI)** 及 **系统开发** 提供极致的效率与审美体验。
+
+---
+
+## 💎 核心插件生态与架构
+
+| 插件 | 核心作用 | 定制化说明 |
+| :--- | :--- | :--- |
+| **Snacks.nvim** | 全能基石 | 负责侧边栏目录树、Dashboard、极速搜索 (Picker)、浮动终端 |
+| **Conform.nvim** | 格式化中枢 | **强制同步执行**，支持工具链串联（如 eslint_d -> prettier） |
+| **LSPConfig** | 语言智能 | **禁用 vtsls**，锁定 **ts_ls** 以确保重构稳定性；禁用 Marksman 无用提示 |
+| **Which-Key** | 快捷键导航 | **100% 中文化**，宽度扩展至 0.9，适配业务图标 |
+| **Render-Markdown**| 文档美化 | 标题采用 **背景色块层级区分**，表格重线条网格化，代码块阴影 |
+| **Venv-selector** | Python 环境 | 深度整合项目本地环境与全局 `/0.python-venv` 环境仓库 |
+
+---
+
+## ✨ 格式化与代码质量矩阵 (Formatting & Linting)
+
+**全局物理规范**：缩进 **Tab**，显示宽度 **4**，长行限制 **120**，保存时同步格式化。
+
+| 语言 | 格式化工具链 (Formatter) | 质量检查 (Linter/LSP) | 核心特色 |
+| :--- | :--- | :--- | :--- |
+| **JS / TS** | `eslint_d` → `prettier` | `eslint-lsp` | 自动清理无用导入，Tailwind 类名自动排序 |
+| **React** | `eslint_d` → `prettier` | `ts_ls` (tsserver) | 标签闭合不换行，宽屏适配 (120宽) |
+| **Vue** | `eslint_d` → `prettier` | `volar` | 逻辑修复与视觉排版无缝串联 |
+| **HTML** | `prettier` (Custom) | `superhtml` | **极致紧凑**：保存时自动删除所有空行 |
+| **CSS / SCSS** | `stylelint` → `prettier` | **Stylelint** | 锁定全局路径，属性逻辑排序 (Recess Order) |
+| **Python** | `isort` → `black` | `ruff` / `pyright` | PEP8 规范 4空格，极致执行速度 |
+| **Go** | `goimports` → `gofumpt` | `gopls` | 自动管理标准库引用，严苛的对齐排版 |
+| **SQL** | `prettier` | - | 遵循现代 4 空格标准，关键字大写 |
+| **Dockerfile** | `perl` (Custom) → `trim` | `hadolint` | **指令自动转大写**，智能压缩多余空格 |
+| **Markdown** | `prettier` | `marksman` | 内嵌代码同步格式化，标题背景色块区分 |
+
+---
+
+## ⌨️ 快捷键终极指南
+
+### 1. 代码开发与重构 (`<leader>c`)
+- `<leader>cf`: **一键格式化** (全语种同步执行)
+- `<leader>ca`: **代码操作** (💡 修复报错、提取函数、重构)
+- `<leader>cr`: **智能重命名** (✏️ 跨文件同步重命名符号)
+- `<leader>co`: **整理导入** (📦 自动排序并删除无用引用)
+- `<leader>cv`: **切换 Python 环境** (🐍 自动扫描全局仓库)
+- `<leader>cs`: **显示符号结构** (🔍 Outline 侧边栏，自动聚焦)
+- `<leader>cX`: **修复全文件错误** (🛠️ 一键 Auto-fix)
+
+### 2. 增强文件浏览器 (Snacks Explorer)
+- `<leader>e`: **打开目录树**
+- `<leader>H`: **切换隐藏文件** (仅切换 `.` 开头的文件，`.gitignore` 忽略的文件始终显示)
+- **内部操作**：
+    - `c`: **创建副本** (粘贴到同级自动重命名 `~1`)
+    - `p`: **智能粘贴** (支持目录粘贴到自身时产生副本，不再产生嵌套错误)
+    - `x` / `y`: **剪切 / 复制路径** | `d` / `r`: **删除 / 重命名**
+
+### 3. 极速搜索与导航
+- `/` 或 `?`: **行内快速搜索** (智能环境识别：在普通代码中搜索，在 UI 窗口中恢复原功能)
+- `<leader>ff`: **查找文件** | `<leader>sg`: **全项目 Grep**
+- `gl`: **切换行诊断浮窗** | `Alt + z`: **跳转至文件末尾并居中**
+- `Alt + h/l`: **行首 / 行尾跳转** | `q`: **安全关闭 Buffer** (保持布局)
+
+---
+
+## 🔧 系统底层优化细节
+- **透明视觉**：`winblend = 20`, `pumblend = 20`。
+- **自动换行**：全局开启 `wrap`，不破坏代码物理行。
+- **折叠逻辑**：基于 `Treesitter` 的高性能折叠，默认全部展开。
+- **内显提示**：`Inlay Hints` 始终开启，辅助阅读 TS/Python 类型。
+- **错误预警**：开启格式化错误显式通知，工具缺失或配置错误时弹出 Error 提醒。
+
+---
+
+## 🏗️ 维护与开发规范
+- **文件分布**：`lua/plugins/` 采用关注点分离模式，禁止 monolithic 配置。
+- **提交规范**：`date "+%Y-%m-%d %H:%M" 内容`。
+- **格式化规则**：Lua 代码遵循项目物理根目录的 `stylua.toml`。

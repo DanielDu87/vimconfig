@@ -55,3 +55,27 @@ vim.api.nvim_create_autocmd("BufWritePre", {
 		require("util.format").format()
 	end,
 })
+
+-------------------------------------------------------------------------------
+-- 针对特定文件类型的特殊设置
+-------------------------------------------------------------------------------
+
+-- 针对 Markdown 文件的视觉优化 (极致清净模式)
+vim.api.nvim_create_autocmd("FileType", {
+	pattern = { "markdown" },
+	callback = function(args)
+		-- 1. 禁用内显提示 (保持文字清爽)
+		pcall(vim.lsp.inlay_hint.enable, false, { bufnr = args.buf })
+		-- 2. 彻底抹除所有现存和未来的诊断提示
+		vim.diagnostic.config({
+			underline = false,
+			virtual_text = false,
+			signs = false,
+			update_in_insert = false,
+		}, args.buf)
+		-- 3. 强制在底层关闭该 Buffer 的诊断引擎
+		pcall(vim.diagnostic.enable, false, { bufnr = args.buf })
+		-- 4. 强制清空已有的报错数据
+		vim.diagnostic.reset(nil, args.buf)
+	end,
+})
