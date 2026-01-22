@@ -67,6 +67,21 @@ return {
 				marksman = {
 					enabled = true,
 				},
+
+				-- 4. 配置 emmet_ls (HTML/JSX 极速展开)
+				emmet_ls = {
+					enabled = true,
+					filetypes = {
+						"html",
+						"typescriptreact",
+						"javascriptreact",
+						"css",
+						"sass",
+						"scss",
+						"less",
+						"vue",
+					},
+				},
 			},
 		},
 	},
