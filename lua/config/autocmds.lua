@@ -66,16 +66,9 @@ vim.api.nvim_create_autocmd("FileType", {
 	callback = function(args)
 		-- 1. 禁用内显提示 (保持文字清爽)
 		pcall(vim.lsp.inlay_hint.enable, false, { bufnr = args.buf })
-		-- 2. 彻底抹除所有现存和未来的诊断提示
-		vim.diagnostic.config({
-			underline = false,
-			virtual_text = false,
-			signs = false,
-			update_in_insert = false,
-		}, args.buf)
-		-- 3. 强制在底层关闭该 Buffer 的诊断引擎
+		-- 2. 彻底关闭该 Buffer 的诊断显示 (Neovim 0.10+ 标准写法)
 		pcall(vim.diagnostic.enable, false, { bufnr = args.buf })
-		-- 4. 强制清空已有的报错数据
+		-- 3. 强制清空已有的报错数据
 		vim.diagnostic.reset(nil, args.buf)
 	end,
 })
