@@ -10,10 +10,17 @@ return {
 			--==============================================================================
 			-- 一劳永逸锁定 Snacks 侧边栏宽度
 			--==============================================================================
-			vim.api.nvim_create_autocmd("FileType", {
-				pattern = { "snacks_picker*" },
+			vim.api.nvim_create_autocmd({ "FileType", "BufEnter" }, {
+				pattern = { "snacks_picker*", "snacks_explorer*" },
 				callback = function()
 					vim.wo.winfixwidth = true
+					-- 如果是已经存在的窗口，尝试强制同步宽度
+					pcall(function()
+						local current_width = load_width()
+						if vim.api.nvim_win_get_width(0) ~= current_width then
+							vim.api.nvim_win_set_width(0, current_width)
+						end
+					end)
 				end,
 			})
 

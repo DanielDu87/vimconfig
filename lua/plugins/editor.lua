@@ -289,6 +289,7 @@ return {
 				{ "<leader>l", desc = "插件管理器", icon = "🧩" },
 				{ "<leader>L", desc = "Lazy更新历史", icon = "📜" },
 				{ "<leader>q", group = "退出/会话", icon = "🚪" },
+				{ "<leader>r", group = "运行/调试", icon = "🚀" },
 				{ "<leader>s", group = "搜索", icon = "🔍" },
 				{ "<leader>S", group = "临时缓冲区", icon = "📝" },
 				{ "<leader>Ss", desc = "打开默认临时缓冲区" },
