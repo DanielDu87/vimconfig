@@ -35,6 +35,7 @@ function M.format(opts)
 		lsp_format = config.lsp_format,
 		async = false,
 		timeout_ms = 5000,
+		quiet = false, -- 显式开启错误提示
 	})
 
 	-- 2. 统一清理行尾空白（通用操作）

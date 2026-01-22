@@ -22,6 +22,7 @@ return {
 			},
 		},
 		opts = {
+			notify_on_error = true, -- 格式化出错时显示通知
 			default_format_opts = {
 				lsp_format = "never", -- 禁用 LSP 格式化，避免覆盖 conform 结果
 			},
@@ -29,14 +30,14 @@ return {
 			-- 按文件类型配置格式化器
 			formatters_by_ft = {
 				-- 前端
-				javascript = { "prettier" },
-				javascriptreact = { "prettier" },
-				typescript = { "prettier" },
-				typescriptreact = { "prettier" },
-				vue = { "prettier" },
-				css = { "prettier" },
-				scss = { "prettier" },
-				less = { "prettier" },
+				javascript = { "eslint_d", "prettier" },
+				javascriptreact = { "eslint_d", "prettier" },
+				typescript = { "eslint_d", "prettier" },
+				typescriptreact = { "eslint_d", "prettier" },
+				vue = { "eslint_d", "prettier" },
+				css = { "stylelint", "prettier" },
+				scss = { "stylelint", "prettier" },
+				less = { "stylelint", "prettier" },
 				-- HTML 使用 Prettier（空行由 autocmd 清理）
 				html = { "prettier" },
 				htmldjango = { "prettier" },
@@ -118,14 +119,17 @@ return {
 				shfmt = {
 					prepend_args = { "-i", "0", "-ci" },
 				},
-				-- SQL 格式化配置：强制 4 空格, 关键字大写
+				-- SQL 格式化配置：使用 4 空格, 关键字大写
 				sql_formatter = {
-					args = {
-						"-l",
-						"postgresql", -- 默认使用 PostgreSQL 语法，通用性好
+					prepend_args = {
 						"--config",
 						'{"indentation": "    ", "keywordCase": "upper"}',
 					},
+				},
+				-- Stylelint 配置：使用系统全局版本，并开启自动修复
+				stylelint = {
+					command = "/opt/homebrew/bin/stylelint",
+					args = { "--fix", "--stdin-filename", "$FILENAME" },
 				},
 			},
 		},

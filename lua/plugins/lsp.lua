@@ -28,23 +28,4 @@ vim.api.nvim_create_autocmd("LspAttach", {
 	end,
 })
 
--- 使用 nvim-lint 运行 eslint（用于检查未使用变量等）
-vim.api.nvim_create_autocmd("FileType", {
-	pattern = { "javascript", "javascriptreact", "typescript", "typescriptreact" },
-	callback = function()
-		-- 延迟执行，等待 LSP 启动
-		vim.defer_fn(function()
-			local lint = require("lint")
-			-- 配置 eslint linter
-			lint.linters_by_ft = lint.linters_by_ft or {}
-			lint.linters_by_ft.javascript = { "eslint" }
-			lint.linters_by_ft.typescript = { "eslint" }
-			lint.linters_by_ft.javascriptreact = { "eslint" }
-			lint.linters_by_ft.typescriptreact = { "eslint" }
-			-- 运行 lint（不传参数，使用当前缓冲区）
-			lint.try_lint()
-		end, 1000)
-	end,
-})
-
 return {}
