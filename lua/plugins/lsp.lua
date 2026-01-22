@@ -4,6 +4,18 @@
 
 return {
 	--==========================================================================
+	-- Linter 配置 (nvim-lint)
+	--==========================================================================
+	{
+		"mfussenegger/nvim-lint",
+		opts = {
+			linters_by_ft = {
+				html = { "markuplint" },
+			},
+		},
+	},
+
+	--==========================================================================
 	-- TypeScript 增强插件
 	--==========================================================================
 	{
@@ -11,7 +23,6 @@ return {
 		opts = {
 			server = {
 				settings = {
-					-- 在这里可以放针对 tsserver 的特定设置
 					typescript = {
 						inlayHints = {
 							includeInlayParameterNameHints = "all",
@@ -63,7 +74,8 @@ return {
 						},
 					},
 				},
-				-- 3. 配置 marksman
+
+				-- 3. 配置 marksman (Markdown 支持)
 				marksman = {
 					enabled = true,
 				},
@@ -71,6 +83,9 @@ return {
 				-- 4. 配置 emmet_ls (HTML/JSX 极速展开)
 				emmet_ls = {
 					enabled = true,
+					flags = {
+						debounce_text_changes = 150,
+					},
 					filetypes = {
 						"html",
 						"typescriptreact",
@@ -82,7 +97,46 @@ return {
 						"vue",
 					},
 				},
-			},
-		},
-	},
-}
+
+				-- 5. 禁用有 Bug 的 superhtml (它会产生错误的 self-close 报错)
+				superhtml = { enabled = false },
+
+												-- 6. 确保标准 html-lsp 开启 (VSCode 同款，稳定无误报)
+
+												html = {
+
+													enabled = true,
+
+													settings = {
+
+														html = {
+
+															validate = { scripts = true, styles = true },
+
+														},
+
+													},
+
+												},
+
+								
+
+				
+
+								-- 7. 限制 stylelint_lsp 的范围，防止它扫描 HTML 导致 CssSyntaxError
+
+								stylelint_lsp = {
+
+									filetypes = { "css", "scss", "less", "sass" },
+
+								},
+
+							},
+
+						},
+
+					},
+
+				}
+
+				

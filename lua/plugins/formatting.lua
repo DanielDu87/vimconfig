@@ -38,8 +38,8 @@ return {
 				css = { "stylelint", "prettier" },
 				scss = { "stylelint", "prettier" },
 				less = { "stylelint", "prettier" },
-				-- HTML 使用 Prettier（空行由 autocmd 清理）
-				html = { "prettier" },
+				-- HTML 使用 Markuplint 进行强力纠错，Prettier 进行排版
+				html = { "markuplint", "prettier" },
 				htmldjango = { "prettier" },
 				json = { "prettier" },
 				jsonc = { "prettier" },

@@ -79,3 +79,19 @@ vim.api.nvim_create_autocmd("FileType", {
 		vim.diagnostic.reset(nil, args.buf)
 	end,
 })
+
+-- 针对 HTML 文件的纠错增强 (实时显示错误)
+vim.api.nvim_create_autocmd("FileType", {
+	pattern = { "html" },
+	callback = function(args)
+		-- 1. 强制启用该 Buffer 的诊断引擎
+		pcall(vim.diagnostic.enable, true, { bufnr = args.buf })
+		-- 2. 开启所有视觉提示：行尾文字、下划线、侧边栏图标
+		vim.diagnostic.config({
+			underline = true,
+			virtual_text = true,
+			signs = true,
+			update_in_insert = true, -- 在插入模式下也实时更新 (更快反馈)
+		}, args.buf)
+	end,
+})
