@@ -10,6 +10,10 @@ local ft_configs = {
 	python = { lsp_format = "never" },
 	-- Dockerfile: 禁用 LSP (dockerls 不做大写转换)，强制使用 conform (perl)
 	dockerfile = { lsp_format = "never" },
+	-- SQL: 禁用 LSP 格式化，强制使用 sql-formatter
+	sql = { lsp_format = "never" },
+	-- Go: 禁用 LSP，强制使用 goimports
+	go = { lsp_format = "never" },
 	-- 默认配置
 	["_"] = { lsp_format = "fallback" },
 }

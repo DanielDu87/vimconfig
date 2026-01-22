@@ -45,6 +45,7 @@ vim.api.nvim_create_autocmd("BufWritePre", {
 		"*.sh",
 		"*.py",
 		"*.sql",
+		"*.go",
 		"Dockerfile*",
 		"*dockerfile*",
 		"dockerfile",

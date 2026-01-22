@@ -54,7 +54,7 @@ return {
 				lua = { "stylua" },
 
 				-- Go
-				go = { "gofmt" },
+				go = { "goimports", "gofumpt" },
 
 				-- Rust
 				rust = { "rustfmt" },
@@ -90,7 +90,11 @@ return {
 						"--tab-width",
 						"4",
 						"--print-width",
-						"100",
+						"120",
+						"--bracket-same-line",
+						"true",
+						"--plugin",
+						"prettier-plugin-tailwindcss",
 					},
 				},
 				-- Black 配置（Python 社区强制使用空格，无法配置 tab）
