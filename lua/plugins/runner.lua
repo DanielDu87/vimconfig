@@ -12,9 +12,19 @@ local CONFIG = {
 	browser_beta = "Google Chrome Beta",
 	browser_stable = "Google Chrome",
 	bs_path_brew = "/opt/homebrew/bin/browser-sync",
+	-- 滚动行为配置
+	--   "never"      - 从不自动滚动
+	--   "auto"       - 接近底部时自动跟随滚动
+	--   "on_complete" - 任务完成时滚动到底部
+	scroll = {
+		html = "never",
+		python = "on_complete",
+		default = "auto",
+	},
 }
 
 M.active_jobs = {}
+M.active_log_win = nil -- 记录日志窗口引用
 local common_log_file = vim.fn.stdpath("cache") .. "/runner_common.log"
 
 --- 写日志
@@ -50,6 +60,42 @@ end
 function M.write_separator()
 	local separator = string.rep("=<>= ", 20):gsub(" ", "")
 	M.write_log(separator, true)
+end
+
+--- 获取任务的滚动配置
+local function get_scroll_mode(job_name)
+	return CONFIG.scroll[job_name] or CONFIG.scroll.default
+end
+
+--- 滚动日志窗口到底部
+function M.scroll_to_bottom()
+	local target_win = M.active_log_win
+
+	-- 如果记录的窗口无效，尝试查找日志窗口
+	if not target_win or not vim.api.nvim_win_is_valid(target_win) then
+		for _, win in ipairs(vim.api.nvim_list_wins()) do
+			local buf = vim.api.nvim_win_get_buf(win)
+			local buf_name = vim.api.nvim_buf_get_name(buf)
+			if buf_name:match("runner_common%.log$") then
+				target_win = win
+				M.active_log_win = win
+				break
+			end
+		end
+	end
+
+	-- 如果仍然找不到有效窗口，退出
+	if not target_win or not vim.api.nvim_win_is_valid(target_win) then
+		return
+	end
+
+	-- 刷新缓冲区并滚动
+	local buf = vim.api.nvim_win_get_buf(target_win)
+	vim.api.nvim_buf_call(buf, function()
+		vim.cmd("checktime")
+	end)
+	local count = vim.api.nvim_buf_line_count(buf)
+	pcall(vim.api.nvim_win_set_cursor, target_win, { count, 0 })
 end
 
 --- 获取侧边栏状态
@@ -100,8 +146,8 @@ function M.stop_all_jobs()
 	end
 
 	-- 1. 停止记录的 Job
-	for name, id in pairs(M.active_jobs) do
-		pcall(vim.fn.jobstop, id)
+	for name, job_info in pairs(M.active_jobs) do
+		pcall(vim.fn.jobstop, job_info.id)
 		M.active_jobs[name] = nil
 	end
 
@@ -167,7 +213,7 @@ function M.run_html_preview()
 		"--no-open", -- 禁止 browser-sync 自动打开，由我们手动控制
 	}
 
-	M.active_jobs["html"] = vim.fn.jobstart(cmd, {
+	local job_id = vim.fn.jobstart(cmd, {
 		stdout_buffered = false,
 		stderr_buffered = false,
 		on_stdout = on_output,
@@ -176,8 +222,10 @@ function M.run_html_preview()
 			if code ~= 0 and code ~= 143 then
 				M.write_log(">>> 进程异常退出，状态码: " .. code)
 			end
+			M.active_jobs["html"] = nil
 		end,
 	})
+	M.active_jobs["html"] = { id = job_id, scroll_mode = get_scroll_mode("html") }
 
 	-- 智能等待
 	vim.defer_fn(function()
@@ -238,7 +286,7 @@ return {
 					local run_cmd = string.format("%s -u '%s'", python_path, file)
 					M.write_log(">>> 运行指令: " .. run_cmd)
 
-					M.active_jobs["python"] = vim.fn.jobstart(run_cmd, {
+					local job_id = vim.fn.jobstart(run_cmd, {
 						stdout_buffered = false,
 						stderr_buffered = false,
 						on_stdout = on_output,
@@ -246,23 +294,13 @@ return {
 						on_exit = function(_, code)
 							M.write_log(">>> 执行结束 (状态码: " .. code .. ")\n")
 							M.active_jobs["python"] = nil
-							-- 滚动到底部
-							vim.schedule(function()
-								for _, win in ipairs(vim.api.nvim_list_wins()) do
-									local buf = vim.api.nvim_win_get_buf(win)
-									local buf_name = vim.api.nvim_buf_get_name(buf)
-								if buf_name:match("runner_common%.log$") then
-										vim.api.nvim_buf_call(buf, function()
-												vim.cmd("checktime")
-										end)
-										local count = vim.api.nvim_buf_line_count(buf)
-										pcall(vim.api.nvim_win_set_cursor, win, { count, 0 })
-										break
-								end
-								end
-							end)
+							-- on_complete 模式：完成后滚动到底部（延迟确保日志窗口已打开）
+							vim.defer_fn(function()
+								M.scroll_to_bottom()
+							end, 100)
 						end,
 					})
+					M.active_jobs["python"] = { id = job_id, scroll_mode = get_scroll_mode("python") }
 					vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<leader>rl", true, true, true), "m", true)
 				end,
 				desc = "运行 Python 脚本",
@@ -282,6 +320,9 @@ return {
 							cursorline = true,
 						},
 					on_buf = function(self)
+							-- 记录日志窗口引用
+							M.active_log_win = self.win
+
 							vim.schedule(function()
 								if not vim.api.nvim_buf_is_valid(self.buf) then
 									return
@@ -291,7 +332,7 @@ return {
 
 							-- 注入语法高亮
 							vim.api.nvim_buf_call(self.buf, function()
-									vim.cmd([[ 
+									vim.cmd([[
 									syn match RunnerLogHeader /^>>>.*/
 										syn match RunnerLogSeparator /^=<>=.*/
 										syn match RunnerLogError /Error.*|Exception.*|Traceback.*|Failed.*|状态码: [1-9].*/
@@ -315,17 +356,22 @@ return {
 								vim.schedule_wrap(function()
 											if not vim.api.nvim_buf_is_valid(self.buf) then
 												timer:stop()
+												M.active_log_win = nil
 												return
 										end
 										vim.cmd("checktime")
-										local has_active = false
-										for _, id in pairs(M.active_jobs) do
-											if id then
-												has_active = true
+
+										-- 检查是否有需要自动滚动的任务
+										local should_scroll = false
+										for _, job_info in pairs(M.active_jobs) do
+											if job_info and job_info.scroll_mode == "auto" then
+												should_scroll = true
 												break
+											end
 										end
-										end
-										if has_active and self.win and vim.api.nvim_win_is_valid(self.win) then
+
+										-- auto 模式：接近底部时跟随滚动
+										if should_scroll and self.win and vim.api.nvim_win_is_valid(self.win) then
 											local curr_line = vim.api.nvim_win_get_cursor(self.win)[1]
 											local total_lines = vim.api.nvim_buf_line_count(self.buf)
 											if total_lines - curr_line <= 10 then
