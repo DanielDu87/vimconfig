@@ -73,7 +73,10 @@ This directory contains a **Neovim configuration** built on top of [LazyVim](htt
 - **`lua/util/explorer_actions.lua`**: Contains the state machine for cut/copy/paste. Note the use of `M.setup` to inject dependencies (`Actions`, `Snacks`).
 - **`lua/plugins/theme.lua`**: Centralized location for all highlight overrides. Do not scatter `vim.api.nvim_set_hl` across multiple files if possible.
 
+始终用中文回答，注释也要中文
 始终严格遵守Lazyvim官方配置文件格式和规范，符合官方配置文件目录结构
 开发优先考虑性能,性能优先
-帮我提交时严格使用"+%Y-%m-%d %H:%M 内容"这种格式的提交信息，通过date "+%Y-%m-%d %H:%M"获取最新时间
+帮我提交时严格使用"+%Y-%m-%d %H:%M 内容"这种格式的提交信息，先通过date "+%Y-%m-%d %H:%M"获取实际时间，然后按照上述提交信息格式进行提交
 不要主动提交，我告诉你提交的时候再提交
+提交信息使用中文
+所有编辑的文件，以Tab进行缩进，宽度为4
