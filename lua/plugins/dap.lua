@@ -28,28 +28,24 @@ return {
 			-- 初始化UI和虚拟文本
 			dapui.setup({
 				layouts = {
+					-- 1. 右侧面板 (变量、堆栈、断点)
 					{
 						elements = {
 							{ id = "scopes", size = 0.5 }, -- 变量查看
 							{ id = "stacks", size = 0.3 }, -- 调用堆栈
 							{ id = "breakpoints", size = 0.2 }, -- 断点列表
 						},
-						size = 40,
-						position = "right", -- 移动到右侧
+						size = 40, -- 宽度
+						position = "right", -- 放在最右侧
 					},
+					-- 2. 底部面板：REPL和Console
 					{
 						elements = {
-							{ id = "repl", size = 0.3 }, -- REPL相对大小
+							{ id = "repl", size = 0.3 }, -- REPL占据上方30%
+							{ id = "console", size = 0.7 }, -- Console占据下方70%
 						},
-						size = 5, -- REPL实际高度（5行）
-						position = "bottom",
-					},
-					{
-						elements = {
-							{ id = "console", size = 0.7 }, -- Console相对大小
-						},
-						size = 10, -- Console实际高度（10行）
-						position = "bottom",
+						size = 15, -- 底部面板的总高度（REPL 5行 + Console 10行）
+						position = "bottom", -- 放在底部
 					},
 				},
 				controls = {
@@ -60,7 +56,6 @@ return {
 					border = "rounded",
 					max_height = 0.9,
 					max_width = 0.5,
-					-- 移除浮动窗口的特定映射，因为现在它们是固定面板
 					mappings = {},
 					elements = {},
 				},
