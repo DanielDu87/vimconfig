@@ -305,7 +305,7 @@ return {
 				{ "<leader>cS", desc = "查找引用/定义", icon = "🔍" },
 				{ "<leader>cF", desc = "格式化注入语言", icon = "🛠️" },
 				                { "<leader>d", group = "调试", icon = "🔧" },
-				                { "<leader>dp", group = "性能分析", icon = "📊" },
+				                { "<leader>dp", group = "LazyVim性能分析", icon = "📊" },
 				                { "<leader>dps", desc = "开始采样", icon = "▶️" },
 				                { "<leader>dpx", desc = "停止采样", icon = "⏹️" },
 				                				{ "<leader>x", group = "诊断/修复", icon = "⚠️" },
