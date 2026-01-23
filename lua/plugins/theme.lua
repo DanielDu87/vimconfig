@@ -93,7 +93,33 @@ return {
 				hl.SnacksPickerBorder = { fg = border_color }
 				hl.SnacksPickerListCursorLine = { link = "CursorLine" } -- Picker 光标行
 
-				-- 4. 强制所有背景透明 (覆盖可能漏掉的组件)
+				-- 4. 补全窗口 (BlinkCmp) 样式
+				hl.BlinkCmpMenu = { bg = c.none }
+				hl.BlinkCmpMenuBorder = { fg = border_color, bg = c.none }
+				hl.BlinkCmpDoc = { bg = c.none }
+				hl.BlinkCmpDocBorder = { fg = border_color, bg = c.none }
+				hl.BlinkCmpDocCursorLine = { bg = "#3d4458" }
+				hl.BlinkCmpSignatureHelp = { bg = c.none }
+				hl.BlinkCmpSignatureHelpBorder = { fg = border_color, bg = c.none }
+				hl.BlinkCmpSignatureHelpActiveParameter = { fg = "#7dcfff", bold = true }
+
+				-- 彻底清除列表项内部所有组件的背景
+				hl.BlinkCmpLabel = { bg = c.none }
+				hl.BlinkCmpLabelMatch = { fg = "#7dcfff", bg = c.none, bold = true }
+				hl.BlinkCmpLabelDetail = { fg = "#565f89", bg = c.none }
+				hl.BlinkCmpLabelDescription = { fg = "#565f89", bg = c.none }
+				hl.BlinkCmpKind = { bg = c.none }
+				hl.BlinkCmpKindIcon = { bg = c.none }
+				hl.BlinkCmpSource = { bg = c.none }
+				hl.BlinkCmpGhostText = { fg = "#565f89", bg = c.none }
+
+				-- 也要清理通用的 Pmenu，因为 blink 可能会继承它
+				hl.Pmenu = { bg = c.none }
+				hl.PmenuSel = { bg = "#3d4458" }
+				hl.PmenuSbar = { bg = c.none }
+				hl.PmenuThumb = { bg = "#3d4458" }
+
+				-- 5. 强制所有背景透明 (覆盖可能漏掉的组件)
 				hl.Normal = { bg = "none" }
 				hl.NormalNC = { bg = "none" }
 				hl.NonText = { bg = "none" }
