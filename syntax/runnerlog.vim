@@ -26,7 +26,8 @@ syn match RunnerLogErrorLine /\c.*\<Traceback\>.*/ contained
 syn match RunnerLogErrorLine /\c.*\<Failed\>.*/ contained
 syn match RunnerLogErrorLine /\c.*\<fatal\>.*/ contained
 syn match RunnerLogErrorLine /\c.*\<critical\>.*/ contained
-syn match RunnerLogErrorLine /状态码: [1-9].*/ contained
+syn match RunnerLogErrorLine /.*状态码: [1-9].*/ contained
+syn match RunnerLogErrorLine /.*进程异常退出.*/ contained
 syn match RunnerLogErrorLine /^\s*File .*, line \d\+.*/ contained
 
 syn match RunnerLogWarnLine /\c.*\<Warning\>.*/ contained
