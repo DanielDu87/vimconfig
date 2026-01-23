@@ -160,11 +160,9 @@ Configured in `lua/plugins/highlight.lua`:
 5. **Code style** - Use tab indentation for Lua files
 6. **Performance first** - All configuration prioritizes performance
 
-始终使用中文回答
+不要主动提交，我告诉你提交的时候再提交,提交时严格使用"+%Y-%m-%d %H:%M 内容"这种格式的提交信息，先通过date "+%Y-%m-%d %H:%M"获取实际时间，然后按照上述提交信息格式进行提交,内容信息要用中文
+始终用中文回答，注释也要中文
 始终严格遵守Lazyvim官方配置文件格式和规范，符合官方配置文件目录结构
 开发优先考虑性能,性能优先
-帮我提交时严格使用"+%Y-%m-%d %H:%M 内容"这种格式的提交信息，先通过date "+%Y-%m-%d %H:%M"获取实际时间，然后按照上述提交信息格式进行提交
-不要主动提交，我告诉你提交的时候再提交
-提交信息使用中文
 所有编辑的文件，以Tab进行缩进，宽度为4
 每次提交前更新README
