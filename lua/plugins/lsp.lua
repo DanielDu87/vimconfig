@@ -8,11 +8,10 @@ return {
 	--==========================================================================
 	{
 		"mfussenegger/nvim-lint",
-		opts = {
-			linters_by_ft = {
-				html = { "markuplint" },
-			},
-		},
+		opts = function(_, opts)
+			opts.linters_by_ft = opts.linters_by_ft or {}
+			opts.linters_by_ft.html = { "markuplint" }
+		end,
 	},
 
 	--==========================================================================
@@ -20,17 +19,16 @@ return {
 	--==========================================================================
 	{
 		"yioneko/nvim-vtsls",
-		ft = { "typescript", "typescriptreact", "vue" },
-		config = function()
-			-- 该插件由 lspconfig 驱动，此处仅确保其加载
-		end,
+		lazy = true,
+		config = false, -- 禁用默认的 setup 调用，该插件由 lspconfig 驱动
 	},
 
 	--==========================================================================
-	-- TypeScript 增强插件 (完全还原您之前的 JS 配置)
+	-- TypeScript 增强插件
 	--==========================================================================
 	{
 		"jose-elias-alvarez/typescript.nvim",
+		main = "typescript", -- 显式指定模块名
 		opts = {
 			server = {
 				filetypes = { "javascript", "javascriptreact" },

@@ -12,6 +12,9 @@
 - **全局透明化 (主题无关)**：
   - 通过全局自动命令 (`ColorScheme`) 强制实现透明背景，支持任意主题切换。
   - 覆盖范围：编辑器背景、侧边栏、浮动窗口、补全菜单、WinBar、BufferLine 等。
+- **多主题支持**：
+  - **OneDark 家族**：整合了 `navarasu/onedark.nvim` (多风格版) 和 `olimorris/onedarkpro.nvim` (Atom 高还原版)。
+  - **快捷入口**：支持通过选择器直接预览 `onedark-abyss`, `onedark-cool`, `atom-onedark` 等 7 种衍生风格。
 - **现代化补全交互 (BlinkCmp)**：
   - 补全菜单、文档窗口、签名提示统一采用 **80 字符宽度** 视觉平衡设计。
   - 窗口背景完全透明，配备统一的 **蓝色圆角边框 (`#2b85b7`)**。

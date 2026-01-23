@@ -192,6 +192,14 @@ local function apply_transparency()
 	for _, group in ipairs(border_groups) do
 		vim.api.nvim_set_hl(0, group, { fg = border_color, bg = "NONE" })
 	end
+
+	-- 4. 优化主题选择器可见性 (解决预览时文字看不清的问题)
+	-- 强制 Picker 列表文字为白色，确保在任何背景下都清晰
+	vim.api.nvim_set_hl(0, "SnacksPickerList", { fg = "#FFFFFF", bg = "NONE" })
+	-- 强制搜索匹配项为鲜艳的青蓝色
+	vim.api.nvim_set_hl(0, "SnacksPickerMatch", { fg = "#7dcfff", bg = "NONE", bold = true })
+	-- 确保当前选中行背景足够明显
+	vim.api.nvim_set_hl(0, "SnacksPickerListCursorLine", { bg = "#3d4458", bold = true })
 end
 
 -- 监听主题切换事件 (使用 schedule 确保在主题完全加载后执行)
