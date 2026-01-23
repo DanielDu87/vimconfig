@@ -355,7 +355,7 @@ return {
 						local buf = vim.api.nvim_get_current_buf()
 						-- 检查 pinned
 						if is_pinned(buf) then
-							vim.notify("Buffer 已固定，无法关闭", vim.log.levels.WARN)
+							vim.notify("Buffer已固定，无法关闭", vim.log.levels.WARN)
 							return
 						end
 						local bufname = vim.api.nvim_buf_get_name(buf)
@@ -395,7 +395,7 @@ return {
 						local buf = ev.buf
 						-- 检查 pinned
 						if is_pinned(buf) then
-							vim.notify("Buffer 已固定，无法关闭", vim.log.levels.WARN)
+							vim.notify("Buffer已固定，无法关闭", vim.log.levels.WARN)
 							return
 						end
 						-- 先保存当前 buffer（如果有文件名且已修改）

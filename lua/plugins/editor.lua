@@ -2,7 +2,7 @@
 -- Editor 插件配置：覆盖 LazyVim 默认的编辑器行为
 --==============================================================================
 -- 本文件主要配置：
--- 1. 快捷键重新组织 (将窗口/缓冲区操作归类)
+-- 1. 快捷键重新组织 (将窗口/Buffer操作归类)
 -- 2. WhichKey 菜单定制与中文化
 -- 3. Snacks.nvim 核心组件配置 (Picker, Explorer, Scratch)
 
@@ -20,24 +20,24 @@ vim.api.nvim_create_autocmd("User", {
 		vim.keymap.del("n", "<leader>|") -- 删除默认的纵向分割
 
 		-- ---------------------------------------------------------------------------
-		-- 临时缓冲区：统一移到 <leader>S (Scratch) 组
+		-- 临时Buffer：统一移到 <leader>S (Scratch) 组
 		-- ---------------------------------------------------------------------------
 		vim.keymap.del("n", "<leader>.")
 
 		-- ---------------------------------------------------------------------------
-		-- 缓冲区管理：清理默认的冗余键位
+		-- Buffer管理：清理默认的冗余键位
 		-- ---------------------------------------------------------------------------
-		vim.keymap.del("n", "<leader>`") -- 切换到上一个缓冲区
-		vim.keymap.del("n", "<leader>,") -- 缓冲区列表
+		vim.keymap.del("n", "<leader>`") -- 切换到上一个Buffer
+		vim.keymap.del("n", "<leader>,") -- Buffer列表
 		vim.keymap.del("n", "<leader>br") -- LazyVim 默认的向右关闭
 		vim.keymap.del("n", "<leader>bl") -- LazyVim 默认的向左关闭
 
-		-- 设置更直观的缓冲区导航 (小写 h/l)
-		vim.keymap.set("n", "<leader>bh", "<cmd>bprevious<cr>", { desc = "上一个缓冲区" })
-		vim.keymap.set("n", "<leader>bl", "<cmd>bnext<cr>", { desc = "下一个缓冲区" })
+		-- 设置更直观的Buffer导航 (小写 h/l)
+		vim.keymap.set("n", "<leader>bh", "<cmd>bprevious<cr>", { desc = "上一个Buffer" })
+		vim.keymap.set("n", "<leader>bl", "<cmd>bnext<cr>", { desc = "下一个Buffer" })
 
 		-- ---------------------------------------------------------------------------
-		-- 辅助函数：批量关闭缓冲区逻辑（跳过固定/Pinned缓冲区）
+		-- 辅助函数：批量关闭Buffer逻辑（跳过固定/PinnedBuffer）
 		-- ---------------------------------------------------------------------------
 		local function get_pinned_set()
 			local pinned = {}
@@ -53,7 +53,7 @@ vim.api.nvim_create_autocmd("User", {
 			return pinned
 		end
 
-		-- 关闭当前缓冲区左侧所有非固定文件
+		-- 关闭当前Buffer左侧所有非固定文件
 		local function close_left_non_pinned()
 			local current = vim.api.nvim_get_current_buf()
 			local bufs = vim.api.nvim_list_bufs()
@@ -79,10 +79,10 @@ vim.api.nvim_create_autocmd("User", {
 					closed = closed + 1
 				end
 			end
-			vim.notify(string.format("已清理左侧 %d 个文件", closed), vim.log.levels.INFO)
+			vim.notify(string.format("已清理左侧%d个Buffer", closed), vim.log.levels.INFO)
 		end
 
-		-- 关闭当前缓冲区右侧所有非固定文件
+		-- 关闭当前Buffer右侧所有非固定文件
 		local function close_right_non_pinned()
 			local current = vim.api.nvim_get_current_buf()
 			local bufs = vim.api.nvim_list_bufs()
@@ -108,19 +108,42 @@ vim.api.nvim_create_autocmd("User", {
 					closed = closed + 1
 				end
 			end
-			vim.notify(string.format("已清理右侧 %d 个文件", closed), vim.log.levels.INFO)
+			vim.notify(string.format("已清理右侧%d个Buffer", closed), vim.log.levels.INFO)
 		end
 
-		-- 绑定批量关闭键位 (大写 H/L)
-		vim.keymap.set("n", "<leader>bH", close_left_non_pinned, { desc = "关闭左侧所有缓冲区" })
-		vim.keymap.set("n", "<leader>bL", close_right_non_pinned, { desc = "关闭右侧所有缓冲区" })
+		-- 关闭除当前Buffer外所有非固定文件
+		local function close_other_non_pinned()
+			local current = vim.api.nvim_get_current_buf()
+			local bufs = vim.api.nvim_list_bufs()
+			local pinned = get_pinned_set()
+			local snacks = require("snacks")
+			local closed = 0
+			for _, buf in ipairs(bufs) do
+				if
+					buf ~= current
+					and vim.api.nvim_buf_is_valid(buf)
+					and vim.api.nvim_get_option_value("buflisted", { buf = buf })
+					and vim.bo[buf].buftype == ""
+					and not pinned[buf]
+				then
+					snacks.bufdelete(buf)
+					closed = closed + 1
+				end
+			end
+			vim.notify("已关闭其他Buffer（跳过Pinned）", vim.log.levels.INFO)
+		end
+
+		-- 绑定批量关闭键位
+		vim.keymap.set("n", "<leader>bH", close_left_non_pinned, { desc = "关闭左侧所有Buffer" })
+		vim.keymap.set("n", "<leader>bL", close_right_non_pinned, { desc = "关闭右侧所有Buffer" })
+		vim.keymap.set("n", "<leader>bo", close_other_non_pinned, { desc = "关闭其他Buffer" })
 	end,
 })
 
 --==============================================================================
 -- 2. 优化 <leader>bP：关闭非固定文件并锁定侧边栏布局
 --==============================================================================
--- 此逻辑专门修复在关闭大量缓冲区时，侧边栏（如目录树）被系统均分导致的闪烁和变形
+-- 此逻辑专门修复在关闭大量Buffer时，侧边栏（如目录树）被系统均分导致的闪烁和变形
 vim.api.nvim_create_autocmd("User", {
 	pattern = "LazyVimKeymaps",
 	callback = function()
@@ -175,11 +198,11 @@ vim.api.nvim_create_autocmd("User", {
 				set_side_fixed_width(false)
 			end)
 
-			vim.notify(string.format("清理完成，共关闭 %d 个文件", count), vim.log.levels.INFO)
+			vim.notify("已关闭所有非Pinned Buffer", vim.log.levels.INFO)
 		end
 
 		vim.keymap.set("n", "<leader>bP", close_non_pinned_buffers_preserve_side_width, {
-			desc = "清理所有非固定缓冲区",
+			desc = "清理所有非固定Buffer",
 		})
 	end,
 })
@@ -248,16 +271,16 @@ return {
 				{ "<leader>rs", desc = "停止任务", icon = "🛑" },
 				{ "<leader>rv", desc = "选择Python虚拟环境", icon = "🐍" },
 				{ "<leader>rV", desc = "选择 TS 工作区版本", icon = "🏷️" },
-				{ "<leader>bb", desc = "切换到其他缓冲区", icon = "🔄" },
-				{ "<leader>bd", desc = "关闭当前缓冲区", icon = "❌" },
-				{ "<leader>bD", desc = "关闭缓冲区和窗口", icon = "❌" },
-				{ "<leader>bf", desc = "缓冲区列表", icon = "📋" },
-				{ "<leader>bh", desc = "上一个缓冲区", icon = "⬅️" },
-				{ "<leader>bl", desc = "下一个缓冲区", icon = "➡️" },
-				{ "<leader>bo", desc = "关闭其他缓冲区", icon = "🗑️" },
+				{ "<leader>bb", desc = "切换到其他Buffer", icon = "🔄" },
+				{ "<leader>bd", desc = "关闭当前Buffer", icon = "❌" },
+				{ "<leader>bD", desc = "关闭Buffer和窗口", icon = "❌" },
+				{ "<leader>bf", desc = "Buffer列表", icon = "📋" },
+				{ "<leader>bh", desc = "上一个Buffer", icon = "⬅️" },
+				{ "<leader>bl", desc = "下一个Buffer", icon = "➡️" },
+				{ "<leader>bo", desc = "关闭其他Buffer", icon = "🗑️" },
 				{ "<leader>bp", desc = "切换固定", icon = "📌" },
-				{ "<leader>bH", desc = "关闭左侧缓冲区", icon = "🗑️" },
-				{ "<leader>bL", desc = "关闭右侧缓冲区", icon = "🗑️" },
+				{ "<leader>bH", desc = "关闭左侧Buffer", icon = "🗑️" },
+				{ "<leader>bL", desc = "关闭右侧Buffer", icon = "🗑️" },
 				{ "<leader>c", group = "代码", icon = "🛠️" },
 				{ "<leader>ca", desc = "代码操作", icon = "💡" },
 				{ "<leader>cA", desc = "项目操作", icon = "⚛️" },
@@ -295,11 +318,11 @@ return {
 				{ "<leader>q", group = "退出/会话", icon = "🚪" },
 				{ "<leader>r", group = "运行/调试", icon = "🚀" },
 				{ "<leader>s", group = "搜索", icon = "🔍" },
-				{ "<leader>S", group = "临时缓冲区", icon = "📝" },
-				{ "<leader>Ss", desc = "打开默认临时缓冲区" },
-				{ "<leader>Sn", desc = "新建命名临时缓冲区" },
-				{ "<leader>S.", desc = "打开默认临时缓冲区" },
-				{ "<leader>SS", desc = "选择/管理临时缓冲区" },
+				{ "<leader>S", group = "临时Buffer", icon = "📝" },
+				{ "<leader>Ss", desc = "打开默认临时Buffer" },
+				{ "<leader>Sn", desc = "新建命名临时Buffer" },
+				{ "<leader>S.", desc = "打开默认临时Buffer" },
+				{ "<leader>SS", desc = "选择/管理临时Buffer" },
 				{ "<leader>u", group = "界面", icon = "🎨" },
 				{ "<leader>w", group = "窗口", icon = "🖼️" },
 				{ "<leader>w-", desc = "向下分割窗口" },
@@ -331,7 +354,7 @@ return {
 					{ "Keywordprg", "关键词查询" },
 					{ "Explorer", "文件浏览器" },
 					{ "Notification History", "通知历史" },
-					{ "Buffers", "缓冲区" },
+					{ "Buffers", "Buffer" },
 					{ "Git Diff", "Git 差异" },
 					{ "Git Status", "Git 状态" },
 					{ "Git Stash", "Git 暂存" },
@@ -340,8 +363,8 @@ return {
 					{ "Recent", "最近文件" },
 					{ "Projects", "项目列表" },
 					{ "Command History", "命令历史" },
-					{ "Buffer Lines", "缓冲区行" },
-					{ "Grep Open Buffers", "搜索已打开缓冲区" },
+					{ "Buffer Lines", "Buffer行" },
+					{ "Grep Open Buffers", "搜索已打开Buffer" },
 					{ "Search for Plugin Spec", "搜索插件配置" },
 					{ "Visual selection or word", "选区或单词" },
 					{ "Registers", "寄存器" },
@@ -349,7 +372,7 @@ return {
 					{ "Autocmds", "自动命令" },
 					{ "Commands", "命令" },
 					{ "Diagnostics", "诊断信息" },
-					{ "Buffer Diagnostics", "缓冲区诊断" },
+					{ "Buffer Diagnostics", "Buffer诊断" },
 					{ "Help Pages", "帮助文档" },
 					{ "Highlights", "高亮组" },
 					{ "Icons", "图标" },
@@ -371,14 +394,14 @@ return {
 					{ "Goto Implementation", "跳转到实现" },
 					{ "Goto Type Definition", "跳转到类型定义" },
 					{ "Keyword Index", "关键词索引" },
-					{ "Select Scratch Buffer", "选择临时缓冲区" },
-					-- 缓冲区相关
-					{ "Switch to Other Buffer", "切换到其他缓冲区" },
-					{ "Delete Buffer", "关闭当前缓冲区" },
-					{ "Delete Buffer and Window", "关闭缓冲区和窗口" },
-					{ "Delete Other Buffers", "关闭其他缓冲区" },
-					{ "Prev Buffer", "上一个缓冲区" },
-					{ "Next Buffer", "下一个缓冲区" },
+					{ "Select Scratch Buffer", "选择临时Buffer" },
+					-- Buffer相关
+					{ "Switch to Other Buffer", "切换到其他Buffer" },
+					{ "Delete Buffer", "关闭当前Buffer" },
+					{ "Delete Buffer and Window", "关闭Buffer和窗口" },
+					{ "Delete Other Buffers", "关闭其他Buffer" },
+					{ "Prev Buffer", "上一个Buffer" },
+					{ "Next Buffer", "下一个Buffer" },
 					-- 窗口相关
 					{ "Split Window Below", "向下分割窗口" },
 					{ "Split Window Right", "向右分割窗口" },
@@ -399,14 +422,14 @@ return {
 					{ "Open lazygit log", "打开 Lazygit 日志" },
 					{ "Vim Changelog", "更新历史" },
 					{ "Toggle Pin", "切换固定" },
-					{ "Delete Non-Pinned", "关闭未固定缓冲区" },
+					{ "Delete Non-Pinned", "关闭未固定Buffer" },
 					{ "Delete", "关闭" },
 					{ "Non-Pinned", "非固定" },
 					{ "Non", "非" },
-					{ "缓冲区列表", "缓冲区列表" },
+					{ "Buffer列表", "Buffer列表" },
 					{ "Pinned", "固定" },
 					{ "Close", "关闭" },
-					{ "Delete Non-Pinned Buffers", "关闭非固定缓冲区" },
+					{ "Delete Non-Pinned Buffers", "关闭非固定Buffer" },
 					{ "Ungrouped", "未分组" },
 					{ "New File", "新建文件" },
 					{ "Format", "格式化" },
@@ -420,7 +443,7 @@ return {
 					{ "Mason", "Mason" },
 					{ "Profiler Start", "开始采样" },
 					{ "Profiler Stop", "停止采样" },
-					{ "Profiler Scratch Buffer", "性能分析临时缓冲区" },
+					{ "Profiler Scratch Buffer", "性能分析临时Buffer" },
 					{ "Conform Info", "格式化信息" },
 					{ "Call Hierarchy", "调用层次" },
 					{ "Incoming Calls", "输入调用" },
@@ -551,44 +574,44 @@ return {
 			},
 			{ "<leader>e", "<leader>fe", desc = "文件浏览器", remap = true },
 
-			-- 临时缓冲区操作
+			-- 临时Buffer操作
 			{
 				"<leader>Ss",
 				function()
 					require("snacks").scratch({ ft = "" })
 				end,
-				desc = "打开默认临时缓冲区",
+				desc = "打开默认临时Buffer",
 			},
 			{
 				"<leader>Sn",
 				function()
 					require("snacks").scratch({ name = vim.fn.input("名称: "), ft = "" })
 				end,
-				desc = "新建命名临时缓冲区",
+				desc = "新建命名临时Buffer",
 			},
 			{
 				"<leader>S.",
 				function()
 					require("snacks").scratch()
 				end,
-				desc = "切换临时缓冲区",
+				desc = "切换临时Buffer",
 			},
 			{
 				"<leader>SS",
 				function()
 					require("snacks").picker.scratch()
 				end,
-				desc = "选择/管理临时缓冲区",
+				desc = "选择/管理临时Buffer",
 			},
 
-			-- 缓冲区与窗口操作
-			{ "<leader>bb", "<cmd>e #<cr>", desc = "切换到其他缓冲区" },
+			-- Buffer与窗口操作
+			{ "<leader>bb", "<cmd>e #<cr>", desc = "切换到其他Buffer" },
 			{
 				"<leader>bf",
 				function()
 					require("snacks").picker.buffers()
 				end,
-				desc = "缓冲区列表",
+				desc = "Buffer列表",
 			},
 
 			-- 窗口管理：原生操作符映射
@@ -664,7 +687,7 @@ return {
 
 			-- 源特定增强
 			opts.picker.sources = opts.picker.sources or {}
-			-- 缓冲区列表：显示固定状态图标
+			-- Buffer列表：显示固定状态图标
 			opts.picker.sources.buffers = {
 				format = function(item, picker)
 					local formatted = require("snacks").picker.format.buffer(item, picker)

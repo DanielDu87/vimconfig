@@ -21,7 +21,7 @@ return {
 				["Quit"] = "退出",
 				["Close"] = "关闭",
 				["Toggle Debug"] = "切换调试",
-				["Select Scratch Buffer"] = "选择临时缓冲区",
+				["Select Scratch Buffer"] = "选择临时Buffer",
 			}
 
 			-- 翻译函数

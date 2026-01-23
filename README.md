@@ -27,6 +27,16 @@
   - 表格采用 **重线条网格** 渲染，代码块带背景保护。
   - 专注模式：Markdown 文件自动关闭 LSP 诊断和内显提示，提供纯净阅读体验。
 
+### 🗂️ 智能 Buffer 管理 (Buffer Management)
+针对多文件协作场景，对 Buffer 操作进行了深度定制，平衡了“一键清理”与“核心文件保留”：
+- **智能过滤逻辑**：所有的批量关闭操作（左侧、右侧、其他、全部）都会自动 **跳过 Pinned (固定)** 的文件，确保核心工作区不被意外打乱。
+- **批量关闭套件**：
+  - `<leader>bo`：**关闭其他 Buffer**（保留当前与固定文件）。
+  - `<leader>bH` / `<leader>bL`：**向左/向右清理**，快速修剪工作区。
+  - `<leader>bP`：**全局清理**，关闭所有非固定文件并锁定侧边栏布局，防止界面抖动。
+- **即时反馈**：所有批量操作完成后，均会通过 `vim.notify` 弹出清理结果提示（如：“已关闭其他Buffer（跳过Pinned）”）。
+- **视觉导航**：使用 `<leader>bh/l` 进行左右快速切换，替代传统的 Tab 键，降低误触率。
+
 ### 🚀 增强型文件资源管理器 (Snacks Explorer)
 基于 `Snacks.explorer` 深度二次开发，打造类似 IDE 的文件操作体验：
 - **核心操作逻辑** (`lua/util/explorer_actions.lua`)：
@@ -99,7 +109,9 @@
 | `<leader>rb / rB` | **配置浏览器 URL** | 设置文件/项目级的浏览器跳转地址 |
 | `<leader>rv` | **选择Python虚拟环境** | 切换 Python 解释器 (venv/conda) |
 | `<leader>rV` | **选择 TS 版本** | 切换 TypeScript 工作区版本 |
-| `<leader>bh/l` | **Buffer 切换** | 替代 `Tab` / `Shift-Tab` |
+| `<leader>bh/l` | **Buffer 切换** | 左右快速切换 Buffer |
+| `<leader>bo` | **关闭其他** | 关闭除当前和固定外所有 Buffer |
+| `<leader>bH/L` | **向左/右关闭** | 批量清理左侧或右侧的非固定 Buffer |
 | `<leader>bP` | **一键清理** | 关闭所有非固定 (Non-Pinned) 文件 |
 | `q` | **安全关闭** | 关闭 Buffer 但不破坏 Explorer 布局 |
 
