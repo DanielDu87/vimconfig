@@ -75,8 +75,144 @@ end
 -- 打印统一分界线
 --
 function M.write_separator()
-	local separator = string.rep("=<>= ", 21):gsub(" ", "")
+	local win_id = nil
+	-- 尝试获取当前活动窗口的ID，并检查是否是runnerlog类型
+	for _, win in ipairs(vim.api.nvim_list_wins()) do
+		local buf = vim.api.nvim_win_get_buf(win)
+		if vim.api.nvim_buf_get_option(buf, "filetype") == "runnerlog" then
+			win_id = win
+			break
+		end
+	end
+
+	local win_width = 80 -- 默认宽度
+	if win_id and vim.api.nvim_win_is_valid(win_id) then
+		win_width = vim.api.nvim_win_get_width(win_id)
+	elseif M.active_log_win and vim.api.nvim_win_is_valid(M.active_log_win) then
+		-- 如果当前没有活动窗口，但记录了日志窗口，则使用记录的窗口
+		win_width = vim.api.nvim_win_get_width(M.active_log_win)
+	end
+
+	win_width = math.max(win_width, 10) -- 确保最小宽度
+
+	local pattern_core = "=<>= " -- 核心模式，包含一个空格
+	local pattern_fill = "=<>"   -- 用于计算和填充的模式 (不含尾部空格)
+	local pattern_fill_len = #pattern_fill
+
+	local separator = ""
+	local current_visual_len = 0
+
+	-- 尝试用 pattern_fill 填满，避免末尾是空格
+	while current_visual_len + pattern_fill_len <= win_width do
+		separator = separator .. pattern_fill
+		current_visual_len = current_visual_len + pattern_fill_len
+	end
+
+	-- 如果还没满，且可以再加一个空格
+	if current_visual_len + 1 <= win_width then
+		separator = separator .. "="
+		current_visual_len = current_visual_len + 1
+	end
+
+	-- 用 = 补齐剩余空间
+	local remaining_chars = win_width - current_visual_len
+	if remaining_chars > 0 then
+		separator = separator .. string.rep("=", remaining_chars)
+	end
+	
 	M.write_log(separator, true)
+end
+
+---
+-- 刷新日志窗口内容
+--
+function M.refresh_log_window()
+	if M.active_log_win and vim.api.nvim_win_is_valid(M.active_log_win) then
+		local buf = vim.api.nvim_win_get_buf(M.active_log_win)
+		if vim.api.nvim_buf_is_valid(buf) then
+			vim.api.nvim_buf_call(buf, function()
+				vim.cmd("checktime")
+			end)
+		end
+	end
+end
+
+---
+-- 打开运行日志窗口
+--
+function M.open_runner_log_window(initial_message)
+	require("snacks").win({
+		file = common_log_file,
+		show = true,
+		width = 0.7,
+		height = 0.7,
+		border = "rounded",
+		title = " 📋 运行日志 (只读 | 自动刷新) ",
+		wo = {
+			wrap = true,
+			cursorline = true,
+		},
+		on_buf = function(self)
+			-- 记录日志窗口引用
+			M.active_log_win = self.win
+
+			vim.schedule(function()
+				if not vim.api.nvim_buf_is_valid(self.buf) then
+					return
+				end
+				vim.bo[self.buf].modifiable = false
+				vim.bo[self.buf].readonly = true
+
+				-- 设置文件类型，语法高亮由 autocmds.lua 处理
+				vim.bo[self.buf].filetype = 'runnerlog'
+
+				-- 每次打开窗口时，清空文件并写入分隔符
+				local f = io.open(common_log_file, "w")
+				if f then f:close() end -- 清空文件
+				
+				M.write_separator() -- 写入分隔符
+
+				-- 写入初始消息
+				if initial_message then
+					M.write_log(initial_message)
+				end
+
+				-- 开启智能滚动
+				local timer = vim.loop.new_timer()
+				timer:start(
+					500,
+					500,
+					vim.schedule_wrap(function()
+						if not vim.api.nvim_buf_is_valid(self.buf) then
+							timer:stop()
+							M.active_log_win = nil
+							return
+						end
+						vim.cmd("checktime")
+
+						-- 检查是否有需要自动滚动的任务
+						local should_scroll = false
+						for _, job_info in pairs(M.active_jobs) do
+							if job_info and job_info.scroll_mode == "auto" then
+								should_scroll = true
+								break
+							end
+						end
+
+						-- auto 模式：接近底部时跟随滚动
+						if should_scroll and self.win and vim.api.nvim_win_is_valid(self.win) then
+							local curr_line = vim.api.nvim_win_get_cursor(self.win)[1]
+							local total_lines = vim.api.nvim_buf_line_count(self.buf)
+							if total_lines - curr_line <= 10 then
+								pcall(vim.api.nvim_win_set_cursor, self.win, { total_lines, 0 })
+							end
+						end
+					end)
+				)
+			end)
+		end,
+		keys = { q = "close", ["<esc>"] = "close" },
+	})
 end
 
 ---
@@ -223,8 +359,8 @@ function M.run_html_preview()
 
 	M.stop_all_jobs()
 	local file_rel = vim.fn.expand("%:.")
-	M.write_separator()
-	M.write_log(string.format("启动 HTML 预览: %s", file_rel))
+	local initial_msg = string.format("启动 HTML 预览: %s", file_rel)
+	M.open_runner_log_window(initial_msg) -- 传递初始消息
 
 	local bs_cmd = M.get_bs_cmd()
 	if not bs_cmd then
@@ -281,6 +417,7 @@ function M.run_html_preview()
 		end
 		try_open_browser(0)
 	end, 1000)
+	M.open_runner_log_window() -- 替换 vim.api.nvim_feedkeys
 end
 
 ---
@@ -343,8 +480,8 @@ function M.run_project()
 	end
 
 	M.stop_all_jobs()
-	M.write_separator()
-	M.write_log(">>> 运行项目: " .. project_cmd)
+	local initial_msg = ">>> 运行项目: " .. project_cmd
+	M.open_runner_log_window(initial_msg) -- 传递初始消息
 
 	local job_id = vim.fn.jobstart(project_cmd, {
 		stdout_buffered = false,
@@ -380,8 +517,6 @@ function M.run_project()
 			end, 1000)
 		end
 	end, 500)
-
-	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<leader>rl", true, true, true), "m", true)
 end
 
 ---
@@ -395,10 +530,8 @@ function M.run_current_file()
 	local custom_cmd_prefix = runner_config.get_file_runner(file)
 	if custom_cmd_prefix then
 		M.stop_all_jobs()
-		M.write_separator()
-		-- 将前缀和文件名组合成最终命令
 		local final_run_cmd = string.format("%s %s", custom_cmd_prefix, file)
-		M.write_log(">>> 运行命令: " .. final_run_cmd)
+		M.open_runner_log_window(">>> 运行命令: " .. final_run_cmd) -- 传递初始消息
 
 		local job_id = vim.fn.jobstart(final_run_cmd, {
 			stdout_buffered = false,
@@ -418,7 +551,6 @@ function M.run_current_file()
 		})
 		-- 假设自定义命令通常不需要特殊的滚动模式，使用默认的 auto
 		M.active_jobs["custom_file_runner"] = { id = job_id, scroll_mode = get_scroll_mode("default") }
-		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<leader>rl", true, true, true), "m", true)
 		return -- 如果有自定义命令，则直接返回
 	end
 
@@ -434,9 +566,8 @@ function M.run_current_file()
 		-- local file = vim.api.nvim_buf_get_name(0) -- 已经移到顶部
 		local node_path = "node"
 
-		M.write_separator()
 		local run_cmd = string.format("%s %s", node_path, file)
-		M.write_log(">>> 运行指令: " .. run_cmd)
+		M.open_runner_log_window(">>> 运行指令: " .. run_cmd) -- 传递初始消息
 
 		local job_id = vim.fn.jobstart(run_cmd, {
 			stdout_buffered = false,
@@ -455,7 +586,6 @@ function M.run_current_file()
 			end,
 		})
 		M.active_jobs["javascript"] = { id = job_id, scroll_mode = get_scroll_mode("javascript") }
-		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<leader>rl", true, true, true), "m", true)
 		return
 	end
 
@@ -465,9 +595,8 @@ function M.run_current_file()
 		-- local file = vim.api.nvim_buf_get_name(0) -- 已经移到顶部
 		local python_path = get_python_path()
 
-		M.write_separator()
 		local run_cmd = string.format("%s -u %s", python_path, file)
-		M.write_log(">>> 运行指令: " .. run_cmd)
+		M.open_runner_log_window(">>> 运行指令: " .. run_cmd) -- 传递初始消息
 
 		local job_id = vim.fn.jobstart(run_cmd, {
 			stdout_buffered = false,
@@ -490,7 +619,6 @@ function M.run_current_file()
 			end,
 		})
 		M.active_jobs["python"] = { id = job_id, scroll_mode = get_scroll_mode("python") }
-		vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<leader>rl", true, true, true), "m", true)
 		return
 	end
 
@@ -553,6 +681,9 @@ return {
 
 							-- 设置文件类型，语法高亮由 autocmds.lua 处理
 							vim.bo[self.buf].filetype = 'runnerlog'
+
+							-- 在日志窗口打开并设置filetype后，再写入分隔符
+							M.write_separator()
 
 							-- 开启智能滚动
 							local timer = vim.loop.new_timer()

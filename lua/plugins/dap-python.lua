@@ -1,5 +1,5 @@
 --==============================================================================
--- Python / Django 调试配置
+-- Python/Django调试配置
 --==============================================================================
 
 return {
@@ -8,7 +8,7 @@ return {
 		opts = function()
 			local dap = require("dap")
 
-			-- 获取 Mason 安装的 debugpy 路径
+			-- 获取Mason安装的debugpy路径
 			local mason_path = vim.fn.stdpath("data") .. "/mason/packages/debugpy/venv/bin/python"
 
 			dap.adapters.python = {
@@ -18,7 +18,7 @@ return {
 			}
 
 			dap.configurations.python = {
-				-- 1. 调试当前 Python 文件
+				-- 1. 调试当前Python文件
 				{
 					type = "python",
 					request = "launch",
@@ -27,7 +27,7 @@ return {
 					console = "integratedTerminal",
 					justMyCode = true,
 				},
-				-- 2. 调试 Django (manage.py runserver)
+				-- 2. 调试Django (manage.py runserver)
 				{
 					type = "python",
 					request = "launch",

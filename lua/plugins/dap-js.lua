@@ -1,5 +1,5 @@
 --==============================================================================
--- 前端 JS / TS / Vue 调试配置
+-- 前端JS/TS/Vue调试配置
 --==============================================================================
 
 return {
@@ -8,7 +8,7 @@ return {
 		opts = function()
 			local dap = require("dap")
 
-			-- 获取 Mason 安装的 js-debug-adapter 路径
+			-- 获取Mason安装的js-debug-adapter路径
 			local js_debug_path = vim.fn.stdpath("data")
 				.. "/mason/packages/js-debug-adapter/js-debug/src/dapDebugServer.js"
 
@@ -28,7 +28,7 @@ return {
 			-- 为所有前端语言配置调试
 			for _, lang in ipairs({ "javascript", "typescript", "javascriptreact", "typescriptreact", "vue" }) do
 				dap.configurations[lang] = {
-					-- 1. 启动当前 Node 文件
+					-- 1. 启动当前Node文件
 					{
 						type = "pwa-node",
 						request = "launch",
@@ -37,15 +37,15 @@ return {
 						cwd = "${workspaceFolder}",
 						console = "integratedTerminal",
 					},
-					-- 2. 附加到 Node 进程
+					-- 2. 附加到Node进程
 					{
 						type = "pwa-node",
 						request = "attach",
-						name = "Node: Attach 进程",
+						name = "Node: Attach进程",
 						processId = require("dap.utils").pick_process,
 						cwd = "${workspaceFolder}",
 					},
-					-- 3. 调试 Chrome (需要 Chrome 以 --remote-debugging-port=9222 启动)
+					-- 3. 调试Chrome (需要Chrome以--remote-debugging-port=9222启动)
 					{
 						type = "pwa-chrome",
 						request = "attach",
