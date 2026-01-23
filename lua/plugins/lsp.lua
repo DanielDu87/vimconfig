@@ -16,12 +16,24 @@ return {
 	},
 
 	--==========================================================================
-	-- TypeScript 增强插件
+	-- Vtsls 辅助插件 (提供版本切换等 UI 命令)
+	--==========================================================================
+	{
+		"yioneko/nvim-vtsls",
+		ft = { "typescript", "typescriptreact", "vue" },
+		config = function()
+			-- 该插件由 lspconfig 驱动，此处仅确保其加载
+		end,
+	},
+
+	--==========================================================================
+	-- TypeScript 增强插件 (完全还原您之前的 JS 配置)
 	--==========================================================================
 	{
 		"jose-elias-alvarez/typescript.nvim",
 		opts = {
 			server = {
+				filetypes = { "javascript", "javascriptreact" },
 				settings = {
 					typescript = {
 						inlayHints = {
@@ -41,26 +53,12 @@ return {
 	{
 		"neovim/nvim-lspconfig",
 		opts = {
-			-- 确保启用自动安装
 			servers = {
-				-- 1. 禁用 vtsls (防止它抢占 typescript 的控制权)
-				vtsls = { enabled = false },
-
-				-- 2. 配置 ts_ls (原 tsserver)
+				-- 1. 还原之前的 ts_ls (tsserver) 设置，仅用于 JS
 				ts_ls = {
 					enabled = true,
+					filetypes = { "javascript", "javascriptreact" },
 					settings = {
-						typescript = {
-							inlayHints = {
-								includeInlayParameterNameHints = "all",
-								includeInlayParameterNameHintsWhenArgumentMatchesName = false,
-								includeInlayFunctionParameterTypeHints = true,
-								includeInlayVariableTypeHints = true,
-								includeInlayPropertyDeclarationTypeHints = true,
-								includeInlayFunctionLikeReturnTypeHints = true,
-								includeInlayEnumMemberValueHints = true,
-							},
-						},
 						javascript = {
 							inlayHints = {
 								includeInlayParameterNameHints = "all",
@@ -75,17 +73,48 @@ return {
 					},
 				},
 
-				-- 3. 配置 marksman (Markdown 支持)
-				marksman = {
+				-- 2. 针对 TypeScript 环境切换到 vtsls
+				vtsls = {
 					enabled = true,
+					filetypes = { "typescript", "typescriptreact", "vue" },
+					keys = {
+						{
+							"<leader>co",
+							function()
+								require("vtsls").commands.organize_imports()
+							end,
+							desc = "整理导入",
+						},
+						{
+							"<leader>cu",
+							function()
+								require("vtsls").commands.remove_unused_imports()
+							end,
+							desc = "删除未使用的导入",
+						},
+					},
+					settings = {
+						typescript = {
+							inlayHints = {
+								parameterNames = { enabled = "all", suppressWhenArgumentMatchesName = false },
+								parameterTypes = { enabled = true },
+								variableTypes = { enabled = true },
+								propertyDeclarationTypes = { enabled = true },
+								functionLikeReturnTypes = { enabled = true },
+								enumMemberValues = { enabled = true },
+							},
+						},
+						vtsls = {
+							autoUseWorkspaceTsdk = true,
+						},
+					},
 				},
 
-				-- 4. 配置 emmet_ls (HTML/JSX 极速展开)
+				-- 3. 其他 LSP 保持不变
+				marksman = { enabled = true },
 				emmet_ls = {
 					enabled = true,
-					flags = {
-						debounce_text_changes = 150,
-					},
+					flags = { debounce_text_changes = 150 },
 					filetypes = {
 						"html",
 						"typescriptreact",
@@ -97,46 +126,15 @@ return {
 						"vue",
 					},
 				},
-
-				-- 5. 禁用有 Bug 的 superhtml (它会产生错误的 self-close 报错)
 				superhtml = { enabled = false },
-
-												-- 6. 确保标准 html-lsp 开启 (VSCode 同款，稳定无误报)
-
-												html = {
-
-													enabled = true,
-
-													settings = {
-
-														html = {
-
-															validate = { scripts = true, styles = true },
-
-														},
-
-													},
-
-												},
-
-								
-
-				
-
-								-- 7. 限制 stylelint_lsp 的范围，防止它扫描 HTML 导致 CssSyntaxError
-
-								stylelint_lsp = {
-
-									filetypes = { "css", "scss", "less", "sass" },
-
-								},
-
-							},
-
-						},
-
-					},
-
-				}
-
-				
+				html = {
+					enabled = true,
+					settings = { html = { validate = { scripts = true, styles = true } } },
+				},
+				stylelint_lsp = {
+					filetypes = { "css", "scss", "less", "sass" },
+				},
+			},
+		},
+	},
+}

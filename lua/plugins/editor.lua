@@ -246,7 +246,7 @@ return {
 				{ "<leader>rr", desc = "运行当前文件", icon = "▶️" },
 				{ "<leader>rl", desc = "查看日志", icon = "📋" },
 				{ "<leader>rs", desc = "停止任务", icon = "🛑" },
-				{ "<leader>rv", desc = "选择虚拟环境", icon = "🐍" },
+				{ "<leader>rv", desc = "选择Python虚拟环境", icon = "🐍" },
 				{ "<leader>rV", desc = "选择 TS 工作区版本", icon = "🏷️" },
 				{ "<leader>bb", desc = "切换到其他缓冲区", icon = "🔄" },
 				{ "<leader>bd", desc = "关闭当前缓冲区", icon = "❌" },

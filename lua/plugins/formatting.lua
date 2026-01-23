@@ -18,7 +18,7 @@ return {
 				function()
 					require("util.format").format()
 				end,
-				desc = "格式化",
+			desc = "格式化",
 			},
 		},
 		opts = {
@@ -39,50 +39,55 @@ return {
 				scss = { "stylelint", "prettier" },
 				less = { "stylelint", "prettier" },
 				-- HTML 使用 Markuplint 进行强力纠错，Prettier 进行排版
-				html = { "markuplint", "prettier" },
-				htmldjango = { "prettier" },
-				json = { "prettier" },
-				jsonc = { "prettier" },
-				yaml = { "prettier" },
-				markdown = { "prettier" },
-				["markdown.mdx"] = { "prettier" },
-				graphql = { "prettier" },
+			html = { "markuplint", "prettier" },
+			htmldjango = { "prettier" },
+			json = { "prettier" },
+			jsonc = { "prettier" },
+			yaml = { "prettier" },
+			markdown = { "prettier" },
+			["markdown.mdx"] = { "prettier" },
+			graphql = { "prettier" },
 
-				-- Python
-				python = { "isort", "black" },
+			-- Python
+			python = { "isort", "black" },
 
-				-- Lua
-				lua = { "stylua" },
+			-- Lua
+			lua = { "stylua" },
 
-				-- Go
-				go = { "goimports", "gofumpt" },
+			-- Go
+			go = { "goimports", "gofumpt" },
 
-				-- Rust
-				rust = { "rustfmt" },
+			-- Rust
+			rust = { "rustfmt" },
 
-				-- Shell
-				sh = { "shfmt" },
-				bash = { "shfmt" },
+			-- Shell
+			sh = { "shfmt" },
+			bash = { "shfmt" },
 
-				-- SQL
-				sql = { "prettier" },
+			-- SQL
+			sql = { "prettier" },
 
-				-- Dockerfile: 使用 sed 强制将指令转换为大写
-				dockerfile = { "docker_uppercase", "trim_whitespace" },
+			-- Dockerfile: 使用 sed 强制将指令转换为大写
+		dockerfile = { "docker_uppercase", "trim_whitespace" },
 
-				-- 其他
-				["_"] = { "trim_whitespace" }, -- 其他文件类型去除空白
+			-- 其他
+			["_"] = { "trim_whitespace" }, -- 其他文件类型去除空白
 			},
 			-- 格式化器配置：统一使用 Tab，宽度 4
 			formatters = {
+				-- Markuplint 配置：纠错并输出到标准输出
+				markuplint = {
+					command = "/opt/homebrew/bin/markuplint",
+					args = { "--fix", "--stdin-filename", "$FILENAME" },
+				},
 				-- 自定义 Docker 格式化器 (使用 Perl 确保跨平台兼容性)
-				docker_uppercase = {
-					command = "perl",
-					args = {
-						"-pe",
-						-- 1. 将指令转为大写 2. 将指令后的多个空格压缩为一个
-						"s/^\\s*(from|run|cmd|label|maintainer|expose|env|add|copy|entrypoint|volume|user|workdir|arg|onbuild|stopsignal|healthcheck|shell)(\\s+)/\\U$1 /ig",
-					},
+			docker_uppercase = {
+				command = "perl",
+				args = {
+					"-pe",
+					-- 1. 将指令转为大写 2. 将指令后的多个空格压缩为一个
+					"s/^\\s*(from|run|cmd|label|maintainer|expose|env|add|copy|entrypoint|volume|user|workdir|arg|onbuild|stopsignal|healthcheck|shell)(\\s+)/\\U$1 /ig",
+				},
 				},
 				-- Prettier 配置：使用 tab
 				prettier = {
@@ -105,32 +110,32 @@ return {
 					command = "/opt/homebrew/bin/black",
 				},
 				-- Isort 配置（Python 导入排序）
-				isort = {
-					prepend_args = {
-						"--profile",
-						"black", -- 兼容 Black 风格
-					},
+			isort = {
+				prepend_args = {
+					"--profile",
+					"black", -- 兼容 Black 风格
 				},
+			},
 				-- Stylua 配置：使用 tab
-				stylua = {
-					prepend_args = { "--indent-type", "Tabs", "--indent-width", "4" },
-				},
+			stylua = {
+				prepend_args = { "--indent-type", "Tabs", "--indent-width", "4" },
+			},
 				-- Shfmt 配置：使用 tab
-				shfmt = {
-					prepend_args = { "-i", "0", "-ci" },
-				},
+			shfmt = {
+				prepend_args = { "-i", "0", "-ci" },
+			},
 				-- SQL 格式化配置：使用 4 空格, 关键字大写
-				sql_formatter = {
-					prepend_args = {
-						"--config",
-						'{"indentation": "    ", "keywordCase": "upper"}',
-					},
+			sql_formatter = {
+				prepend_args = {
+					"--config",
+					'{"indentation": "    ", "keywordCase": "upper"}',
 				},
+			},
 				-- Stylelint 配置：使用系统全局版本，并开启自动修复
-				stylelint = {
-					command = "/opt/homebrew/bin/stylelint",
-					args = { "--fix", "--stdin-filename", "$FILENAME" },
-				},
+			stylelint = {
+				command = "/opt/homebrew/bin/stylelint",
+				args = { "--fix", "--stdin-filename", "$FILENAME" },
+			},
 			},
 		},
 		init = function()

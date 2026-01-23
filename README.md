@@ -65,7 +65,8 @@
 | 领域 | 语言/文件 | LSP (智能提示) | Formatter (格式化) | Linter (代码质量) | 备注 |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Core** | Lua | `lua_ls` | `stylua` | - | 缩进: Tab (4) |
-| **Frontend** | TS / JS / JSX | `ts_ls` | `prettier` + `eslint_d` | `eslint` | 禁用 `vtsls`，Inlay Hints 全开 |
+| **Frontend** | JS / JSX | `ts_ls` | `prettier` + `eslint_d` | `eslint` | 保留传统 JS 开发习惯 |
+| **Frontend** | TS / TSX | `vtsls` | `prettier` + `eslint_d` | `eslint` | 支持 TS 版本切换特性 |
 | **Frontend** | Vue | `volar` | `prettier` + `eslint_d` | `eslint` | - |
 | **Frontend** | HTML | `html-lsp` | `markuplint` + `prettier` | `markuplint` | 强力纠错，闭合标签检测 |
 | **Styles** | CSS / SCSS | `cssls` | `stylelint` + `prettier` | `stylelint` | 自动属性重排 |
@@ -89,7 +90,7 @@
 | `<leader>rs` | **停止任务** | 杀死后台进程并释放端口 |
 | `<leader>rc / rC` | **配置运行命令** | 设置文件/项目级的运行指令 |
 | `<leader>rb / rB` | **配置浏览器 URL** | 设置文件/项目级的浏览器跳转地址 |
-| `<leader>rv` | **选择虚拟环境** | 切换 Python 解释器 (venv/conda) |
+| `<leader>rv` | **选择Python虚拟环境** | 切换 Python 解释器 (venv/conda) |
 | `<leader>rV` | **选择 TS 版本** | 切换 TypeScript 工作区版本 |
 | `<leader>bh/l` | **Buffer 切换** | 替代 `Tab` / `Shift-Tab` |
 | `<leader>bP` | **一键清理** | 关闭所有非固定 (Non-Pinned) 文件 |

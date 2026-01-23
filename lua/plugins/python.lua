@@ -8,7 +8,7 @@ return {
 		"linux-cultist/venv-selector.nvim",
         keys = {
             { "<leader>cv", false }, -- 禁用原快捷键
-            { "<leader>rv", "<cmd>VenvSelect<cr>", desc = "选择虚拟环境 (Python)" },
+            { "<leader>rv", "<cmd>VenvSelect<cr>", desc = "选择Python虚拟环境" },
         },
 		opts = function(_, opts)
 		        			-- 综合模式：既看本地，也看全局

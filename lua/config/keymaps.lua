@@ -111,3 +111,22 @@ vim.keymap.set("n", "<leader>H", function()
 	local LazyVim = require("lazyvim.util")
 	Snacks.explorer({ cwd = LazyVim.root() })
 end, { desc = "切换显示隐藏文件" })
+
+--==============================================================================
+-- TS 版本切换 (全局映射，非 TS 文件给出提示)
+--==============================================================================
+vim.keymap.set("n", "<leader>rV", function()
+	local ft = vim.bo.filetype
+	if ft == "typescript" or ft == "typescriptreact" or ft == "vue" then
+		-- 只有在 TS/Vue 文件中才尝试调用 vtsls 命令
+		local ok, vtsls = pcall(require, "vtsls")
+		if ok and vtsls.commands and vtsls.commands.select_ts_version then
+			vtsls.commands.select_ts_version()
+		else
+			vim.notify("TS 服务未就绪", vim.log.levels.WARN, { title = "LSP" })
+		end
+	else
+		vim.notify("非 TS 文件，无法切换版本", vim.log.levels.WARN, { title = "LSP" })
+	end
+end, { desc = "选择 TS 工作区版本" })
+

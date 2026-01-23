@@ -10,8 +10,10 @@ return {
 			opts.servers = opts.servers or {}
 			opts.servers.eslint = vim.tbl_deep_extend("force", opts.servers.eslint or {}, {
 				settings = {
-					-- 帮助 eslint 在子文件夹中找到配置
-					workingDirectories = { mode = "auto" },
+					-- 显式指定全局路径作为备选，解决 "Unable to find ESLint library" 错误
+					nodePath = "/opt/homebrew/lib/node_modules",
+					-- 显式设置工作目录，解决 "Could not find config file" 错误
+					workingDirectories = { { mode = "auto" }, { directory = vim.fn.getcwd(), changeProcessCWD = true } },
 					-- 确保显示所有严重级别
 					quiet = false,
 					-- 代码操作
