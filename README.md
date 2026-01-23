@@ -89,6 +89,8 @@
 | `<leader>rs` | **停止任务** | 杀死后台进程并释放端口 |
 | `<leader>rc / rC` | **配置运行命令** | 设置文件/项目级的运行指令 |
 | `<leader>rb / rB` | **配置浏览器 URL** | 设置文件/项目级的浏览器跳转地址 |
+| `<leader>rv` | **选择虚拟环境** | 切换 Python 解释器 (venv/conda) |
+| `<leader>rV` | **选择 TS 版本** | 切换 TypeScript 工作区版本 |
 | `<leader>bh/l` | **Buffer 切换** | 替代 `Tab` / `Shift-Tab` |
 | `<leader>bP` | **一键清理** | 关闭所有非固定 (Non-Pinned) 文件 |
 | `q` | **安全关闭** | 关闭 Buffer 但不破坏 Explorer 布局 |
