@@ -20,29 +20,29 @@ syn match RunnerLogPlainLine /^[^\[].*$/
 " 新增：Django runserver 命令的 IP:Port 部分 (精确匹配)
 syn match RunnerLogDjangoRunserver /runserver\s\+\(\%(\d\{1,3}\.\)\{3}\d\{1,3}\|localhost\):\d\+\(\/\S*\)\?/
 
-syn match RunnerLogErrorLine /\c.*\<Error\>.*/ contained
-syn match RunnerLogErrorLine /\c.*\<Exception\>.*/ contained
-syn match RunnerLogErrorLine /\c.*\<Traceback\>.*/ contained
-syn match RunnerLogErrorLine /\c.*\<Failed\>.*/ contained
-syn match RunnerLogErrorLine /\c.*\<fatal\>.*/ contained
-syn match RunnerLogErrorLine /\c.*\<critical\>.*/ contained
-syn match RunnerLogErrorLine /.*状态码: [1-9].*/ contained
-syn match RunnerLogErrorLine /.*进程异常退出.*/ contained
-syn match RunnerLogErrorLine /^\s*File .*, line \d\+.*/ contained
+syn match RunnerLogErrorLine /\v^(\[\d{2}:\d{2}:\d{2}\]\s+)?\zs.*\<Error\>.*/
+syn match RunnerLogErrorLine /\v^(\[\d{2}:\d{2}:\d{2}\]\s+)?\zs.*\<Exception\>.*/
+syn match RunnerLogErrorLine /\v^(\[\d{2}:\d{2}:\d{2}\]\s+)?\zs.*\<Traceback\>.*/
+syn match RunnerLogErrorLine /\v^(\[\d{2}:\d{2}:\d{2}\]\s+)?\zs.*\<Failed\>.*/
+syn match RunnerLogErrorLine /\v^(\[\d{2}:\d{2}:\d{2}\]\s+)?\zs.*\<fatal\>.*/
+syn match RunnerLogErrorLine /\v^(\[\d{2}:\d{2}:\d{2}\]\s+)?\zs.*\<critical\>.*/
+syn match RunnerLogErrorLine /\v^(\[\d{2}:\d{2}:\d{2}\]\s+)?\zs.*状态码: [1-9].*/
+syn match RunnerLogErrorLine /\v^(\[\d{2}:\d{2}:\d{2}\]\s+)?\zs.*进程异常退出.*/
+syn match RunnerLogErrorLine /\v^\s*File .*, line \d+.*/
 
-syn match RunnerLogWarnLine /\c.*\<Warning\>.*/ contained
-syn match RunnerLogWarnLine /\c.*\<warn\>.*/ contained
-syn match RunnerLogWarnLine /.*WARN.*/ contained
+syn match RunnerLogWarnLine /\v^(\[\d{2}:\d{2}:\d{2}\]\s+)?\zs.*\<Warning\>.*/
+syn match RunnerLogWarnLine /\v^(\[\d{2}:\d{2}:\d{2}\]\s+)?\zs.*\<warn\>.*/
+syn match RunnerLogWarnLine /\v^(\[\d{2}:\d{2}:\d{2}\]\s+)?\zs.*WARN.*/
 
-syn match RunnerLogSuccessLine /\c.*\<Success\>.*/ contained
-syn match RunnerLogSuccessLine /\c.*\<Completed\>.*/ contained
-syn match RunnerLogSuccessLine /\c.*\<ok\>.*/ contained
-syn match RunnerLogSuccessLine /\c.*\<done\>.*/ contained
-syn match RunnerLogSuccessLine /\c.*\<finished\>.*/ contained
+syn match RunnerLogSuccessLine /\v^(\[\d{2}:\d{2}:\d{2}\]\s+)?\zs.*\<Success\>.*/
+syn match RunnerLogSuccessLine /\v^(\[\d{2}:\d{2}:\d{2}\]\s+)?\zs.*\<Completed\>.*/
+syn match RunnerLogSuccessLine /\v^(\[\d{2}:\d{2}:\d{2}\]\s+)?\zs.*\<ok\>.*/
+syn match RunnerLogSuccessLine /\v^(\[\d{2}:\d{2}:\d{2}\]\s+)?\zs.*\<done\>.*/
+syn match RunnerLogSuccessLine /\v^(\[\d{2}:\d{2}:\d{2}\]\s+)?\zs.*\<finished\>.*/
 
 " 新增 Debug 级别
-syn match RunnerLogDebugLine /\c.*\<debug\>.*/ contained
-syn match RunnerLogDebugLine /\c.*\<trace\>.*/ contained
+syn match RunnerLogDebugLine /\v^(\[\d{2}:\d{2}:\d{2}\]\s+)?\zs.*\<debug\>.*/
+syn match RunnerLogDebugLine /\v^(\[\d{2}:\d{2}:\d{2}\]\s+)?\zs.*\<trace\>.*/
 
 syn match RunnerLogUrl /https\?:\/\/\S\+/
 syn match RunnerLogUrl /localhost:\d\+\/\S\+/
@@ -80,5 +80,21 @@ syn match RunnerDjangoServerUrl
 syn match RunnerPythonCmdLine /^\s*\%(python3\|python\|\/\S\+python3\|\/\S\+python\)\>\s\+.*$/
 
 hi link RunnerLogSeparator Comment
+hi link RunnerLogTime Number
+hi link RunnerLogPrefix Function
+hi link RunnerLogCommand String
+hi link RunnerLogOutput Normal
+hi link RunnerLogPlainLine Normal
+hi link RunnerLogErrorLine ErrorMsg
+hi link RunnerLogWarnLine WarningMsg
+hi link RunnerLogSuccessLine String
+hi link RunnerLogDebugLine Comment
+hi link RunnerLogUrl Underlined
+hi link RunnerLogPath Directory
+hi link RunnerLogPathFull Directory
+hi link RunnerLogInfo Question
+hi link RunnerLogDjangoRunserver Special
+hi link RunnerDjangoServerUrl Underlined
+hi link RunnerPythonCmdLine String
 
 let b:current_syntax = "runnerlog"
