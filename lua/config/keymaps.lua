@@ -128,5 +128,5 @@ vim.keymap.set("n", "<leader>rV", function()
 	else
 		vim.notify("非 TS 文件，无法切换版本", vim.log.levels.WARN, { title = "LSP" })
 	end
-end, { desc = "选择 TS 工作区版本" })
+end, { desc = "选择TS工作区版本" })
 

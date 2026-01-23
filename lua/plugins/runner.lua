@@ -284,7 +284,7 @@ function M.run_html_preview()
 end
 
 ---
--- 打开浏览器 URL
+-- 打开浏览器URL
 --
 local function open_browser(url)
 	if not url or url == "" then
@@ -366,7 +366,7 @@ function M.run_project()
 
 	-- 智能等待并尝试打开浏览器
 	vim.defer_fn(function()
-		-- 尝试从项目配置中获取浏览器 URL
+		-- 尝试从项目配置中获取浏览器URL
 		local project_url = runner_config.get_current_project_browser()
 		if project_url and project_url ~= "" then
 			-- 自动添加 http:// 前缀（如果没有协议）
@@ -660,12 +660,12 @@ return {
 				function()
 					local file = vim.api.nvim_buf_get_name(0)
 					if not file or file == "" then
-						vim.notify("未保存的文件无法配置浏览器 URL", 3)
+						vim.notify("未保存的文件无法配置浏览器URL", 3)
 						return
 					end
 
 					vim.ui.input({
-						prompt = "配置文件浏览器 URL:",
+						prompt = "配置文件浏览器URL:",
 						default = runner_config.get_file_browser(file) or ""
 					}, function(url)
 						if url ~= nil then
@@ -673,12 +673,12 @@ return {
 								runner_config.clear_file_browser(file)
 							else
 								runner_config.set_file_browser(file, url)
-								vim.notify("已设置文件浏览器 URL: " .. url, 2)
+								vim.notify("已设置文件浏览器URL: " .. url, 2)
 							end
 						end
 					end)
 				end,
-				desc = "配置文件浏览器 URL",
+				desc = "配置文件浏览器URL",
 			},
 			{
 				"<leader>rB",
@@ -690,7 +690,7 @@ return {
 					end
 
 					vim.ui.input({
-						prompt = "配置项目浏览器 URL:",
+						prompt = "配置项目浏览器URL:",
 						default = runner_config.get_project_browser(root) or ""
 					}, function(url)
 						if url ~= nil then
@@ -698,12 +698,12 @@ return {
 								runner_config.clear_project_browser(root)
 							else
 								runner_config.set_project_browser(root, url)
-								vim.notify("已设置项目浏览器 URL: " .. url, 2)
+								vim.notify("已设置项目浏览器URL: " .. url, 2)
 							end
 						end
 					end)
 				end,
-				desc = "配置项目浏览器 URL",
+				desc = "配置项目浏览器URL",
 			},
 			{
 				"<leader>ro",

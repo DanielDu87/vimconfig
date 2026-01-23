@@ -83,8 +83,8 @@
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Core** | Lua | `lua_ls` | `stylua` | - | 缩进: Tab (4) |
 | **Frontend** | JS / JSX | `ts_ls` | `prettier` + `eslint_d` | `eslint` | 保留传统 JS 开发习惯 |
-| **Frontend** | TS / TSX | `vtsls` | `prettier` + `eslint_d` | `eslint` | 支持 TS 版本切换特性 |
-| **Frontend** | Vue | `volar` | `prettier` + `eslint_d` | `eslint` | - |
+| **Frontend** | TS / TSX | `vtsls` | `prettier` + `eslint_d` | `eslint` | 支持TS版本切换特性 |
+---
 | **Frontend** | HTML | `html-lsp` | `markuplint` + `prettier` | `markuplint` | 强力纠错，闭合标签检测 |
 | **Styles** | CSS / SCSS | `cssls` | `stylelint` + `prettier` | `stylelint` | 自动属性重排 |
 | **Backend** | Python | `pyright` | `black` + `isort` | `ruff` | 自动识别 `/0.python-venv` |
@@ -106,9 +106,9 @@
 | `<leader>rl` | **查看运行日志** | 开启日志直播窗口 |
 | `<leader>rs` | **停止任务** | 杀死后台进程并释放端口 |
 | `<leader>rc / rC` | **配置运行命令** | 设置文件/项目级的运行指令 |
-| `<leader>rb / rB` | **配置浏览器 URL** | 设置文件/项目级的浏览器跳转地址 |
+| `<leader>rb / rB` | **配置浏览器URL** | 设置文件/项目级的浏览器跳转地址 |
 | `<leader>rv` | **选择Python虚拟环境** | 切换 Python 解释器 (venv/conda) |
-| `<leader>rV` | **选择 TS 版本** | 切换 TypeScript 工作区版本 |
+| `<leader>rV` | **选择TS版本** | 切换 TypeScript 工作区版本 |
 | `<leader>bh/l` | **Buffer 切换** | 左右快速切换 Buffer |
 | `<leader>bo` | **关闭其他** | 关闭除当前和固定外所有 Buffer |
 | `<leader>bH/L` | **向左/右关闭** | 批量清理左侧或右侧的非固定 Buffer |
