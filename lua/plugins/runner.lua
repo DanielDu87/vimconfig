@@ -334,6 +334,57 @@ local function get_python_path()
 end
 
 ---
+-- 运行当前项目（完整命令）
+--
+function M.run_project()
+	local project_cmd = runner_config.get_current_project_runner()
+	if not project_cmd then
+		return vim.notify("未配置项目运行命令，请按 <leader>rC 配置", 3)
+	end
+
+	M.stop_all_jobs()
+	M.write_separator()
+	M.write_log(">>> 运行项目: " .. project_cmd)
+
+	local job_id = vim.fn.jobstart(project_cmd, {
+		stdout_buffered = false,
+		stderr_buffered = false,
+		pty = true,
+		on_stdout = on_output,
+		on_stderr = on_output,
+		on_exit = function(_, code)
+			-- 信号退出码 (>=128) 视为正常退出
+			if code == 0 or code >= 128 then
+				M.write_log(">>> 项目运行结束 (状态码: " .. code .. ")\n")
+			else
+				M.write_log(">>> 进程异常退出，状态码: " .. code .. "\n")
+			end
+			M.active_jobs["project"] = nil
+		end,
+	})
+	M.active_jobs["project"] = { id = job_id, scroll_mode = get_scroll_mode("project") }
+
+	-- 智能等待并尝试打开浏览器
+	vim.defer_fn(function()
+		-- 尝试从项目配置中获取浏览器 URL
+		local project_url = runner_config.get_current_project_browser()
+		if project_url and project_url ~= "" then
+			-- 自动添加 http:// 前缀（如果没有协议）
+			if not project_url:match("^[hH][tT][tT][pP][sS]?://") then
+				project_url = "http://" .. project_url
+			end
+			-- 等待 1 秒后打开浏览器
+			vim.defer_fn(function()
+				open_browser(project_url)
+				M.write_log(">>> 已在浏览器打开: " .. project_url)
+			end, 1000)
+		end
+	end, 500)
+
+	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<leader>rl", true, true, true), "m", true)
+end
+
+---
 -- 运行当前文件（自动识别类型）
 --
 function M.run_current_file()

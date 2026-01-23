@@ -429,8 +429,6 @@ return {
 					{ "Add missing imports", "添加缺失导入" },
 					{ "Organize Imports", "整理导入" },
 					{ "Remove unused imports", "删除未使用的导入" },
-					{ "Select TS workspace version", "选择 TS 工作区版本" },
-					{ "Select VirtualEnv", "选择虚拟环境" },
 					{ "Code Lens", "代码透镜" },
 					{ "Refresh & Display Codelens", "刷新并显示代码透镜" },
 					{ "Refresh", "刷新" },

@@ -80,3 +80,4 @@ This directory contains a **Neovim configuration** built on top of [LazyVim](htt
 帮我提交时严格使用"+%Y-%m-%d %H:%M 内容"这种格式的提交信息，先通过date "+%Y-%m-%d %H:%M"获取实际时间，然后按照上述提交信息格式进行提交
 提交信息使用中文
 所有编辑的文件，以Tab进行缩进，宽度为4
+每次提交前更新README

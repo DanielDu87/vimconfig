@@ -6,8 +6,11 @@ syn sync fromstart
 
 syn match RunnerLogSeparator /^=<>=.*/
 syn match RunnerLogTime /^\[\d\{2}:\d\{2}:\d\{2}\]\s\+/
-syn match RunnerLogPrefix /^>>> [^:]\+:/
-syn match RunnerLogCommand /^>>> [^:]\+: \zs.*$/
+syn match RunnerLogPrefix /\v^(\[\d{2}:\d{2}:\d{2}\]\s+)?\zs>>> [^:]+:/
+syn match RunnerLogCommand /\v^(\[\d{2}:\d{2}:\d{2}\]\s+)?>>> [^:]+: \zs.*$/ contains=RunnerLogPath
+
+" 专门高亮命令行参数 (如 -u, --version 等)，强制在 Command 中生效
+syn match RunnerLogPythonFlag /\s\zs-\w\+\ze\s/ containedin=RunnerLogCommand
 syn match RunnerLogOutput /^\[\d\{2}:\d\{2}:\d\{2}\]\s\+\zs.*$/
 \ contains=RunnerLogUrl,RunnerLogErrorLine,RunnerLogWarnLine,RunnerLogSuccessLine,RunnerLogInfo,RunnerLogDebugLine
 

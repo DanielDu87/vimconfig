@@ -167,3 +167,4 @@ Configured in `lua/plugins/highlight.lua`:
 不要主动提交，我告诉你提交的时候再提交
 提交信息使用中文
 所有编辑的文件，以Tab进行缩进，宽度为4
+每次提交前更新README

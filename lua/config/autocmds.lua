@@ -101,6 +101,7 @@ vim.api.nvim_create_autocmd("FileType", {
 		vim.api.nvim_set_hl(0, 'RunnerDjangoServerUrl', { fg = '#7dcfff', underline = true, ctermfg = 117 })
 		vim.api.nvim_set_hl(0, 'RunnerLogPrefix', { link = 'DiagnosticInfo' })
 		vim.api.nvim_set_hl(0, 'RunnerLogCommand', { fg = '#7dcfff', ctermfg = 117 })
+		vim.api.nvim_set_hl(0, 'RunnerLogPythonFlag', { fg = '#7dcfff', ctermfg = 117 })
 		vim.api.nvim_set_hl(0, 'RunnerLogOutput', { fg = '#E0E0E0', ctermfg = 254 })
 		vim.api.nvim_set_hl(0, 'RunnerLogPlainLine', { fg = '#E0E0E0', ctermfg = 254 })
 		vim.api.nvim_set_hl(0, 'RunnerLogErrorLine', { link = 'DiagnosticError' })
