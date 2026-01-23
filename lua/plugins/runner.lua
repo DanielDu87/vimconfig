@@ -21,6 +21,7 @@ local CONFIG = {
 		html = "never",
 		python = "on_complete",
 		javascript = "auto",
+		project = "never",  -- 项目运行不自动滚动
 		default = "auto",
 	},
 }
@@ -74,7 +75,7 @@ end
 -- 打印统一分界线
 --
 function M.write_separator()
-	local separator = string.rep("=<>= ", 20):gsub(" ", "")
+	local separator = string.rep("=<>= ", 21):gsub(" ", "")
 	M.write_log(separator, true)
 end
 
@@ -249,7 +250,8 @@ function M.run_html_preview()
 		on_stdout = on_output,
 		on_stderr = on_output,
 		on_exit = function(_, code)
-			if code ~= 0 and code ~= 143 then
+			-- 信号退出码 (>=128) 视为正常退出
+			if code ~= 0 and code < 128 then
 				M.write_log(">>> 进程异常退出，状态码: " .. code)
 			end
 			M.active_jobs["html"] = nil
@@ -282,13 +284,81 @@ function M.run_html_preview()
 end
 
 ---
+-- 打开浏览器 URL
+--
+local function open_browser(url)
+	if not url or url == "" then
+		return vim.notify("URL 为空", 3)
+	end
+
+	-- 自动添加 http:// 前缀（如果没有协议）
+	if not url:match("^[hH][tT][tT][pP][sS]?://") then
+		url = "http://" .. url
+	end
+
+	local browser_cmd = M.get_browser_cmd(url)
+	vim.fn.jobstart(browser_cmd, { detach = true })
+	vim.notify("已在浏览器打开: " .. url, 2)
+end
+
+---
+-- 运行当前项目（完整命令）
+--
+function M.run_project()
+	local project_cmd = runner_config.get_current_project_runner()
+	if not project_cmd then
+		return vim.notify("未配置项目运行命令，请按 <leader>rC 配置", 3)
+	end
+
+	M.stop_all_jobs()
+	M.write_separator()
+	M.write_log(">>> 运行项目: " .. project_cmd)
+
+	local job_id = vim.fn.jobstart(project_cmd, {
+		stdout_buffered = false,
+		stderr_buffered = false,
+		pty = true,
+		on_stdout = on_output,
+		on_stderr = on_output,
+		on_exit = function(_, code)
+			-- 信号退出码 (>=128) 视为正常退出
+			if code == 0 or code >= 128 then
+				M.write_log(">>> 项目运行结束 (状态码: " .. code .. ")\n")
+			else
+				M.write_log(">>> 进程异常退出，状态码: " .. code .. "\n")
+			end
+			M.active_jobs["project"] = nil
+		end,
+	})
+	M.active_jobs["project"] = { id = job_id, scroll_mode = get_scroll_mode("project") }
+
+	-- 智能等待并尝试打开浏览器
+	vim.defer_fn(function()
+		-- 尝试从项目配置中获取浏览器 URL
+					local project_url = runner_config.get_current_project_browser()
+					if project_url and project_url ~= "" then
+						-- 自动添加 http:// 前缀（如果没有协议）
+						if not project_url:match("^[hH][tT][tT][pP][sS]?://") then
+							project_url = "http://" .. project_url
+						end
+						-- 等待 1 秒后打开浏览器
+						vim.defer_fn(function()
+							open_browser(project_url)
+							M.write_log(">>> 已在浏览器打开: " .. project_url)
+						end, 1000)
+					end	end, 500)
+
+	vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<leader>rl", true, true, true), "m", true)
+end
+
+---
 -- 运行当前文件（自动识别类型）
 --
 function M.run_current_file()
 	local ft = vim.bo.filetype
 	local file = vim.api.nvim_buf_get_name(0)
 
-	-- 优先检查文件级别的自定义运行命令
+	-- 检查文件级别的自定义运行命令
 	local custom_cmd_prefix = runner_config.get_file_runner(file)
 	if custom_cmd_prefix then
 		M.stop_all_jobs()
@@ -304,7 +374,12 @@ function M.run_current_file()
 			on_stdout = on_output,
 			on_stderr = on_output,
 			on_exit = function(_, code)
-				M.write_log(">>> 运行结束 (状态码: " .. code .. ")\n")
+				-- 信号退出码 (>=128) 视为正常退出
+				if code == 0 or code >= 128 then
+					M.write_log(">>> 运行结束 (状态码: " .. code .. ")\n")
+				else
+					M.write_log(">>> 进程异常退出，状态码: " .. code .. "\n")
+				end
 				M.active_jobs["custom_file_runner"] = nil -- 使用一个通用的键名
 			end,
 		})
@@ -337,7 +412,12 @@ function M.run_current_file()
 			on_stdout = on_output,
 			on_stderr = on_output,
 			on_exit = function(_, code)
-				M.write_log(">>> 执行结束 (状态码: " .. code .. ")\n")
+				-- 信号退出码 (>=128) 视为正常退出
+				if code == 0 or code >= 128 then
+					M.write_log(">>> 执行结束 (状态码: " .. code .. ")\n")
+				else
+					M.write_log(">>> 进程异常退出，状态码: " .. code .. "\n")
+				end
 				M.active_jobs["javascript"] = nil
 			end,
 		})
@@ -363,7 +443,12 @@ function M.run_current_file()
 			on_stdout = on_output,
 			on_stderr = on_output,
 			on_exit = function(_, code)
-				M.write_log(">>> 执行结束 (状态码: " .. code .. ")\n")
+				-- 信号退出码 (>=128) 视为正常退出
+				if code == 0 or code >= 128 then
+					M.write_log(">>> 执行结束 (状态码: " .. code .. ")\n")
+				else
+					M.write_log(">>> 进程异常退出，状态码: " .. code .. "\n")
+				end
 				M.active_jobs["python"] = nil
 				-- on_complete 模式：完成后滚动到底部
 				vim.defer_fn(function()
@@ -377,7 +462,7 @@ function M.run_current_file()
 	end
 
 	-- 不支持的文件类型
-	vim.notify("不支持的文件类型: " .. ft .. "\n支持的类型: html, javascript, python", 3)
+	vim.notify("不支持的文件类型: " .. ft .. "\n支持的类型: html, javascript, python\n或按 <leader>rc 配置自定义运行命令", 3)
 end
 
 -- 启动时清空日志
@@ -400,6 +485,13 @@ return {
 					M.run_current_file()
 				end,
 				desc = "运行当前文件",
+			},
+			{
+				"<leader>rp",
+				function()
+					M.run_project()
+				end,
+				desc = "运行项目",
 			},
 			{
 				"<leader>rl",
@@ -426,52 +518,10 @@ return {
 							vim.bo[self.buf].modifiable = false
 							vim.bo[self.buf].readonly = true
 
-							-- 注入语法高亮
-							vim.api.nvim_buf_call(self.buf, function()
-										pcall(vim.cmd, [[
-											syntax clear
-											syn match RunnerLogSeparator /^=<>=.*/
-											" Matches '>>> some text:'
-											syn match RunnerLogPrefix /^>>> [^:]\+:/
-											" Matches everything after '>>> some text: '
-											syn match RunnerLogCommand /^>>> [^:]\+: \zs.*/ contains=RunnerLogUrl,RunnerLogPath,RunnerLogPathFull
-											" Matches all normal log lines - time stamp and content separately
-											syn match RunnerLogTime /^\[\d\{2}:\d\{2}:\d\{2}\] /
-											syn match RunnerLogOutput /^\[\d\{2}:\d\{2}:\d\{2}\] \zs.*/ contains=RunnerLogUrl,RunnerLogPath,RunnerLogPathFull,RunnerLogErrorLine,RunnerLogWarnLine,RunnerLogSuccessLine
-											syn match RunnerLogErrorLine /\c.*\<Error\>.*/
-											syn match RunnerLogErrorLine /\c.*\<Exception\>.*/
-											syn match RunnerLogErrorLine /\c.*\<Traceback\>.*/
-											syn match RunnerLogErrorLine /\c.*\<Failed\>.*/
-											syn match RunnerLogErrorLine /状态码: [1-9].*/
-											syn match RunnerLogErrorLine /^\s*File .*, line \d\+.*/
-											syn match RunnerLogWarnLine /\c.*\<Warning\>.*/
-											syn match RunnerLogWarnLine /.*WARN.*/
-											syn match RunnerLogSuccessLine /\c.*\<Success\>.*/
-											syn match RunnerLogSuccessLine /\c.*\<Completed\>.*/
-											syn match RunnerLogUrl /https\?:\/\/\S\+/
-											syn match RunnerLogUrl /localhost:\d\+\/\S\+/
-											syn match RunnerLogPath /[a-zA-Z0-9_\-\/]\+\.\(js\|ts\|jsx\|tsx\|vue\|css\|scss\|html\|py\)/
-											syn match RunnerLogPathFull /\/[a-zA-Z0-9_\-\/\.]\+/ " 匹配完整路径（包含点号）
-											syn match RunnerLogInfo /\\\[INFO\\\]/
-											syn match RunnerLogInfo /\\\[Browsersync\\\]/
-											hi link RunnerLogSeparator Comment
-											hi link RunnerLogInfo DiagnosticInfo
-								]])
+							-- 设置文件类型，语法高亮由 autocmds.lua 处理
+							vim.bo[self.buf].filetype = 'runnerlog'
 
-								-- 使用 Lua API 设置高亮，更可靠
-								vim.api.nvim_set_hl(0, 'RunnerLogPrefix', { link = 'DiagnosticInfo' })
-								vim.api.nvim_set_hl(0, 'RunnerLogCommand', { fg = '#7dcfff', ctermfg = 117 })
-								vim.api.nvim_set_hl(0, 'RunnerLogOutput', { fg = '#7dcfff', ctermfg = 117 })
-								vim.api.nvim_set_hl(0, 'RunnerLogTime', { fg = '#ff9e64', ctermfg = 215 }) -- 橙色
-								vim.api.nvim_set_hl(0, 'RunnerLogUrl', { fg = '#7dcfff', underline = true })
-								vim.api.nvim_set_hl(0, 'RunnerLogPath', { fg = '#7dcfff' })
-								vim.api.nvim_set_hl(0, 'RunnerLogPathFull', { fg = '#7dcfff' })
-								vim.api.nvim_set_hl(0, 'RunnerLogErrorLine', { link = 'DiagnosticError' })
-								vim.api.nvim_set_hl(0, 'RunnerLogWarnLine', { link = 'DiagnosticWarn' })
-								vim.api.nvim_set_hl(0, 'RunnerLogSuccessLine', { link = 'DiagnosticOk' })
-								end)
-
-								-- 开启智能滚动
+							-- 开启智能滚动
 							local timer = vim.loop.new_timer()
 							timer:start(
 										500,
@@ -545,6 +595,104 @@ return {
 				end)
 				end,
 				desc = "配置当前文件运行命令",
+			},
+			{
+				"<leader>rC",
+				function()
+					local root = runner_config.get_project_root()
+					if not root then
+						vim.notify("无法确定项目根目录", 3)
+						return
+					end
+
+					vim.ui.input({
+						prompt = "配置项目运行命令 (完整命令):",
+						default = runner_config.get_project_runner(root) or ""
+					}, function(command)
+						if command ~= nil then -- 用户没有取消
+							if command == "" then
+								runner_config.clear_project_runner(root)
+								vim.notify("已清除项目运行命令", 2)
+							else
+								runner_config.set_project_runner(root, command)
+								vim.notify("已设置项目运行命令", 2)
+							end
+						end
+					end)
+				end,
+				desc = "配置项目运行命令",
+			},
+			{
+				"<leader>rb",
+				function()
+					local file = vim.api.nvim_buf_get_name(0)
+					if not file or file == "" then
+						vim.notify("未保存的文件无法配置浏览器 URL", 3)
+						return
+					end
+
+					vim.ui.input({
+						prompt = "配置文件浏览器 URL:",
+						default = runner_config.get_file_browser(file) or ""
+					}, function(url)
+						if url ~= nil then
+							if url == "" then
+								runner_config.clear_file_browser(file)
+							else
+								runner_config.set_file_browser(file, url)
+								vim.notify("已设置文件浏览器 URL: " .. url, 2)
+							end
+						end
+					end)
+				end,
+				desc = "配置文件浏览器 URL",
+			},
+			{
+				"<leader>rB",
+				function()
+					local root = runner_config.get_project_root()
+					if not root then
+						vim.notify("无法确定项目根目录", 3)
+						return
+					end
+
+					vim.ui.input({
+						prompt = "配置项目浏览器 URL:",
+						default = runner_config.get_project_browser(root) or ""
+					}, function(url)
+						if url ~= nil then
+							if url == "" then
+								runner_config.clear_project_browser(root)
+							else
+								runner_config.set_project_browser(root, url)
+								vim.notify("已设置项目浏览器 URL: " .. url, 2)
+							end
+						end
+					end)
+				end,
+				desc = "配置项目浏览器 URL",
+			},
+			{
+				"<leader>ro",
+				function()
+					-- 优先使用文件级配置
+					local file = vim.api.nvim_buf_get_name(0)
+					if file and file ~= "" then
+						local file_url = runner_config.get_file_browser(file)
+						if file_url and file_url ~= "" then
+							open_browser(file_url)
+							return
+						end
+					end
+
+					-- 回退到项目级配置
+					local project_url = runner_config.get_current_project_browser()
+					if project_url and project_url ~= "" then
+						open_browser(project_url)
+						return
+					end
+				end,
+				desc = "打开浏览器",
 			},
 		},
 	},

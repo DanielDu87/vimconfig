@@ -80,11 +80,38 @@ vim.api.nvim_create_autocmd("FileType", {
 		-- 1. 强制启用该 Buffer 的诊断引擎
 		pcall(vim.diagnostic.enable, true, { bufnr = args.buf })
 		-- 2. 开启所有视觉提示：行尾文字、下划线、侧边栏图标
-		vim.diagnostic.config({
+		pcall(vim.diagnostic.config, {
 			underline = true,
 			virtual_text = true,
 			signs = true,
 			update_in_insert = true, -- 在插入模式下也实时更新 (更快反馈)
-		}, args.buf)
+		}, { bufnr = args.buf })
 	end,
 })
+
+-- 针对 Runner 日志的语法高亮
+vim.api.nvim_create_autocmd("FileType", {
+	pattern = { "runnerlog" },
+	callback = function(args)
+		pcall(vim.treesitter.stop, args.buf)
+		vim.api.nvim_set_hl(0, 'RunnerLogTime', { fg = '#ff9e64', ctermfg = 215 })
+		vim.api.nvim_set_hl(0, 'RunnerDjangoCmdPath', { fg = '#7dcfff', ctermfg = 117 })
+		vim.api.nvim_set_hl(0, 'RunnerDjangoCmdContinuation', { fg = '#7dcfff', ctermfg = 117 })
+		vim.api.nvim_set_hl(0, 'RunnerPythonCmdLine', { fg = '#7dcfff', ctermfg = 117 })
+		vim.api.nvim_set_hl(0, 'RunnerDjangoServerUrl', { fg = '#7dcfff', underline = true, ctermfg = 117 })
+		vim.api.nvim_set_hl(0, 'RunnerLogPrefix', { link = 'DiagnosticInfo' })
+		vim.api.nvim_set_hl(0, 'RunnerLogCommand', { fg = '#7dcfff', ctermfg = 117 })
+		vim.api.nvim_set_hl(0, 'RunnerLogOutput', { fg = '#E0E0E0', ctermfg = 254 })
+		vim.api.nvim_set_hl(0, 'RunnerLogPlainLine', { fg = '#E0E0E0', ctermfg = 254 })
+		vim.api.nvim_set_hl(0, 'RunnerLogErrorLine', { link = 'DiagnosticError' })
+		vim.api.nvim_set_hl(0, 'RunnerLogWarnLine', { link = 'DiagnosticWarn' })
+		vim.api.nvim_set_hl(0, 'RunnerLogSuccessLine', { link = 'DiagnosticOk' })
+		vim.api.nvim_set_hl(0, 'RunnerLogUrl', { fg = '#7dcfff', underline = true })
+		vim.api.nvim_set_hl(0, 'RunnerLogPath', { fg = '#7dcfff' })
+		vim.api.nvim_set_hl(0, 'RunnerLogPathFull', { fg = '#7dcfff' })
+		vim.api.nvim_set_hl(0, 'RunnerLogInfo', { link = 'DiagnosticInfo' })
+		vim.api.nvim_set_hl(0, 'RunnerLogDjangoRunserver', { fg = '#7dcfff', ctermfg = 117 })
+		vim.api.nvim_set_hl(0, 'RunnerLogDebugLine', { fg = '#888888', ctermfg = 245 })
+	end,
+})
+
