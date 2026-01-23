@@ -94,25 +94,113 @@ vim.api.nvim_create_autocmd("FileType", {
 	pattern = { "runnerlog" },
 	callback = function(args)
 		pcall(vim.treesitter.stop, args.buf)
-		vim.api.nvim_set_hl(0, 'RunnerLogTime', { fg = '#ff9e64', ctermfg = 215 })
-		vim.api.nvim_set_hl(0, 'RunnerDjangoCmdPath', { fg = '#7dcfff', ctermfg = 117 })
-		vim.api.nvim_set_hl(0, 'RunnerDjangoCmdContinuation', { fg = '#7dcfff', ctermfg = 117 })
-		vim.api.nvim_set_hl(0, 'RunnerPythonCmdLine', { fg = '#7dcfff', ctermfg = 117 })
-		vim.api.nvim_set_hl(0, 'RunnerDjangoServerUrl', { fg = '#7dcfff', underline = true, ctermfg = 117 })
-		vim.api.nvim_set_hl(0, 'RunnerLogPrefix', { link = 'DiagnosticInfo' })
-		vim.api.nvim_set_hl(0, 'RunnerLogCommand', { fg = '#7dcfff', ctermfg = 117 })
-		vim.api.nvim_set_hl(0, 'RunnerLogPythonFlag', { fg = '#7dcfff', ctermfg = 117 })
-		vim.api.nvim_set_hl(0, 'RunnerLogOutput', { fg = '#E0E0E0', ctermfg = 254 })
-		vim.api.nvim_set_hl(0, 'RunnerLogPlainLine', { fg = '#E0E0E0', ctermfg = 254 })
-		vim.api.nvim_set_hl(0, 'RunnerLogErrorLine', { link = 'DiagnosticError' })
-		vim.api.nvim_set_hl(0, 'RunnerLogWarnLine', { link = 'DiagnosticWarn' })
-		vim.api.nvim_set_hl(0, 'RunnerLogSuccessLine', { link = 'DiagnosticOk' })
-		vim.api.nvim_set_hl(0, 'RunnerLogUrl', { fg = '#7dcfff', underline = true })
-		vim.api.nvim_set_hl(0, 'RunnerLogPath', { fg = '#7dcfff' })
-		vim.api.nvim_set_hl(0, 'RunnerLogPathFull', { fg = '#7dcfff' })
-		vim.api.nvim_set_hl(0, 'RunnerLogInfo', { link = 'DiagnosticInfo' })
-		vim.api.nvim_set_hl(0, 'RunnerLogDjangoRunserver', { fg = '#7dcfff', ctermfg = 117 })
-		vim.api.nvim_set_hl(0, 'RunnerLogDebugLine', { fg = '#888888', ctermfg = 245 })
+		vim.api.nvim_set_hl(0, "RunnerLogTime", { fg = "#ff9e64", ctermfg = 215 })
+		vim.api.nvim_set_hl(0, "RunnerDjangoCmdPath", { fg = "#7dcfff", ctermfg = 117 })
+		vim.api.nvim_set_hl(0, "RunnerDjangoCmdContinuation", { fg = "#7dcfff", ctermfg = 117 })
+		vim.api.nvim_set_hl(0, "RunnerPythonCmdLine", { fg = "#7dcfff", ctermfg = 117 })
+		vim.api.nvim_set_hl(0, "RunnerDjangoServerUrl", { fg = "#7dcfff", underline = true, ctermfg = 117 })
+		vim.api.nvim_set_hl(0, "RunnerLogPrefix", { link = "DiagnosticInfo" })
+		vim.api.nvim_set_hl(0, "RunnerLogCommand", { fg = "#7dcfff", ctermfg = 117 })
+		vim.api.nvim_set_hl(0, "RunnerLogPythonFlag", { fg = "#7dcfff", ctermfg = 117 })
+		vim.api.nvim_set_hl(0, "RunnerLogOutput", { fg = "#E0E0E0", ctermfg = 254 })
+		vim.api.nvim_set_hl(0, "RunnerLogPlainLine", { fg = "#E0E0E0", ctermfg = 254 })
+		vim.api.nvim_set_hl(0, "RunnerLogErrorLine", { link = "DiagnosticError" })
+		vim.api.nvim_set_hl(0, "RunnerLogWarnLine", { link = "DiagnosticWarn" })
+		vim.api.nvim_set_hl(0, "RunnerLogSuccessLine", { link = "DiagnosticOk" })
+		vim.api.nvim_set_hl(0, "RunnerLogUrl", { fg = "#7dcfff", underline = true })
+		vim.api.nvim_set_hl(0, "RunnerLogPath", { fg = "#7dcfff" })
+		vim.api.nvim_set_hl(0, "RunnerLogPathFull", { fg = "#7dcfff" })
+		vim.api.nvim_set_hl(0, "RunnerLogInfo", { link = "DiagnosticInfo" })
+		vim.api.nvim_set_hl(0, "RunnerLogDjangoRunserver", { fg = "#7dcfff", ctermfg = 117 })
+		vim.api.nvim_set_hl(0, "RunnerLogDebugLine", { fg = "#888888", ctermfg = 245 })
 	end,
 })
 
+-------------------------------------------------------------------------------
+-- 全局透明效果增强 (支持任意主题切换)
+-------------------------------------------------------------------------------
+
+local function apply_transparency()
+	-- 1. 基础背景透明组 (补全所有可能的背景层)
+	local hl_groups = {
+		"Normal",
+		"NormalNC",
+		"NonText",
+		"EndOfBuffer",
+		"Folded",
+		"SignColumn",
+		"StatusLine",
+		"StatusLineNC",
+		"VertSplit",
+		"WinSeparator",
+		"WinBar",
+		"WinBarNC",
+		"TabLine",
+		"TabLineFill",
+		"TabLineSel",
+		"BufferLineFill",
+		"BufferLineBackground",
+		"BufferLineSeparator",
+		"BufferLineSeparatorVisible",
+		"BufferLineSeparatorSelected",
+		"NormalFloat",
+		"Pmenu",
+		"PmenuSbar",
+		"BlinkCmpMenu",
+		"BlinkCmpDoc",
+		"BlinkCmpSignatureHelp",
+	}
+	for _, group in ipairs(hl_groups) do
+		vim.api.nvim_set_hl(0, group, { bg = "NONE", ctermbg = "NONE" })
+	end
+
+	-- 2. 补全列表项细节透明 (BlinkCmp 专用)
+	local blink_sub_groups = {
+		"BlinkCmpLabel",
+		"BlinkCmpLabelMatch",
+		"BlinkCmpLabelDetail",
+		"BlinkCmpLabelDescription",
+		"BlinkCmpKind",
+		"BlinkCmpKindIcon",
+		"BlinkCmpSource",
+		"BlinkCmpGhostText",
+	}
+	for _, group in ipairs(blink_sub_groups) do
+		local ok, old_hl = pcall(vim.api.nvim_get_hl, 0, { name = group })
+		if ok then
+			vim.api.nvim_set_hl(0, group, vim.tbl_extend("force", old_hl, { bg = "NONE" }))
+		else
+			vim.api.nvim_set_hl(0, group, { bg = "NONE" })
+		end
+	end
+
+	-- 3. 统一浮窗边框颜色 (蓝色风格)
+	local border_color = "#2b85b7"
+	local border_groups = {
+		"FloatBorder",
+		"FloatTitle",
+		"NoiceConfirmBorder",
+		"NoicePopupBorder",
+		"NoiceCmdlinePopupBorder",
+		"SnacksInputBorder",
+		"SnacksWinBorder",
+		"SnacksPickerBorder",
+		"BlinkCmpMenuBorder",
+		"BlinkCmpDocBorder",
+		"BlinkCmpSignatureHelpBorder",
+	}
+	for _, group in ipairs(border_groups) do
+		vim.api.nvim_set_hl(0, group, { fg = border_color, bg = "NONE" })
+	end
+end
+
+-- 监听主题切换事件 (使用 schedule 确保在主题完全加载后执行)
+vim.api.nvim_create_autocmd("ColorScheme", {
+	pattern = "*",
+	callback = function()
+		vim.schedule(apply_transparency)
+	end,
+})
+
+-- 立即执行一次
+vim.schedule(apply_transparency)
