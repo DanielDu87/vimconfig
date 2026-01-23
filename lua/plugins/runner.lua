@@ -294,7 +294,7 @@ function M.run_current_file()
 		M.stop_all_jobs()
 		M.write_separator()
 		-- 将前缀和文件名组合成最终命令
-		local final_run_cmd = string.format("%s '%s'", custom_cmd_prefix, file)
+		local final_run_cmd = string.format("%s %s", custom_cmd_prefix, file)
 		M.write_log(">>> 运行命令: " .. final_run_cmd)
 
 		local job_id = vim.fn.jobstart(final_run_cmd, {
@@ -327,7 +327,7 @@ function M.run_current_file()
 		local node_path = "node"
 
 		M.write_separator()
-		local run_cmd = string.format("%s '%s'", node_path, file)
+		local run_cmd = string.format("%s %s", node_path, file)
 		M.write_log(">>> 运行指令: " .. run_cmd)
 
 		local job_id = vim.fn.jobstart(run_cmd, {
@@ -353,7 +353,7 @@ function M.run_current_file()
 		local python_path = CONFIG.python_executable or "python3"
 
 		M.write_separator()
-		local run_cmd = string.format("%s -u '%s'", python_path, file)
+		local run_cmd = string.format("%s -u %s", python_path, file)
 		M.write_log(">>> 运行指令: " .. run_cmd)
 
 		local job_id = vim.fn.jobstart(run_cmd, {
@@ -428,14 +428,16 @@ return {
 
 							-- 注入语法高亮
 							vim.api.nvim_buf_call(self.buf, function()
-										pcall(vim.cmd, [[ 
+										pcall(vim.cmd, [[
 											syntax clear
 											syn match RunnerLogSeparator /^=<>=.*/
 											" Matches '>>> some text:'
-											syn match RunnerLogPrefix /^>>> [^:]\+:/ 
+											syn match RunnerLogPrefix /^>>> [^:]\+:/
 											" Matches everything after '>>> some text: '
-											syn match RunnerLogCommand /\%(^>>> [^:]\+: \)\@<=.*/ contains=RunnerLogUrl,RunnerLogPath
-											syn match RunnerLogTime /^\\\[\d\{2}:\d\{2}:\d\{2}\]/ contains=RunnerLogTimeContent
+											syn match RunnerLogCommand /^>>> [^:]\+: \zs.*/ contains=RunnerLogUrl,RunnerLogPath,RunnerLogPathFull
+											" Matches all normal log lines - time stamp and content separately
+											syn match RunnerLogTime /^\[\d\{2}:\d\{2}:\d\{2}\] /
+											syn match RunnerLogOutput /^\[\d\{2}:\d\{2}:\d\{2}\] \zs.*/ contains=RunnerLogUrl,RunnerLogPath,RunnerLogPathFull,RunnerLogErrorLine,RunnerLogWarnLine,RunnerLogSuccessLine
 											syn match RunnerLogErrorLine /\c.*\<Error\>.*/
 											syn match RunnerLogErrorLine /\c.*\<Exception\>.*/
 											syn match RunnerLogErrorLine /\c.*\<Traceback\>.*/
@@ -446,23 +448,27 @@ return {
 											syn match RunnerLogWarnLine /.*WARN.*/
 											syn match RunnerLogSuccessLine /\c.*\<Success\>.*/
 											syn match RunnerLogSuccessLine /\c.*\<Completed\>.*/
-											syn match RunnerLogTimeContent /\\\[\d\{2}:\d\{2}:\d\{2}\]/ contained
-											syn match RunnerLogUrl /https\?:\/\/\S\+/ containedin=RunnerLogCommand
-											syn match RunnerLogUrl /localhost:\d\+\/\S\+/ containedin=RunnerLogCommand
-											syn match RunnerLogPath /\f\+\.\(js\|ts\|jsx\|tsx\|vue\|css\|scss\|html\|py\)/ containedin=RunnerLogCommand
-											syn match RunnerLogInfo /\\\[INFO\\\]/ contained
-											syn match RunnerLogInfo /\\\[Browsersync\\\]/ contained
+											syn match RunnerLogUrl /https\?:\/\/\S\+/
+											syn match RunnerLogUrl /localhost:\d\+\/\S\+/
+											syn match RunnerLogPath /[a-zA-Z0-9_\-\/]\+\.\(js\|ts\|jsx\|tsx\|vue\|css\|scss\|html\|py\)/
+											syn match RunnerLogPathFull /\/[a-zA-Z0-9_\-\/\.]\+/ " 匹配完整路径（包含点号）
+											syn match RunnerLogInfo /\\\[INFO\\\]/
+											syn match RunnerLogInfo /\\\[Browsersync\\\]/
 											hi link RunnerLogSeparator Comment
-										hi link RunnerLogPrefix Function
-										hi link RunnerLogCommand Function " 确保命令本身是蓝色
-										hi link RunnerLogTimeContent Special
-										hi link RunnerLogErrorLine DiagnosticError
-										hi link RunnerLogWarnLine DiagnosticWarn
-										hi link RunnerLogSuccessLine DiagnosticOk
-										hi link RunnerLogUrl RunnerLogCommand
-										hi link RunnerLogPath RunnerLogCommand
-										hi link RunnerLogInfo DiagnosticInfo
+											hi link RunnerLogInfo DiagnosticInfo
 								]])
+
+								-- 使用 Lua API 设置高亮，更可靠
+								vim.api.nvim_set_hl(0, 'RunnerLogPrefix', { link = 'DiagnosticInfo' })
+								vim.api.nvim_set_hl(0, 'RunnerLogCommand', { fg = '#7dcfff', ctermfg = 117 })
+								vim.api.nvim_set_hl(0, 'RunnerLogOutput', { fg = '#7dcfff', ctermfg = 117 })
+								vim.api.nvim_set_hl(0, 'RunnerLogTime', { fg = '#ff9e64', ctermfg = 215 }) -- 橙色
+								vim.api.nvim_set_hl(0, 'RunnerLogUrl', { fg = '#7dcfff', underline = true })
+								vim.api.nvim_set_hl(0, 'RunnerLogPath', { fg = '#7dcfff' })
+								vim.api.nvim_set_hl(0, 'RunnerLogPathFull', { fg = '#7dcfff' })
+								vim.api.nvim_set_hl(0, 'RunnerLogErrorLine', { link = 'DiagnosticError' })
+								vim.api.nvim_set_hl(0, 'RunnerLogWarnLine', { link = 'DiagnosticWarn' })
+								vim.api.nvim_set_hl(0, 'RunnerLogSuccessLine', { link = 'DiagnosticOk' })
 								end)
 
 								-- 开启智能滚动
