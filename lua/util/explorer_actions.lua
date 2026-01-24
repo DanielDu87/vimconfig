@@ -112,7 +112,7 @@ function M.setup(Actions, Snacks)
 		end
 
 		picker.list:set_selected() -- 清除 UI 上的选择状态
-		vim.fn.setreg(vim.v.register or "+", table.concat(paths, "\n"), "l")
+		vim.fn.setreg(vim.v.register or "+", table.concat(paths, "\n"), "v")
 		cut_mode = true
 
 		local files, dirs = {}, {}
@@ -138,7 +138,7 @@ function M.setup(Actions, Snacks)
 		end
 
 		picker.list:set_selected() -- 清除 UI 上的选择状态
-		vim.fn.setreg(vim.v.register or "+", table.concat(paths, "\n"), "l")
+		vim.fn.setreg(vim.v.register or "+", table.concat(paths, "\n"), "v")
 		cut_mode = false
 
 		local files, dirs = {}, {}

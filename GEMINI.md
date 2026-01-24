@@ -78,7 +78,7 @@ This directory contains a **Neovim configuration** built on top of [LazyVim](htt
 
 ### Critical Modules
 
-- **`lua/util/explorer_actions.lua`**: Contains the state machine for cut/copy/paste. Note the use of `M.setup` to inject dependencies (`Actions`, `Snacks`).
+- **`lua/util/explorer_actions.lua`**: Contains the state machine for cut/copy/paste. Note the use of `M.setup` to inject dependencies (`Actions`, `Snacks`). Also handles path copying (yank) with char-wise register mode to avoid trailing newlines.
 - **`lua/plugins/theme.lua`**: Centralized location for all highlight overrides. Do not scatter `vim.api.nvim_set_hl` across multiple files if possible.
 - **`lua/plugins/dap.lua`**: Manages debugging sessions and the persistence of UI layouts.
 
