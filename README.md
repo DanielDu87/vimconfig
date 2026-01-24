@@ -1,88 +1,126 @@
-# Neovim Configuration (LazyVim Based)
+# Neovim 深度定制配置 (基于 LazyVim)
 
-This directory contains a highly customized **Neovim configuration** built on top of [LazyVim](https://www.lazyvim.org/). It is tailored for full-stack development (TypeScript, Vue, Python, Docker) with a focus on performance, visual transparency, and a localized Chinese user experience.
+本仓库包含一份基于 [LazyVim](https://www.lazyvim.org/) 构建的高级 **Neovim 配置文件**。它专为全栈开发（TypeScript, Vue, Python, Docker）量身定制，核心理念是**高性能**、**视觉透明化**以及**极致的中文本地化体验**。
 
-## ✨ Project Overview
+## ✨ 核心特性
 
-- **Base Framework:** LazyVim
-- **Package Manager:** `lazy.nvim`
-- **Key Technologies:** Lua, Neovim API, Tree-sitter, LSP, Mason, Snacks.nvim.
-- **Core Philosophy:** Performance-first, fully localized (Chinese), and visually transparent.
+### 1. 🎨 极致 UI 与主题
+- **全局透明化**：编辑器背景、浮动窗口、侧边栏、补全菜单等均已配置为透明，完美融入终端背景（配置位于 `lua/plugins/theme.lua`）。
+- **中文本地化**：
+    - `Which-Key` 快捷键菜单全中文注释。
+    - `Lazy.nvim` 插件管理器界面中文化。
+    - 文件资源管理器操作菜单中文化。
+- **界面美化**：集成 `Snacks.nvim` 提供现代化的 UI 组件。
 
-### 🚀 Key Features
+### 2. ⚡️ 高效文件管理 (Explorer)
+- **增强型操作**：重写了文件操作逻辑 (`lua/util/explorer_actions.lua`)，支持 Windows 风格的**剪切/复制/粘贴**。
+- **智能冲突处理**：粘贴时自动检测文件名冲突，并提供重命名或自动备份策略。
+- **路径修复**：复制路径到剪贴板时自动去除多余换行符，方便终端使用。
+- **目录保护**：防止误删项目根目录。
 
-*   **Transparency:** Global transparency for editor, floating windows, and sidebars (managed via `lua/plugins/theme.lua`).
-*   **Localization:** Comprehensive Chinese translations for `which-key` menus, `lazy.nvim` UI, and file explorer actions.
-*   **Intelligent Explorer:** Enhanced file operations (Cut/Copy/Paste/Delete) with automatic conflict detection, renaming, and directory support. Powered by `Snacks.picker` and custom logic (`lua/util/explorer_actions.lua`).
-*   **Strict Formatting:** Enforced **Tab indentation (width 4)** for all files, controlled by a custom synchronous pipeline in `lua/util/format.lua`.
-*   **Advanced Debugging:**
-    *   **Layout Persistence:** Automatically saves and precisely restores manual window adjustments for the DAP UI.
-    *   **Silent Restoration:** Restores layouts instantly without visual shifts or notification noise.
-    *   **Shortcuts:** Integrated keys for Breakpoints, Stepping, and Panel toggling.
+### 3. 🛠 代码规范与工具链
+- **强制 Tab 缩进**：全项目强制使用 **Tab** 进行缩进（宽度 4 空格），并通过 `lua/util/format.lua` 自定义管道确保保存时同步格式化。
+- **LSP (语言服务)**：
+    - 预配置 TypeScript, Vue, Python, Docker 等语言支持。
+    - 使用 `Mason` 自动管理 LSP Server、Linter 和 Formatter 的安装。
+- **代码补全**：基于 `blink.cmp` 的高性能补全引擎。
+- **代码检查 (Lint)**：集成 `nvim-lint`，实时显示代码潜在错误。
 
-## 📂 Project Structure
+### 4. 🐞 智能调试 (DAP)
+- **布局持久化**：自动记录您手动调整的调试窗口（变量、堆栈、控制台）尺寸。
+- **无感恢复**：下次打开调试界面时，会**立即同步**恢复到上次的布局，没有任何视觉跳变或通知干扰。
+- **自定义配置**：支持 Python (DebugPy) 和 JS/TS (js-debug-adapter) 调试。
+
+## 📂 项目结构说明
 
 ```text
 ~/.config/nvim/
-├── init.lua                    # Entry point
+├── init.lua                    # 🚀 入口文件
 ├── lua/
-│   ├── config/                 # Core configuration
-│   │   ├── autocmds.lua        # Autocommands (triggers formatting, resize events)
-│   │   ├── keymaps.lua         # General keybindings
-│   │   ├── lazy.lua            # Plugin manager setup
-│   │   ├── NOTES.lua           # Scratchpad
-│   │   └── options.lua         # Vim options (tabs, UI settings)
-│   ├── plugins/                # Plugin specifications
-│   │   ├── editor.lua          # WhichKey & Snacks setup (Translations)
-│   │   ├── explorer.lua        # File Explorer configuration
-│   │   ├── formatting.lua      # Conform.nvim setup
-│   │   ├── dap.lua             # Debug Adapter Protocol & Layout Management
-│   │   ├── theme.lua           # UI styling & Transparency
-│   │   └── ...                 # Language support (Python, JS/TS, etc.)
-│   └── util/                   # Custom Utility Modules
-│       ├── explorer_actions.lua # Core logic for file manipulation
-│       └── format.lua          # Centralized formatting controller
-├── stylua.toml                 # Lua formatting rules (Tabs, 4 spaces)
-└── lazy-lock.json              # Plugin lockfile
+│   ├── config/                 # ⚙️ 核心配置
+│   │   ├── autocmds.lua        # 自动命令 (格式化触发、窗口事件)
+│   │   ├── keymaps.lua         # 通用快捷键定义
+│   │   ├── lazy.lua            # 插件管理器引导
+│   │   └── options.lua         # Vim 选项 (Tab设置、UI细节)
+│   ├── plugins/                # 🧩 插件定义 (按功能分类)
+│   │   ├── editor.lua          # 编辑器增强 (Snacks, WhichKey, 中文翻译)
+│   │   ├── explorer.lua        # 文件浏览器配置
+│   │   ├── formatting.lua      # 格式化核心配置 (Conform.nvim)
+│   │   ├── linting.lua         # 代码检查 (nvim-lint)
+│   │   ├── lsp.lua             # LSP 基础配置
+│   │   ├── dap.lua             # 调试功能与布局管理核心
+│   │   ├── theme.lua           # 主题与透明度设置
+│   │   └── ...                 # 各语言专用配置 (python.lua, vue.lua 等)
+│   └── util/                   # 🔧 自定义工具库 (核心逻辑)
+│       ├── explorer_actions.lua # 文件操作状态机 (剪切/复制/粘贴)
+│       └── format.lua          # 格式化控制中心
+├── stylua.toml                 # Lua 代码风格配置
+└── lazy-lock.json              # 插件版本锁定文件
 ```
 
-## ⌨️ Key Commands & Workflows
+## ⌨️ 常用快捷键速查
 
-### 🛠️ Management
-- **Start:** `nvim`
-- **Update Plugins:** `:Lazy sync`
-- **Manage Tools (LSP/Formatters):** `:Mason`
-- **Check Health:** `:checkhealth`
+### 🚀 常用操作
+| 快捷键 | 描述 |
+| :--- | :--- |
+| `<leader><space>` | **命令面板** (查找文件、命令、符号) |
+| `<leader>e` / `<leader>fe` | 打开/切换 **文件资源管理器** |
+| `<leader>cf` | **格式化代码** (强制 Tab 缩进) |
+| `<leader>sg` / `<leader>/` | **全局搜索** (Grep) |
+| `<leader>ff` | **查找文件** |
+| `<leader>bd` | 关闭当前缓冲区 (Buffer) |
 
-### 💻 Development
-- **Format Code:** `<leader>cf` (Sync formatting via `lua/util/format.lua`)
-- **File Explorer:** `<leader>e` or `<leader>fe`
-- **Global Search:** `<leader>sg` or `<leader>/`
-- **Command Palette:** `<leader><space>`
+### 🐞 调试 (DAP)
+| 快捷键 | 描述 |
+| :--- | :--- |
+| `<leader>dt` | **切换调试界面** (自动恢复布局) |
+| `<leader>db` | 切换 **断点** |
+| `<leader>dB` | 设置 **条件断点** |
+| `<leader>dC` | **清除所有断点** |
+| `<leader>dc` | **开始 / 继续** (Continue) |
+| `<leader>di` | **步入** (Step Into) |
+| `<leader>do` | **步过** (Step Over) |
+| `<leader>du` | **步出** (Step Out) |
 
-### 🐞 Debugging (DAP)
-- **Toggle UI:** `<leader>dt` (Auto-saves & restores layout)
-- **Start/Continue:** `<leader>dc`
-- **Step Into/Over/Out:** `<leader>di` / `<leader>do` / `<leader>du`
-- **Breakpoints:**
-    - Toggle: `<leader>db`
-    - Conditional: `<leader>dB`
-    - Clear All: `<leader>dC`
+### 📂 文件资源管理器 (Explorer)
+> 在 Explorer 窗口中生效
 
-## 📏 Development Conventions
+| 快捷键 | 描述 |
+| :--- | :--- |
+| `y` | **复制** 文件/路径 (到剪贴板) |
+| `x` | **剪切** 文件 |
+| `p` | **粘贴** 文件 (支持自动重命名/移动) |
+| `d` | **删除** 文件 (带确认) |
+| `a` | **新建** 文件/目录 |
+| `r` | **重命名** |
 
-### Coding Style
-- **Indentation:** **Hard Tabs** (Width: 4 spaces).
-- **Lua Style:** Governed by `stylua.toml`.
-- **Prettier:** Governed by `.prettierrc` (uses tabs).
+## 🛠️ 安装与维护
 
-### Configuration Guidelines
-1.  **Plugin Isolation:** Keep settings specific to a plugin within `lua/plugins/`. Avoid monolithic files.
-2.  **Logic Separation:** Complex logic (e.g., file manipulation, layout calculation) **MUST** reside in `lua/util/`.
-3.  **Localization:** All new keymaps and menus must have Chinese descriptions in `lua/plugins/editor.lua`.
-4.  **DAP Layout:** Layout logic is centralized in `lua/plugins/dap.lua`. It uses a `apply_saved_sizes` strategy for instant, jump-free restoration.
-5.  **Performance:** Prioritize startup time and runtime responsiveness. Avoid heavy operations in the main thread unless necessary.
+### 首次安装
+1. 确保已安装 **Neovim >= 0.9.0**。
+2. 克隆本仓库到配置目录：
+   ```bash
+   git clone <repo-url> ~/.config/nvim
+   ```
+3. 启动 `nvim`，Lazy 会自动安装所有插件。
 
-### Critical Modules
-- **`lua/util/explorer_actions.lua`**: Implements the state machine for Cut/Copy/Paste. Uses `v` (character-wise) register mode for path copying to prevent trailing newlines.
-- **`lua/plugins/dap.lua`**: Manages debug sessions and persistence. It features a custom debounce mechanism and synchronous layout application to ensure a smooth UX.
+### 工具链管理
+- **更新插件**：运行 `:Lazy sync`
+- **安装/管理 LSP & Tools**：运行 `:Mason`
+    - 在弹出的菜单中，使用 `i` 安装，`u` 更新 LSP Server、Linter 或 Formatter。
+- **健康检查**：运行 `:checkhealth`
+
+## 📝 开发规范
+
+1.  **代码风格**：
+    - 所有文件必须使用 **Tab 缩进**，宽度设置为 **4 空格**。
+    - Lua 代码需符合 `stylua.toml` 规范。
+2.  **插件配置**：
+    - 尽量将特定插件的配置放在 `lua/plugins/` 下的独立文件中。
+    - 复杂的业务逻辑（如文件操作、自定义格式化）必须提取到 `lua/util/` 模块中，保持配置文件的整洁。
+3.  **提交规范**：
+    - 提交信息必须使用中文。
+    - 格式：`+YYYY-MM-DD HH:MM 内容`。
+
+---
+*Generated by Gemini Agent*
