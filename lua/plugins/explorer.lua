@@ -8,6 +8,22 @@ return {
 		"snacks.nvim",
 		opts = function(_, opts)
 			--==============================================================================
+			-- Explorer 宽度持久化配置（必须先定义函数）
+			--==============================================================================
+			local width_file = vim.fn.stdpath("config") .. "/.explorer_width"
+
+			-- 读取保存的宽度
+			local function load_width()
+				local f = io.open(width_file, "r")
+				if f then
+					local content = f:read("*a")
+					f:close()
+					return tonumber(content) or 30
+				end
+				return 30
+			end
+
+			--==============================================================================
 			-- 一劳永逸锁定 Snacks 侧边栏宽度
 			--==============================================================================
 			vim.api.nvim_create_autocmd({ "FileType", "BufEnter" }, {
@@ -41,22 +57,8 @@ return {
 			opts.picker.explorer = opts.picker.explorer or {}
 
 			--==============================================================================
-			-- Explorer 宽度持久化配置
-			--==============================================================================
-			local width_file = vim.fn.stdpath("config") .. "/.explorer_width"
-
-			-- 读取保存的宽度
-			local function load_width()
-				local f = io.open(width_file, "r")
-				if f then
-					local content = f:read("*a")
-					f:close()
-					return tonumber(content) or 30
-				end
-				return 30
-			end
-
 			-- 配置 Explorer 布局（使用官方推荐方式）
+			--==============================================================================
 			-- 参考: https://github.com/folke/snacks.nvim/discussions/2139
 			opts.picker.sources = opts.picker.sources or {}
 			opts.picker.sources.explorer = opts.picker.sources.explorer or {}
