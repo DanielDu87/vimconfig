@@ -45,6 +45,37 @@ return {
 				return nil
 			end
 
+			-- 计算初始布局尺寸
+			local function get_initial_sizes()
+				local data = load_layout_data() or {}
+				local sidebar_width = 40 -- 默认值
+				local bottom_height = 15 -- 默认值
+
+				-- Sidebar: 尝试获取 dapui_scopes 的宽度
+				if data.dapui_scopes and data.dapui_scopes.width then
+					sidebar_width = data.dapui_scopes.width
+				elseif data.dapui_stacks and data.dapui_stacks.width then
+					sidebar_width = data.dapui_stacks.width
+				end
+
+				-- Bottom: 尝试获取 dapui_console + dapui_repl 的总高度
+				-- 如果数据中只存在一个，则只用一个；如果都存在，则累加（假设为上下堆叠）
+				local console_h = (data.dapui_console and data.dapui_console.height) or 0
+				local repl_h = (data.dapui_repl and data.dapui_repl.height) or 0
+				
+				if console_h > 0 or repl_h > 0 then
+					-- 在默认布局中，Repl 和 Console 通常是上下堆叠的，所以初始总高度应为两者之和
+					-- 如果只显示了一个，则为该窗口高度
+					bottom_height = console_h + repl_h
+					-- 增加一点余量防止计算误差导致过小
+					if bottom_height < 5 then bottom_height = 15 end
+				end
+				
+				return sidebar_width, bottom_height
+			end
+
+			local init_sidebar_w, init_bottom_h = get_initial_sizes()
+
 			-- 保存布局逻辑（防抖）
 			local save_timer = nil
 			local function save_layout_debounced()
@@ -119,7 +150,7 @@ return {
 							{ id = "stacks", size = 0.3 }, 
 							{ id = "breakpoints", size = 0.2 },
 						},
-						size = 40, -- 初始默认值
+						size = init_sidebar_w, -- 使用计算出的初始宽度
 						position = "right",
 					},
 					-- 2. 底部面板：REPL和Console
@@ -128,7 +159,7 @@ return {
 							{ id = "repl", size = 0.3 }, 
 							{ id = "console", size = 0.7 },
 						},
-						size = 15, -- 初始默认值
+						size = init_bottom_h, -- 使用计算出的初始高度
 						position = "bottom",
 					},
 				},
@@ -152,13 +183,29 @@ return {
 				is_restoring = true
 				dapui.open()
 
+				-- 立即尝试恢复（减少视觉跳变）
+				local function apply_layout_now()
+					local data = load_layout_data()
+					if not data then return end
+					local windows = vim.api.nvim_list_wins()
+					for _, win in ipairs(windows) do
+						local buf = vim.api.nvim_win_get_buf(win)
+						local ft = vim.bo[buf].filetype or ""
+						if data[ft] then
+							pcall(vim.api.nvim_win_set_width, win, data[ft].width)
+							pcall(vim.api.nvim_win_set_height, win, data[ft].height)
+						end
+					end
+				end
+				apply_layout_now() -- 同步执行一次
+
 				local function restore_layout()
 					local data = load_layout_data()
 					if not data then return end
 
 					local windows = vim.api.nvim_list_wins()
 					
-					-- 1. 先应用尺寸调整
+					-- 1. 先应用尺寸调整 (微调内部比例)
 					for _, win in ipairs(windows) do
 						local buf = vim.api.nvim_win_get_buf(win)
 						local ft = vim.bo[buf].filetype or ""
