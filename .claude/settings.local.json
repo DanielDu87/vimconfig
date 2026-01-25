@@ -60,7 +60,11 @@
       "Bash(isort:*)",
       "Bash(/opt/homebrew/bin/isort:*)",
       "Bash(for:*)",
-      "Bash(done:*)"
+      "Bash(done:*)",
+      "Bash(if diff:*)",
+      "Bash(then echo \"文件完全相同\")",
+      "Bash(else echo \"文件有差异\")",
+      "Bash(fi:*)"
     ]
   }
 }
