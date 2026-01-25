@@ -272,17 +272,8 @@ end
 -- 获取浏览器打开命令 (带回退机制)
 --
 function M.get_browser_cmd(url)
-	-- 1. 尝试 Chrome Beta
-	-- 2. 尝试 Chrome 正式版
-	-- 3. 使用默认 open
-	local cmd = string.format(
-		'open -a "%s" "%s" 2>/dev/null || open -a "%s" "%s" 2>/dev/null || open "%s"',
-		CONFIG.browser_beta,
-		url,
-		CONFIG.browser_stable,
-		url,
-		url
-	)
+	-- 使用 Dia.app 作为默认浏览器
+	local cmd = string.format('open -a "/Applications/Dia.app" "%s"', url)
 	return cmd
 end
 

@@ -73,19 +73,12 @@ vim.api.nvim_create_autocmd("FileType", {
 	end,
 })
 
--- 针对 HTML 文件的纠错增强 (实时显示错误)
+-- 针对 HTML 文件的纠错增强 (tiny-inline-diagnostic 会处理显示)
 vim.api.nvim_create_autocmd("FileType", {
 	pattern = { "html" },
 	callback = function(args)
-		-- 1. 强制启用该 Buffer 的诊断引擎
+		-- 强制启用该 Buffer 的诊断引擎
 		pcall(vim.diagnostic.enable, true, { bufnr = args.buf })
-		-- 2. 开启所有视觉提示：行尾文字、下划线、侧边栏图标
-		pcall(vim.diagnostic.config, {
-			underline = true,
-			virtual_text = true,
-			signs = true,
-			update_in_insert = true, -- 在插入模式下也实时更新 (更快反馈)
-		}, { bufnr = args.buf })
 	end,
 })
 
@@ -199,7 +192,10 @@ local function apply_transparency()
 	-- 强制搜索匹配项为鲜艳的青蓝色
 	vim.api.nvim_set_hl(0, "SnacksPickerMatch", { fg = "#7dcfff", bg = "NONE", bold = true })
 	-- 确保当前选中行背景足够明显
-	vim.api.nvim_set_hl(0, "SnacksPickerListCursorLine", { bg = "#3d4458", bold = true })
+	vim.api.nvim_set_hl(0, "SnacksPickerListCursorLine", { bg = "#2d3343", bold = true })
+
+	-- 5. Visual 模式和光标行高亮由主题配置 (theme.lua)
+	-- 这里不再重复设置，避免与主题配置冲突
 end
 
 -- 监听主题切换事件 (使用 schedule 确保在主题完全加载后执行)
@@ -212,3 +208,38 @@ vim.api.nvim_create_autocmd("ColorScheme", {
 
 -- 立即执行一次
 vim.schedule(apply_transparency)
+
+-------------------------------------------------------------------------------
+-- 缓冲级撤销边界：只允许撤销到本次打开文件之前的状态
+-------------------------------------------------------------------------------
+vim.api.nvim_create_autocmd({ "BufReadPost", "BufNewFile", "BufWinEnter" }, {
+	pattern = "*",
+	callback = function(args)
+		local bufnr = args.buf
+		-- 获取当前 undotree 序列号，安全包装
+		local ok, ud = pcall(vim.fn.undotree)
+		local seq = 0
+		if ok and type(ud) == "table" and ud.seq_cur then
+			seq = ud.seq_cur
+		end
+		-- 存储缓冲打开时的撤销序列边界
+		vim.api.nvim_buf_set_var(bufnr, "undo_open_seq", seq)
+
+		-- buffer-local 限制的 undo 映射
+		vim.keymap.set("n", "u", function()
+			local ok2, ud2 = pcall(vim.fn.undotree)
+			if not ok2 or type(ud2) ~= "table" or not ud2.seq_cur then
+				-- 若无法读取 undotree，则回退为正常 undo
+				vim.cmd("undo")
+				return
+			end
+			local cur = ud2.seq_cur
+			local start_seq = vim.api.nvim_buf_get_var(bufnr, "undo_open_seq") or 0
+			if cur <= start_seq then
+				vim.notify("已到达打开文件时的撤销边界，无法继续撤销", vim.log.levels.WARN)
+				return
+			end
+			vim.cmd("undo")
+		end, { buffer = bufnr, desc = "buffer-limited undo" })
+	end,
+})

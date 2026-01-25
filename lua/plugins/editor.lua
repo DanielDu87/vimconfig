@@ -32,6 +32,11 @@ vim.api.nvim_create_autocmd("User", {
 		vim.keymap.del("n", "<leader>br") -- LazyVim 默认的向右关闭
 		vim.keymap.del("n", "<leader>bl") -- LazyVim 默认的向左关闭
 
+		-- ---------------------------------------------------------------------------
+		-- 删除 LSP 默认的重命名键位（被智能重构接管）
+		-- ---------------------------------------------------------------------------
+		pcall(vim.keymap.del, "n", "<leader>cr") -- 删除 LazyVim 默认的 LSP 重命名映射（如果存在）
+
 		-- 设置更直观的Buffer导航 (小写 h/l)
 		vim.keymap.set("n", "<leader>bh", "<cmd>bprevious<cr>", { desc = "上一个Buffer" })
 		vim.keymap.set("n", "<leader>bl", "<cmd>bnext<cr>", { desc = "下一个Buffer" })
@@ -141,7 +146,7 @@ vim.api.nvim_create_autocmd("User", {
 })
 
 --==============================================================================
--- 2. 优化 <leader>bP：关闭非固定文件并锁定侧边栏布局
+-- 4. 优化 <leader>bP：关闭非固定文件并锁定侧边栏布局
 --==============================================================================
 -- 此逻辑专门修复在关闭大量Buffer时，侧边栏（如目录树）被系统均分导致的闪烁和变形
 vim.api.nvim_create_autocmd("User", {
@@ -300,24 +305,24 @@ return {
 				{ "<leader>cu", desc = "删除未使用的导入", icon = "🗑️" },
 				{ "<leader>ci", desc = "添加缺失导入", icon = "📥" },
 				{ "<leader>cX", desc = "修复所有诊断", icon = "🛠️" },
-				{ "<leader>cr", desc = "重命名", icon = "✏️" },
-				{ "<leader>cs", desc = "显示符号结构", icon = "🔍" },
-				{ "<leader>cS", desc = "查找引用/定义", icon = "🔍" },
 				{ "<leader>cF", desc = "格式化注入语言", icon = "🛠️" },
-				                                { "<leader>d", group = "调试", icon = "🔧" },
-				                                { "<leader>db", desc = "切换断点(持久化)", icon = "🔴" },
-				                                { "<leader>dB", desc = "条件断点(持久化)", icon = "⭕" },
-				                                { "<leader>dC", desc = "清除所有断点(持久化)", icon = "🗑️" },
-				                                { "<leader>dc", desc = "开始/继续调试", icon = "▶️" },
-				                                { "<leader>di", desc = "步入(Into)", icon = "⬇️" },				                { "<leader>do", desc = "步过(Over)", icon = "➡️" },
-				                { "<leader>du", desc = "步出(Out)", icon = "⬆️" },
-				                { "<leader>dt", desc = "切换调试面板", icon = "🖥️" },
-				                { "<leader>dp", group = "LazyVim性能分析", icon = "📊" },
-				                { "<leader>dps", desc = "开始采样", icon = "▶️" },
-				                { "<leader>dpx", desc = "停止采样", icon = "⏹️" },
-				                				{ "<leader>x", group = "诊断/修复", icon = "⚠️" },
-				                				{ "<leader>e", group = "文件浏览器", icon = "📂" },
-				                				{ "<leader>f", group = "文件/查找", icon = "📁" },				{ "<leader>ff", desc = "查找文件", icon = "🔍" },
+				{ "<leader>cs", desc = "显示符号结构", icon = "🔍" },
+				{ "<leader>d", group = "调试", icon = "🔧" },
+				{ "<leader>db", desc = "切换断点(持久化)", icon = "🔴" },
+				{ "<leader>dB", desc = "条件断点(持久化)", icon = "⭕" },
+				{ "<leader>dC", desc = "清除所有断点(持久化)", icon = "🗑️" },
+				{ "<leader>dc", desc = "开始/继续调试", icon = "▶️" },
+				{ "<leader>di", desc = "步入(Into)", icon = "⬇️" },
+				{ "<leader>do", desc = "步过(Over)", icon = "➡️" },
+				{ "<leader>du", desc = "步出(Out)", icon = "⬆️" },
+				{ "<leader>dt", desc = "切换调试面板", icon = "🖥️" },
+				{ "<leader>dp", group = "LazyVim性能分析", icon = "📊" },
+				{ "<leader>dps", desc = "开始采样", icon = "▶️" },
+				{ "<leader>dpx", desc = "停止采样", icon = "⏹️" },
+				{ "<leader>x", group = "诊断/修复", icon = "⚠️" },
+				{ "<leader>e", group = "文件浏览器", icon = "📂" },
+				{ "<leader>f", group = "文件/查找", icon = "📁" },
+				{ "<leader>ff", desc = "查找文件", icon = "🔍" },
 				{ "<leader>g", group = "Git", icon = "🧡" },
 				{ "<leader>gh", group = "变更", icon = "🔄" },
 				{ "<leader>h", group = "历史", icon = "📜" },

@@ -13,7 +13,7 @@
 --==============================================================================
 vim.keymap.set("n", "K", "<nop>", { desc = "禁用 K 键" })
 
---==============================================================================
+--==================================================≈============================
 -- gl 切换诊断浮窗（复用同一个窗口，减少遮挡）
 --==============================================================================
 local diag_float = nil
@@ -31,7 +31,7 @@ vim.keymap.set("n", "gl", function()
 		border = "rounded",
 		source = "if_many",
 		header = "",
-		prefix = "",
+		prefix = "",≈≈
 	})
 end, { desc = "Line Diagnostics (toggle float)" })
 
@@ -130,3 +130,8 @@ vim.keymap.set("n", "<leader>rV", function()
 	end
 end, { desc = "选择TS工作区版本" })
 
+-- Visual 模式智能重构映射由 lsp.lua 在 LazyVimKeymaps 事件中设置（避免重复映射）
+-- 但为了避免 which-key 前缀导致选区丢失，提供一个直接的单键 Visual 快捷映射
+vim.keymap.set("v", "<leader>r", function()
+	require("util.refactor_smart").smart_visual_refactor()
+end, { desc = "智能重构 (Visual, 快捷)", noremap = true, silent = true })
