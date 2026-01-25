@@ -24,11 +24,18 @@
     - 预配置 TypeScript, Vue, Python, Docker 等语言支持。
     - 使用 `Mason` 自动管理 LSP Server、Linter 和 Formatter 的安装。
 - **代码补全**：基于 `blink.cmp` 的高性能补全引擎。
-- **代码检查 (Lint)**：
-    - 集成 `nvim-lint`，实时显示代码潜在错误。
+- **代码检查 (Lint & Diagnostics)**：
+    - 集成 `nvim-lint`，实时显示代码潜在错误（HTML 使用 markuplint）。
     - 使用 `tiny-inline-diagnostic` 提供行内多行换行显示。
     - 光标停留自动弹出诊断悬浮窗（支持换行）。
     - 所有诊断级别显示波浪下划线。
+    - 自动触发检查：文件保存、读取、退出插入模式时。
+    - LSP 诊断 + nvim-lint 诊断统一显示。
+
+- **代码重构 (Refactoring)**：
+    - Visual 模式下 `<leader>cr` 调用智能重构菜单。
+    - 支持提取函数/变量、内联函数/变量、提取到文件等操作。
+    - LSP 重命名 (`<leader>cn`) 支持实时预览所有引用处。
 
 ### 4. 🐞 智能调试 (DAP)
 - **布局持久化**：自动记录您手动调整的调试窗口（变量、堆栈、控制台）尺寸。
@@ -86,6 +93,14 @@
 | `<leader>di` | **步入** (Step Into) |
 | `<leader>do` | **步过** (Step Over) |
 | `<leader>du` | **步出** (Step Out) |
+
+### 🔨 代码重构 (Refactoring)
+> 需先在 **Visual 模式** 下选中代码
+
+| 快捷键 | 描述 |
+| :--- | :--- |
+| `<leader>cr` | **智能重构菜单** (提取函数/变量、内联等) |
+| `<leader>cn` | 带实时预览的 **重命名** (LSP) |
 
 ### 📂 文件资源管理器 (Explorer)
 > 在 Explorer 窗口中生效

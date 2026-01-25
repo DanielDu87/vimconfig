@@ -2,6 +2,17 @@
 -- LSP 自动启动配置
 --==============================================================================
 
+-- 公共 inlayHints 配置（用于 ts_ls 和 vtsls）
+local ts_inlay_hints = {
+	includeInlayParameterNameHints = "all",
+	includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+	includeInlayFunctionParameterTypeHints = true,
+	includeInlayVariableTypeHints = true,
+	includeInlayPropertyDeclarationTypeHints = true,
+	includeInlayFunctionLikeReturnTypeHints = true,
+	includeInlayEnumMemberValueHints = true,
+}
+
 return {
 	--==========================================================================
 	-- Linter 配置 (nvim-lint)
@@ -12,16 +23,74 @@ return {
 		config = function()
 			local lint = require("lint")
 
-			-- 配置linters
+			-- 配置 linters
 			lint.linters_by_ft = lint.linters_by_ft or {}
-			lint.linters_by_ft.html = { "markuplint" }
 
-			-- 自动触发lint
-			vim.api.nvim_create_autocmd({ "BufWritePost", "BufReadPost", "InsertLeave" }, {
-				pattern = { "*.html", "*.htm" },
-				callback = function()
-					lint.try_lint()
-				end,
+			-- 1. HTML / CSS
+			lint.linters_by_ft.html = { "markuplint" }
+			lint.linters_by_ft.css = { "stylelint" }
+			lint.linters_by_ft.scss = { "stylelint" }
+			lint.linters_by_ft.less = { "stylelint" }
+
+			-- 2. JavaScript / TypeScript
+			lint.linters_by_ft.javascript = { "eslint" }
+			lint.linters_by_ft.javascriptreact = { "eslint" }
+			lint.linters_by_ft.typescript = { "eslint" }
+			lint.linters_by_ft.typescriptreact = { "eslint" }
+			lint.linters_by_ft.vue = { "eslint" }
+
+			-- 3. Python
+			lint.linters_by_ft.python = { "ruff" }
+
+			-- 4. Docker
+			lint.linters_by_ft.dockerfile = { "hadolint" }
+
+			-- 防抖定时器，避免过于频繁触发
+			local lint_debounce_timer = nil
+			local debounce_ms = 500 -- 500ms 防抖，平衡性能和实时性
+
+			local function trigger_lint()
+				-- 清除之前的定时器
+				if lint_debounce_timer then
+					vim.fn.timer_stop(lint_debounce_timer)
+					lint_debounce_timer = nil
+				end
+
+				-- 设置新的定时器
+				lint_debounce_timer = vim.fn.timer_start(debounce_ms, function()
+					local ft = vim.bo.filetype
+					local supported_fts = {
+						html = true,
+						htm = true,
+						css = true,
+						scss = true,
+						less = true,
+						javascript = true,
+						javascriptreact = true,
+						typescript = true,
+						typescriptreact = true,
+						vue = true,
+						python = true,
+						dockerfile = true,
+					}
+					if supported_fts[ft] then
+						-- 显示调试信息（可选，注释掉以关闭）
+						-- vim.notify("触发 lint: " .. ft, vim.log.levels.DEBUG)
+						lint.try_lint()
+					end
+				end)
+			end
+
+			-- 实时触发 lint：编辑时、插入时、保存时
+			vim.api.nvim_create_autocmd({
+				"BufWritePost",     -- 保存时
+				"BufReadPost",      -- 读取时
+				"TextChanged",      -- 普通模式下文本改变
+				"TextChangedI",     -- 插入模式下文本改变
+				"InsertLeave",      -- 退出插入模式
+			}, {
+				group = vim.api.nvim_create_augroup("nvim-lint-auto", { clear = true }),
+				callback = trigger_lint,
 			})
 		end,
 	},
@@ -54,98 +123,6 @@ return {
 						},
 					},
 				},
-			},
-		},
-	},
-
-	--==========================================================================
-	-- LSP 服务详细配置
-	--==========================================================================
-	{
-		"neovim/nvim-lspconfig",
-		opts = {
-			servers = {
-				-- 1. 还原之前的 ts_ls (tsserver) 设置，仅用于 JS
-				ts_ls = {
-					enabled = true,
-					filetypes = { "javascript", "javascriptreact" },
-					settings = {
-						javascript = {
-							inlayHints = {
-								includeInlayParameterNameHints = "all",
-								includeInlayParameterNameHintsWhenArgumentMatchesName = false,
-								includeInlayFunctionParameterTypeHints = true,
-								includeInlayVariableTypeHints = true,
-								includeInlayPropertyDeclarationTypeHints = true,
-								includeInlayFunctionLikeReturnTypeHints = true,
-								includeInlayEnumMemberValueHints = true,
-							},
-						},
-					},
-				},
-
-				-- 2. 针对 TypeScript 环境切换到 vtsls
-				vtsls = {
-					enabled = true,
-					filetypes = { "typescript", "typescriptreact", "vue" },
-					keys = {
-						{
-							"<leader>co",
-							function()
-								require("vtsls").commands.organize_imports()
-							end,
-							desc = "整理导入",
-						},
-						{
-							"<leader>cu",
-							function()
-								require("vtsls").commands.remove_unused_imports()
-							end,
-							desc = "删除未使用的导入",
-						},
-					},
-					settings = {
-						typescript = {
-							inlayHints = {
-								parameterNames = { enabled = "all", suppressWhenArgumentMatchesName = false },
-								parameterTypes = { enabled = true },
-								variableTypes = { enabled = true },
-								propertyDeclarationTypes = { enabled = true },
-								functionLikeReturnTypes = { enabled = true },
-								enumMemberValues = { enabled = true },
-							},
-						},
-						vtsls = {
-							autoUseWorkspaceTsdk = true,
-						},
-					},
-				},
-
-				-- 3. 其他 LSP 保持不变
-				marksman = { enabled = true },
-				emmet_ls = {
-					enabled = true,
-					flags = { debounce_text_changes = 150 },
-					filetypes = {
-						"html",
-						"typescriptreact",
-						"javascriptreact",
-						"css",
-						"sass",
-						"scss",
-						"less",
-						"vue",
-					},
-				},
-				superhtml = { enabled = false },
-				html = {
-					enabled = true,
-					settings = { html = { validate = { scripts = true, styles = true } } },
-				},
-				stylelint_lsp = {
-					filetypes = { "css", "scss", "less", "sass" },
-				},
-				css_variables = { enabled = false },
 			},
 		},
 	},
