@@ -38,8 +38,8 @@ return {
 				css = { "stylelint", "prettier" },
 				scss = { "stylelint", "prettier" },
 				less = { "stylelint", "prettier" },
-				-- HTML 使用 Markuplint 进行强力纠错，Prettier 进行排版
-			html = { "markuplint", "prettier" },
+				-- HTML 只使用 Prettier 进行排版（markuplint用于lint，不用于格式化）
+			html = { "prettier" },
 			htmldjango = { "prettier" },
 			json = { "prettier" },
 			jsonc = { "prettier" },
@@ -75,11 +75,6 @@ return {
 			},
 			-- 格式化器配置：统一使用 Tab，宽度 4
 			formatters = {
-				-- Markuplint 配置：纠错并输出到标准输出
-				markuplint = {
-					command = "/opt/homebrew/bin/markuplint",
-					args = { "--fix", "--stdin-filename", "$FILENAME" },
-				},
 				-- 自定义 Docker 格式化器 (使用 Perl 确保跨平台兼容性)
 			docker_uppercase = {
 				command = "perl",

@@ -8,11 +8,22 @@ return {
 	--==========================================================================
 	{
 		"mfussenegger/nvim-lint",
-		opts = {
-			linters_by_ft = {
-				html = { "markuplint" },
-			},
-		},
+		event = { "BufWritePre", "BufReadPost" },
+		config = function()
+			local lint = require("lint")
+
+			-- 配置linters
+			lint.linters_by_ft = lint.linters_by_ft or {}
+			lint.linters_by_ft.html = { "markuplint" }
+
+			-- 自动触发lint
+			vim.api.nvim_create_autocmd({ "BufWritePost", "BufReadPost", "InsertLeave" }, {
+				pattern = { "*.html", "*.htm" },
+				callback = function()
+					lint.try_lint()
+				end,
+			})
+		end,
 	},
 
 	--==========================================================================

@@ -158,8 +158,8 @@ return {
 				layouts = {
 					{
 						elements = {
-							{ id = "scopes", size = 0.5 }, 
-							{ id = "stacks", size = 0.3 }, 
+							{ id = "scopes", size = 0.5 },
+							{ id = "stacks", size = 0.3 },
 							{ id = "breakpoints", size = 0.2 },
 						},
 						size = init_sidebar_w,
@@ -167,7 +167,7 @@ return {
 					},
 					{
 						elements = {
-							{ id = "repl", size = 0.3 }, 
+							{ id = "repl", size = 0.3 },
 							{ id = "console", size = 0.7 },
 						},
 						size = init_bottom_h,
@@ -182,6 +182,19 @@ return {
 					mappings = { close = { "q", "<Esc>" } },
 				},
 			})
+
+			-- 配置DAP UI窗口的分割线颜色
+			vim.api.nvim_create_autocmd("FileType", {
+				pattern = "dapui_*",
+				callback = function()
+					-- 设置DAP窗口的分割线颜色（青蓝色，显眼但不刺眼）
+					vim.api.nvim_set_hl(0, "WinSeparator", {
+						fg = "#2b85b7", -- 青蓝色
+						bg = "NONE",
+					})
+				end,
+			})
+
 			require("nvim-dap-virtual-text").setup()
 
 			-- 自动开关UI面板及布局恢复
