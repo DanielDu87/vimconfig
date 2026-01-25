@@ -2,49 +2,17 @@
 -- LSP 自动启动配置
 --==============================================================================
 
--- 公共 inlayHints 配置（用于 ts_ls 和 vtsls）
-local ts_inlay_hints = {
-	includeInlayParameterNameHints = "all",
-	includeInlayParameterNameHintsWhenArgumentMatchesName = false,
-	includeInlayFunctionParameterTypeHints = true,
-	includeInlayVariableTypeHints = true,
-	includeInlayPropertyDeclarationTypeHints = true,
-	includeInlayFunctionLikeReturnTypeHints = true,
-	includeInlayEnumMemberValueHints = true,
-}
-
 return {
-	--==========================================================================
-	-- 删除 LazyVim 默认的 LSP 重命名键位（被智能重构接管）
-	--==========================================================================
-	{
-		"neovim/nvim-lspconfig",
-		event = "VeryLazy",
-		config = function()
-			vim.api.nvim_create_autocmd("User", {
-				pattern = "LazyVimKeymaps",
-				callback = function()
-					-- 设置 Visual 模式的智能重构键位
-					vim.keymap.set("x", "<leader>cr", function()
-						require("util.refactor_smart").smart_visual_refactor()
-					end, { desc = "智能重构操作", remap = false })
-				end,
-				once = true,
-			})
-		end,
-	},
-
 	--==========================================================================
 	-- Linter 配置 (nvim-lint)
 	--==========================================================================
 	{
 		"mfussenegger/nvim-lint",
-		opts = function(_, opts)
-			opts.linters_by_ft = opts.linters_by_ft or {}
-			-- HTML 使用 markuplint，Python 使用 ruff（需在系统中安装 ruff）
-			opts.linters_by_ft.html = { "markuplint" }
-			opts.linters_by_ft.python = { "ruff" }
-		end,
+		opts = {
+			linters_by_ft = {
+				html = { "markuplint" },
+			},
+		},
 	},
 
 	--==========================================================================
@@ -52,8 +20,31 @@ return {
 	--==========================================================================
 	{
 		"yioneko/nvim-vtsls",
-		lazy = true,
-		config = false, -- 禁用默认的 setup 调用，该插件由 lspconfig 驱动
+		ft = { "typescript", "typescriptreact", "vue" },
+		config = function()
+			-- 该插件由 lspconfig 驱动，此处仅确保其加载
+		end,
+	},
+
+	--==========================================================================
+	-- TypeScript 增强插件 (完全还原您之前的 JS 配置)
+	--==========================================================================
+	{
+		"jose-elias-alvarez/typescript.nvim",
+		opts = {
+			server = {
+				filetypes = { "javascript", "javascriptreact" },
+				settings = {
+					typescript = {
+						inlayHints = {
+							includeInlayParameterNameHints = "all",
+							includeInlayVariableTypeHints = true,
+							includeInlayFunctionLikeReturnTypeHints = true,
+						},
+					},
+				},
+			},
+		},
 	},
 
 	--==========================================================================
@@ -61,90 +52,90 @@ return {
 	--==========================================================================
 	{
 		"neovim/nvim-lspconfig",
-		opts = function(_, opts)
-			-- 服务器配置
-			opts.servers = opts.servers or {}
-
-			-- =========================================================================
-			-- TypeScript/JavaScript LSP 配置
-			-- =========================================================================
-
-			-- 1. ts_ls (tsserver) - 用于 JavaScript
-			opts.servers.ts_ls = {
-				enabled = true,
-				filetypes = { "javascript", "javascriptreact" },
-				settings = {
-					javascript = {
-						inlayHints = ts_inlay_hints,
-					},
-				},
-			}
-
-			-- 2. vtsls - 用于 TypeScript 和 Vue（支持工作区版本切换）
-			opts.servers.vtsls = {
-				enabled = true,
-				filetypes = { "typescript", "typescriptreact", "vue" },
-				keys = {
-					{
-						"<leader>co",
-						function()
-							require("vtsls").commands.organize_imports()
-						end,
-						desc = "整理导入",
-					},
-					{
-						"<leader>cu",
-						function()
-							require("vtsls").commands.remove_unused_imports()
-						end,
-						desc = "删除未使用的导入",
-					},
-				},
-				settings = {
-					typescript = {
-						inlayHints = {
-							parameterNames = { enabled = "all", suppressWhenArgumentMatchesName = false },
-							parameterTypes = { enabled = true },
-							variableTypes = { enabled = true },
-							propertyDeclarationTypes = { enabled = true },
-							functionLikeReturnTypes = { enabled = true },
-							enumMemberValues = { enabled = true },
+		opts = {
+			servers = {
+				-- 1. 还原之前的 ts_ls (tsserver) 设置，仅用于 JS
+				ts_ls = {
+					enabled = true,
+					filetypes = { "javascript", "javascriptreact" },
+					settings = {
+						javascript = {
+							inlayHints = {
+								includeInlayParameterNameHints = "all",
+								includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+								includeInlayFunctionParameterTypeHints = true,
+								includeInlayVariableTypeHints = true,
+								includeInlayPropertyDeclarationTypeHints = true,
+								includeInlayFunctionLikeReturnTypeHints = true,
+								includeInlayEnumMemberValueHints = true,
+							},
 						},
 					},
-					vtsls = {
-						autoUseWorkspaceTsdk = true,
+				},
+
+				-- 2. 针对 TypeScript 环境切换到 vtsls
+				vtsls = {
+					enabled = true,
+					filetypes = { "typescript", "typescriptreact", "vue" },
+					keys = {
+						{
+							"<leader>co",
+							function()
+								require("vtsls").commands.organize_imports()
+							end,
+							desc = "整理导入",
+						},
+						{
+							"<leader>cu",
+							function()
+								require("vtsls").commands.remove_unused_imports()
+							end,
+							desc = "删除未使用的导入",
+						},
+					},
+					settings = {
+						typescript = {
+							inlayHints = {
+								parameterNames = { enabled = "all", suppressWhenArgumentMatchesName = false },
+								parameterTypes = { enabled = true },
+								variableTypes = { enabled = true },
+								propertyDeclarationTypes = { enabled = true },
+								functionLikeReturnTypes = { enabled = true },
+								enumMemberValues = { enabled = true },
+							},
+						},
+						vtsls = {
+							autoUseWorkspaceTsdk = true,
+						},
 					},
 				},
-			}
 
-			-- =========================================================================
-			-- 其他 LSP 配置
-			-- =========================================================================
-			opts.servers.marksman = { enabled = true }
-			opts.servers.emmet_ls = {
-				enabled = true,
-				flags = { debounce_text_changes = 150 },
-				filetypes = {
-					"html",
-					"typescriptreact",
-					"javascriptreact",
-					"css",
-					"sass",
-					"scss",
-					"less",
-					"vue",
+				-- 3. 其他 LSP 保持不变
+				marksman = { enabled = true },
+				emmet_ls = {
+					enabled = true,
+					flags = { debounce_text_changes = 150 },
+					filetypes = {
+						"html",
+						"typescriptreact",
+						"javascriptreact",
+						"css",
+						"sass",
+						"scss",
+						"less",
+						"vue",
+					},
 				},
-			}
-			opts.servers.superhtml = { enabled = false }
-			opts.servers.html = {
-				enabled = true,
-				settings = { html = { validate = { scripts = true, styles = true } } },
-			}
-			opts.servers.stylelint_lsp = {
-				filetypes = { "css", "scss", "less", "sass" },
-			}
-
-			return opts
-		end,
+				superhtml = { enabled = false },
+				html = {
+					enabled = true,
+					settings = { html = { validate = { scripts = true, styles = true } } },
+				},
+				stylelint_lsp = {
+					filetypes = { "css", "scss", "less", "sass" },
+				},
+				css_variables = { enabled = false },
+			},
+		},
 	},
 }
