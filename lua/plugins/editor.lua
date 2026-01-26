@@ -307,6 +307,8 @@ return {
 				{ "<leader>cX", desc = "修复所有诊断", icon = "🛠️" },
 				{ "<leader>cF", desc = "格式化注入语言", icon = "🛠️" },
 				{ "<leader>cs", desc = "显示符号结构", icon = "🔍" },
+				{ "<leader>cr", desc = "智能重构", icon = "🔨" },
+				{ "<leader>rv", desc = "选择Python虚拟环境", icon = "🐍" },
 				{ "<leader>d", group = "调试", icon = "🔧" },
 				{ "<leader>db", desc = "切换断点(持久化)", icon = "🔴" },
 				{ "<leader>dB", desc = "条件断点(持久化)", icon = "⭕" },
