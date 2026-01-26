@@ -20,6 +20,21 @@ vim.api.nvim_create_autocmd("User", {
 		vim.keymap.del("n", "<leader>|") -- 删除默认的纵向分割
 
 		-- ---------------------------------------------------------------------------
+		-- 删除可能存在的 <leader>P 子项键位
+		-- ---------------------------------------------------------------------------
+		vim.api.nvim_create_autocmd("User", {
+			pattern = "VeryLazy",
+			once = true,
+			callback = function()
+				local wk = require("which-key")
+				-- 删除 which-key 中注册的 <leader>P 组
+				pcall(function()
+					wk.remove({ "<leader>", "P" })
+				end)
+			end,
+		})
+
+		-- ---------------------------------------------------------------------------
 		-- 临时Buffer：统一移到 <leader>S (Scratch) 组
 		-- ---------------------------------------------------------------------------
 		vim.keymap.del("n", "<leader>.")
@@ -36,6 +51,39 @@ vim.api.nvim_create_autocmd("User", {
 		-- 删除 LSP 默认的重命名键位（被智能重构接管）
 		-- ---------------------------------------------------------------------------
 		pcall(vim.keymap.del, "n", "<leader>cr") -- 删除 LazyVim 默认的 LSP 重命名映射（如果存在）
+
+		-- ---------------------------------------------------------------------------
+		-- 性能分析快捷键（放在 <leader>dp 子菜单）
+		-- ---------------------------------------------------------------------------
+		vim.keymap.set("n", "<leader>dpp", function()
+			require("snacks").toggle.profiler()
+		end, { desc = "切换性能分析器" })
+		vim.keymap.set("n", "<leader>dph", function()
+			require("snacks").toggle.profiler_highlights()
+		end, { desc = "性能分析高亮" })
+
+		-- ---------------------------------------------------------------------------
+		-- 删除 LazyVim Python extras 的默认调试键位（从 dP 子菜单移出）
+		-- ---------------------------------------------------------------------------
+		pcall(vim.keymap.del, "n", "<leader>dPt") -- 删除 Debug Method（三键）
+		pcall(vim.keymap.del, "n", "<leader>dPc") -- 删除 Debug Class（三键）
+
+		-- 删除可能存在的 <leader>P 菜单
+		pcall(vim.keymap.del, "n", "<leader>P")
+
+		-- 重新定义 Python 调试快捷键（直接放在 <leader>d 下）
+		vim.keymap.set("n", "<leader>dm", function()
+			require("dap-python").test_method()
+		end, { desc = "调试方法（Method）" })
+		vim.keymap.set("n", "<leader>dC", function()
+			require("dap-python").test_class()
+		end, { desc = "调试类（Class）" })
+
+		-- 重新映射清除断点到 dX (因为 dC 被调试类占用)
+		pcall(vim.keymap.del, "n", "<leader>dC") -- 删除旧的清除断点（如果存在）
+		vim.keymap.set("n", "<leader>dX", function()
+			require("persistent-breakpoints.api").clear_all_breakpoints()
+		end, { desc = "清除所有断点(持久化)" })
 
 		-- 设置更直观的Buffer导航 (小写 h/l)
 		vim.keymap.set("n", "<leader>bh", "<cmd>bprevious<cr>", { desc = "上一个Buffer" })
@@ -266,6 +314,8 @@ return {
 				{ "<leader>|", desc = "which_key_ignore" },
 				{ "<leader>.", desc = "which_key_ignore" },
 				{ "<leader>E", desc = "which_key_ignore" },
+				{ "<leader>P", group = which_key_ignore },
+				{ "<leader>P", desc = "which_key_ignore" },
 				{ "<leader>`", desc = "which_key_ignore" },
 				{ "<leader>,", desc = "which_key_ignore" },
 				{ "<leader>br", desc = "which_key_ignore" },
@@ -310,17 +360,19 @@ return {
 				{ "<leader>cr", desc = "智能重构", icon = "🔨" },
 				{ "<leader>rv", desc = "选择Python虚拟环境", icon = "🐍" },
 				{ "<leader>d", group = "调试", icon = "🔧" },
-				{ "<leader>db", desc = "切换断点(持久化)", icon = "🔴" },
-				{ "<leader>dB", desc = "条件断点(持久化)", icon = "⭕" },
-				{ "<leader>dC", desc = "清除所有断点(持久化)", icon = "🗑️" },
+				{ "<leader>db", desc = "切换断点（持久化）", icon = "🔴" },
+				{ "<leader>dB", desc = "条件断点（持久化）", icon = "⭕" },
+				{ "<leader>dC", desc = "调试类（Class）", icon = "🐍" },
+				{ "<leader>dX", desc = "清除所有断点（持久化）", icon = "🗑️" },
 				{ "<leader>dc", desc = "开始/继续调试", icon = "▶️" },
-				{ "<leader>di", desc = "步入(Into)", icon = "⬇️" },
-				{ "<leader>do", desc = "步过(Over)", icon = "➡️" },
-				{ "<leader>du", desc = "步出(Out)", icon = "⬆️" },
+				{ "<leader>di", desc = "步入（Into）", icon = "⬇️" },
+				{ "<leader>do", desc = "步过（Over）", icon = "➡️" },
+				{ "<leader>du", desc = "步出（Out）", icon = "⬆️" },
 				{ "<leader>dt", desc = "切换调试面板", icon = "🖥️" },
-				{ "<leader>dp", group = "LazyVim性能分析", icon = "📊" },
-				{ "<leader>dps", desc = "开始采样", icon = "▶️" },
-				{ "<leader>dpx", desc = "停止采样", icon = "⏹️" },
+				{ "<leader>dm", desc = "调试方法（Method）", icon = "🐍" },
+				{ "<leader>dp", group = "性能分析", icon = "📊" },
+				{ "<leader>dpp", desc = "切换性能分析器", icon = "📊" },
+				{ "<leader>dph", desc = "性能分析高亮", icon = "✨" },
 				{ "<leader>x", group = "诊断/修复", icon = "⚠️" },
 				{ "<leader>e", group = "文件浏览器", icon = "📂" },
 				{ "<leader>f", group = "文件/查找", icon = "📁" },
@@ -461,11 +513,15 @@ return {
 					{ "Lsp Info", "LSP信息" },
 					{ "Lsp Log", "LSP日志" },
 					{ "Mason", "Mason" },
-					{ "Profiler Start", "开始采样" },
+					{ "Profiler Start", "切换性能分析器" },
 					{ "Profiler Stop", "停止采样" },
 					{ "Profiler Scratch Buffer", "性能分析临时Buffer" },
+					{ "Toggle Profiler", "切换性能分析器" },
+					{ "Profiler", "性能分析器" },
 					{ "Conform Info", "格式化信息" },
 					{ "Call Hierarchy", "调用层次" },
+					{ "Debug Class", "调试类（Class）" },
+					{ "Debug Method", "调试方法（Method）" },
 					{ "Incoming Calls", "输入调用" },
 					{ "Outgoing Calls", "输出调用" },
 					{ "Fix all diagnostics", "修复所有诊断" },
