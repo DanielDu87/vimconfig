@@ -211,7 +211,7 @@ function M.smart_visual_refactor()
 
 		-- 弹出重构操作选择（中文标签）
 		vim.ui.select(refactor_options, {
-			prompt = "选择重构操作 (选区已自动精修)",
+			prompt = "选择重构操作（选区已自动精修）",
 			format_item = function(item) return item.label end,
 		}, function(choice)
 			if not choice then return end

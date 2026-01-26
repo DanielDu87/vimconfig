@@ -147,7 +147,7 @@ function M.open_runner_log_window(initial_message)
 		width = 0.7,
 		height = 0.7,
 		border = "rounded",
-		title = " 📋 运行日志 (只读 | 自动刷新) ",
+		title = " 📋 运行日志（只读 | 自动刷新） ",
 		wo = {
 			wrap = true,
 			cursorline = true,
@@ -483,7 +483,7 @@ function M.run_project()
 		on_exit = function(_, code)
 			-- 信号退出码 (>=128) 视为正常退出
 			if code == 0 or code >= 128 then
-				M.write_log(">>> 项目运行结束 (状态码: " .. code .. ")\n")
+				M.write_log(">>> 项目运行结束（状态码: " .. code .. "）\n")
 			else
 				M.write_log(">>> 进程异常退出，状态码: " .. code .. "\n")
 			end
@@ -533,7 +533,7 @@ function M.run_current_file()
 			on_exit = function(_, code)
 				-- 信号退出码 (>=128) 视为正常退出
 				if code == 0 or code >= 128 then
-					M.write_log(">>> 运行结束 (状态码: " .. code .. ")\n")
+					M.write_log(">>> 运行结束（状态码: " .. code .. "）\n")
 				else
 					M.write_log(">>> 进程异常退出，状态码: " .. code .. "\n")
 				end
@@ -569,7 +569,7 @@ function M.run_current_file()
 			on_exit = function(_, code)
 				-- 信号退出码 (>=128) 视为正常退出
 				if code == 0 or code >= 128 then
-					M.write_log(">>> 执行结束 (状态码: " .. code .. ")\n")
+					M.write_log(">>> 执行结束（状态码: " .. code .. "）\n")
 				else
 					M.write_log(">>> 进程异常退出，状态码: " .. code .. "\n")
 				end
@@ -598,7 +598,7 @@ function M.run_current_file()
 			on_exit = function(_, code)
 				-- 信号退出码 (>=128) 视为正常退出
 				if code == 0 or code >= 128 then
-					M.write_log(">>> 执行结束 (状态码: " .. code .. ")\n")
+					M.write_log(">>> 执行结束（状态码: " .. code .. "）\n")
 				else
 					M.write_log(">>> 进程异常退出，状态码: " .. code .. "\n")
 				end
@@ -654,7 +654,7 @@ return {
 						width = 0.7,
 						height = 0.7,
 						border = "rounded",
-						title = " 📋 运行日志 (只读 | 自动刷新) ",
+						title = " 📋 运行日志（只读 | 自动刷新） ",
 						wo = {
 							wrap = true,
 							cursorline = true,
@@ -735,7 +735,7 @@ return {
 				end
 
 				vim.ui.input({
-					prompt = "配置运行命令前缀 (会自动追加当前文件名):",
+					prompt = "配置运行命令前缀（会自动追加当前文件名）：",
 					default = runner_config.get_file_runner(file) or ""
 				}, function(command)
 					if command ~= nil then -- 用户没有取消
@@ -761,7 +761,7 @@ return {
 					end
 
 					vim.ui.input({
-						prompt = "配置项目运行命令 (完整命令):",
+						prompt = "配置项目运行命令（完整命令）：",
 						default = runner_config.get_project_runner(root) or ""
 					}, function(command)
 						if command ~= nil then -- 用户没有取消

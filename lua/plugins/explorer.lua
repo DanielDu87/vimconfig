@@ -236,8 +236,8 @@ return {
 					vim.api.nvim_set_hl(0, "SnacksPickerGitStatusAdded", { link = "DiagnosticWarn" })
 					-- 已暂存修改：蓝色
 					vim.api.nvim_set_hl(0, "SnacksPickerGitStatusStaged", { link = "DiagnosticInfo" })
-					-- 目录树光标行颜色（链接到 CursorLine，自动跟随主题）
-					vim.api.nvim_set_hl(0, "SnacksPickerListCursorLine", { link = "CursorLine" })
+					-- 目录树光标行颜色（设置更亮的背景色）
+					vim.api.nvim_set_hl(0, "SnacksPickerListCursorLine", { bg = "#3b4261" })
 				end,
 			})
 			-- 立即应用一次（防止 ColorScheme 已经加载过）
@@ -245,7 +245,7 @@ return {
 				vim.api.nvim_set_hl(0, "SnacksPickerGitStatusUntracked", { link = "String" })
 				vim.api.nvim_set_hl(0, "SnacksPickerGitStatusAdded", { link = "DiagnosticWarn" })
 				vim.api.nvim_set_hl(0, "SnacksPickerGitStatusStaged", { link = "DiagnosticInfo" })
-				vim.api.nvim_set_hl(0, "SnacksPickerListCursorLine", { link = "CursorLine" })
+				vim.api.nvim_set_hl(0, "SnacksPickerListCursorLine", { bg = "#3b4261" })
 			end)
 
 			--==============================================================================
@@ -442,7 +442,7 @@ return {
 			vim.keymap.set("n", "<M-h>", "<Plug>(MotionLineStart)", { desc = "Move to line start" })
 			vim.keymap.set("n", "<M-l>", "<Plug>(MotionLineEnd)", { desc = "Move to line end" })
 
-			-- Operator-pending 模式 (配合 d, c, y 等操作符)
+			-- Operator-pending 模式（配合 d, c, y 等操作符）
 			vim.keymap.set("o", "<M-h>", "<Plug>(MotionLineStart)", { desc = "Operator: to line start" })
 			vim.keymap.set("o", "<M-l>", "<Plug>(MotionLineEnd)", { desc = "Operator: to line end" })
 

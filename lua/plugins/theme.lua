@@ -67,7 +67,7 @@ return {
 			-- 自定义高亮 - 仅保留编辑器内部特定颜色覆盖
 			on_highlights = function(hl, _) 
 				hl.Visual = { bg = "#515c7e" } -- 选中文本背景（更亮的蓝色/灰色）
-				hl.CursorLine = { bg = "#2d3343" } -- 编辑器光标行（更暗的灰色）
+				hl.CursorLine = { bg = "#363d59" } -- 编辑器光标行（调亮后的颜色）
 				hl.Comment = { fg = "#7a7a7a", italic = true } -- 注释颜色（纯浅灰色）
 			end,
 		},

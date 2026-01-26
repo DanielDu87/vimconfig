@@ -27,7 +27,7 @@ return {
 					console = "integratedTerminal",
 					justMyCode = true,
 				},
-				-- 2. 调试Django (manage.py runserver)
+				-- 2. 调试Django（manage.py runserver）
 				{
 					type = "python",
 					request = "launch",
@@ -45,7 +45,7 @@ return {
 				{
 					type = "python",
 					request = "attach",
-					name = "Python: Attach (5678)",
+					name = "Python: Attach（5678）",
 					connect = { host = "127.0.0.1", port = 5678 },
 					justMyCode = false,
 				},

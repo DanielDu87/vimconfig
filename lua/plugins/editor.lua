@@ -89,7 +89,7 @@ vim.api.nvim_create_autocmd("User", {
 		pcall(vim.keymap.del, "n", "<leader>dC") -- 删除旧的清除断点（如果存在）
 		vim.keymap.set("n", "<leader>dX", function()
 			require("persistent-breakpoints.api").clear_all_breakpoints()
-		end, { desc = "清除所有断点(持久化)" })
+		end, { desc = "清除所有断点（持久化）" })
 
 		-- 设置更直观的Buffer导航 (小写 h/l)
 		vim.keymap.set("n", "<leader>bh", "<cmd>bprevious<cr>", { desc = "上一个Buffer" })
@@ -392,6 +392,24 @@ return {
 				{ "<leader>fe", desc = "文件浏览器（根目录）" },
 				{ "<leader>fE", desc = "文件浏览器（当前目录）" },
 				{ "<leader>g", group = "Git", icon = "🧡" },
+				{ "<leader>gB", desc = "which_key_ignore" },
+				{ "<leader>gY", desc = "which_key_ignore" },
+				{ "<leader>gba", desc = "Git行追溯" },
+				{ "<leader>gb", desc = "Git切换分支" },
+				{ "<leader>gc", desc = "Git检出分支" },
+				{ "<leader>gC", desc = "Git检出" },
+				{ "<leader>gd", desc = "Git差异" },
+				{ "<leader>gf", desc = "Git文件" },
+				{ "<leader>gg", desc = "Git提交图" },
+				{ "<leader>gG", desc = "Git暂存" },
+				{ "<leader>gl", desc = "Git提交详情" },
+				{ "<leader>gp", desc = "Git拉取" },
+				{ "<leader>gP", desc = "Git推送" },
+				{ "<leader>gr", group = "Git远程仓库", icon = "🔗" },
+				{ "<leader>gro", desc = "浏览器打开" },
+				{ "<leader>gry", desc = "复制链接" },
+				{ "<leader>gs", desc = "Git状态" },
+				{ "<leader>gS", desc = "Git切换" },
 				{ "<leader>gh", group = "变更", icon = "🔄" },
 				{ "<leader>h", group = "历史", icon = "📜" },
 				{ "<leader>hn", desc = "通知历史", icon = "🔔" },
@@ -450,6 +468,17 @@ return {
 					{ "Git Diff", "Git差异" },
 					{ "Git Status", "Git状态" },
 					{ "Git Stash", "Git暂存" },
+					{ "Git Blame", "Git行追溯" },
+					{ "Git Branches", "Git切换分支" },
+					{ "Git Commit", "Git提交记录" },
+					{ "Git Checkout", "Git检出" },
+					{ "Git Files", "Git文件" },
+					{ "Git Browse", "浏览器打开" },
+					{ "Git Browse (open)", "浏览器打开" },
+					{ "Git Log", "Git日志" },
+					{ "Git Pull", "Git拉取" },
+					{ "Git Push", "Git推送" },
+					{ "Git Switch", "Git切换" },
 					{ "GitHub Issues", "GitHub问题" },
 					{ "GitHub Pull Requests", "GitHub拉取请求" },
 					{ "Recent", "最近文件" },
@@ -470,8 +499,7 @@ return {
 					{ "Icons", "图标" },
 					{ "Jumps", "跳转列表" },
 					{ "Keymaps", "快捷键映射" },
-					{ "Buffer Keymaps (which-key)", "Buffer快捷键查询" },
-					{ "Location List", "位置列表" },
+					                    { "Buffer Keymaps (which-key)", "Buffer快捷键查询（which-key）" },					{ "Location List", "位置列表" },
 					{ "Man Pages", "手册页" },
 					{ "Marks", "标记" },
 					{ "Resume", "恢复上一次" },
@@ -782,6 +810,202 @@ return {
 					require("snacks").toggle.zoom()
 				end,
 				desc = "最大化/恢复窗口",
+			},
+
+			-- Git 增强映射 (中文化覆盖)
+			-- Git检出：选择并切换分支（使用git switch）
+			{
+				"<leader>gc",
+				function()
+					-- 自定义格式化函数，减少分支名称占用的宽度
+					local function git_branch_compact(item, picker)
+						local a = require("snacks.picker.util").align
+						local ret = {} ---@type snacks.picker.Highlight[]
+						if item.current then
+							ret[#ret + 1] = { a("", 2), "SnacksPickerGitBranchCurrent" }
+						else
+							ret[#ret + 1] = { a("", 2) }
+						end
+						if item.detached then
+							ret[#ret + 1] = { a("(detached HEAD)", 5, { truncate = true }), "SnacksPickerGitDetached" }
+						else
+							ret[#ret + 1] = { a(item.branch, 5, { truncate = true }), "SnacksPickerGitBranch" }
+						end
+						ret[#ret + 1] = { "        " }  -- 增加间隔为8个空格
+						-- 只添加提交哈希，不添加日期时间
+						if item.commit then
+							ret[#ret + 1] = { a(item.commit, 8, { truncate = true }), "SnacksPickerGitCommit" }
+						end
+						return ret
+					end
+
+					-- 直接使用 snacks 的 git_branches picker，并使用git switch
+					require("snacks").picker.git_branches({
+						format = git_branch_compact,
+						confirm = function(picker, item)
+							picker:close()
+							local branch = type(item) == "table" and item.branch or item
+							-- 使用 git switch 切换分支（Git推荐命令）
+							local cmd = "git switch " .. vim.fn.shellescape(branch)
+							local result = vim.fn.system(cmd)
+							if vim.v.shell_error == 0 then
+								vim.notify("已切换到分支: " .. branch, vim.log.levels.INFO)
+								vim.cmd("checktime") -- 刷新缓冲区
+							else
+								vim.notify("切换分支失败:\n" .. result, vim.log.levels.ERROR)
+							end
+						end,
+						previewers = {
+							git_log = {
+								wo = {
+									wrap = false, -- 禁用自动换行
+								},
+							},
+						},
+						win = {
+							preview = {
+								padding = { 0, 0, 0, 0 }, -- 右上左下，完全去掉内边距
+								wo = {
+									fillchars = "eob: ,lastline: ", -- 隐藏底部虚线
+								},
+							},
+						},
+						layout = {
+							layout = {
+								box = "horizontal",
+								width = 0.8,
+								height = 0.8,
+								{
+									box = "vertical",
+									border = "rounded",
+									title = " Git检出分支 ",
+									title_pos = "center",
+									{ win = "input", height = 1, border = "bottom" },
+									{ win = "list", border = "none" },
+								},
+								{ win = "preview", title = "{preview}", border = "rounded", width = 0.7 },
+							},
+						},
+					})
+				end,
+				desc = "Git检出分支",
+			},
+			-- Git远程仓库子菜单（leader gr）
+			{
+				"<leader>gro",
+				function()
+					require("snacks").gitbrowse()
+				end,
+				desc = "浏览器打开",
+				mode = { "n", "v" },
+			},
+			{
+				"<leader>gry",
+				function()
+					-- 获取远程仓库URL并复制到剪贴板
+					local cwd = vim.fn.getcwd()
+					local remote = vim.fn.trim(vim.fn.system("git -C " .. cwd .. " config --get remote.origin.url"))
+
+					if remote == "" then
+						vim.notify("未找到远程仓库", vim.log.levels.WARN)
+						return
+					end
+
+					-- 获取当前文件信息
+					local file = vim.fn.expand("%:.")
+					local branch = vim.fn.trim(vim.fn.system("git -C " .. cwd .. " rev-parse --abbrev-ref HEAD"))
+					local line = vim.api.nvim_win_get_cursor(0)[1]
+
+					-- 构建GitHub/GitLab URL
+					local url = remote
+						:gsub("%.git$", "")
+						:gsub("^git@(.+):(.+)$", "https://%1/%2")
+						:gsub("^git@(.+)/(.+)$", "https://%1/%2")
+						:gsub("^https://.+@", "https://")
+
+					-- 添加文件路径和行号
+					if file and file ~= "" then
+						url = url .. "/blob/" .. branch .. "/" .. file .. "#L" .. line
+					else
+						url = url .. "/tree/" .. branch
+					end
+
+					-- 复制到剪贴板
+					vim.fn.setreg("+", url)
+					vim.notify("已复制远程仓库链接", vim.log.levels.INFO)
+				end,
+				desc = "复制链接",
+				mode = { "n", "v" },
+			},
+			{
+				"<leader>gba",
+				function()
+					require("snacks").git.blame_line()
+				end,
+				desc = "Git行追溯",
+			},
+			{
+				"<leader>gf",
+				function()
+					require("snacks").lazygit.log_file()
+				end,
+				desc = "Git文件历史",
+			},
+			{
+				"<leader>gs",
+				function()
+					require("snacks").picker.git_status()
+				end,
+				desc = "Git状态",
+			},
+
+			-- Git提交图：显示 git log --oneline --graph --decorate --all
+			{
+				"<leader>gg",
+				function()
+					require("snacks").terminal("git log --oneline --graph --decorate --all", {
+						win = {
+							position = "float",
+							backdrop = false,
+							border = "rounded",
+							title = " Git提交图 ",
+							title_pos = "center",
+							width = 0.8,
+							height = 0.8,
+						},
+						interactive = false,
+					})
+				end,
+				desc = "Git提交图",
+			},
+			-- Git提交详情：查看提交的完整代码变更
+			{
+				"<leader>gl",
+				function()
+					require("snacks").picker.git_log({
+						limit = 100,
+						confirm = function(picker, item)
+							picker:close()
+							if item then
+								local hash = item.commit
+								if hash then
+									require("snacks").terminal("git show " .. hash, {
+										win = {
+											position = "float",
+											backdrop = false,
+											border = "rounded",
+											title = " Git Diff: " .. hash .. " ",
+											title_pos = "center",
+										},
+										interactive = false,
+									})
+								end
+							end
+						end,
+						layout = { preset = "select" }, -- 优化：使用精简布局防止卡顿
+					})
+				end,
+				desc = "Git提交详情",
 			},
 
 			-- 快捷搜索：/ 和 ?

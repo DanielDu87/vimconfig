@@ -45,11 +45,11 @@ return {
 						processId = require("dap.utils").pick_process,
 						cwd = "${workspaceFolder}",
 					},
-					-- 3. 调试Chrome (需要Chrome以--remote-debugging-port=9222启动)
+					-- 3. 调试Chrome（需要Chrome以--remote-debugging-port=9222启动）
 					{
 						type = "pwa-chrome",
 						request = "attach",
-						name = "Chrome: Attach (9222)",
+						name = "Chrome: Attach（9222）",
 						program = "${file}",
 						cwd = "${workspaceFolder}",
 						sourceMaps = true,

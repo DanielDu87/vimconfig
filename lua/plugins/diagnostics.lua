@@ -25,7 +25,7 @@ return {
 		end,
 	},
 
-	-- 2. 配置 LSP 诊断选项和重构键位 (nvim-lspconfig)
+	-- 2. 配置 LSP 诊断选项和重构键位（nvim-lspconfig）
 	{
 		"neovim/nvim-lspconfig",
 		event = "VeryLazy",
@@ -53,7 +53,7 @@ return {
 			-- LSP 服务器配置
 			opts.servers = opts.servers or {}
 
-			-- 1. ts_ls (tsserver) 仅用于 JS
+			-- 1. ts_ls（tsserver）仅用于 JS
 			opts.servers.ts_ls = {
 				enabled = true,
 				filetypes = { "javascript", "javascriptreact" },

@@ -33,7 +33,7 @@ vim.keymap.set("n", "gl", function()
 		header = "",
 		prefix = "",
 	})
-end, { desc = "Line Diagnostics (toggle float)" })
+end, { desc = "行诊断（切换浮窗）" })
 
 --==============================================================================
 -- DevDocs 文档搜索
@@ -56,12 +56,12 @@ end, { desc = "查询DevDocs（当前关键词）" })
 
 -- leader+K: 输入查询
 vim.keymap.set("n", "<leader>K", function()
-	vim.ui.input({ prompt = "DevDocs 查询: " }, function(q)
+	vim.ui.input({ prompt = "DevDocs查询：" }, function(q)
 		if q and #q > 0 then
 			devdocs_search(q)
 		end
 	end)
-end, { desc = "搜索DevDocs (输入查询)" })
+end, { desc = "搜索DevDocs（输入查询）" })
 
 --==============================================================================
 -- 历史记录键位重新组织到 <leader>h 组

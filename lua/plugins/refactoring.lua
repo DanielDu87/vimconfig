@@ -1,5 +1,5 @@
 --==============================================================================
--- 代码重构插件配置 (Refactoring)
+-- 代码重构插件配置（Refactoring）
 --==============================================================================
 -- 本文件配置专业级的代码重构功能：
 --
@@ -7,7 +7,7 @@
 --   1. refactoring.nvim  - 结构化重构（提取函数/变量、内联等）
 --   2. inc-rename.nvim   - 带实时预览的重命名（自动接管 LSP 重命名）
 --
--- 所有快捷键都在 <leader>c (代码操作) 组下
+-- 所有快捷键都在 <leader>c（代码操作）组下
 -- Visual 模式下选中代码后操作
 
 return {
@@ -163,7 +163,7 @@ return {
 					local old_name = details.old_name
 					local new_name = details.new_name
 					local count = details.count
-					return string.format("将 '%s' 重命名为 '%s' (%d 处修改)", old_name, new_name, count)
+					return string.format("将 '%s' 重命名为 '%s'（%d处修改）", old_name, new_name, count)
 				end,
 			})
 		end,

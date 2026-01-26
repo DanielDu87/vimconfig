@@ -125,8 +125,7 @@ function M.setup(Actions, Snacks)
 			end
 		end
 
-		notify_files("已剪切", files, dirs, "(将在粘贴时移动原文件)")
-	end
+					notify_files("已剪切", files, dirs, "（将在粘贴时移动原文件）")	end
 
 	--==============================================================================
 	-- Action: 复制 (Yank)
@@ -420,7 +419,7 @@ function M.setup(Actions, Snacks)
 	--==============================================================================
 	function Actions.actions.explorer_add(picker)
 		Snacks.input({
-			prompt = "新建文件/目录 (目录以 / 结尾)：",
+			prompt = "新建文件/目录（目录以 / 结尾）：",
 		}, function(value)
 			if not value or value:match("^%s*$") then
 				return
