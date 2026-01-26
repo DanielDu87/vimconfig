@@ -659,6 +659,16 @@ return {
 			vim.api.nvim_set_hl(0, "WhichKeySeparator", { fg = "#565f89", default = true })
 
 			require("which-key").setup(opts)
+
+			-- 为 git log 自定义高亮组
+			vim.api.nvim_set_hl(0, "GitLogHead", { fg = "#D484FF", italic = false }) -- 亮紫色, 非斜体
+			vim.api.nvim_set_hl(0, "GitLogTag", { fg = "#3891A6", italic = false }) -- 青色, 非斜体
+			vim.api.nvim_set_hl(0, "GitLogRemote", { fg = "#9D9D9D", italic = false }) -- 灰色, 非斜体
+			vim.api.nvim_set_hl(0, "GitLogBranch", { fg = "#50FA7B", italic = false }) -- 亮绿色, 非斜体
+			-- 为内置组创建非斜体版本
+			vim.api.nvim_set_hl(0, "GitLogComment", { fg = "#E5C07B", italic = false }) -- 淡黄色 (括号), 非斜体
+			vim.api.nvim_set_hl(0, "GitLogDiagnosticInfo", { fg = "#61afef", italic = false }) -- Atom OneDark 信息颜色
+			vim.api.nvim_set_hl(0, "GitLogType", { fg = "#c678dd", italic = false }) -- Atom OneDark 类型颜色
 		end,
 	},
 
@@ -982,27 +992,111 @@ return {
 			{
 				"<leader>gl",
 				function()
-					require("snacks").picker.git_log({
-						limit = 100,
+					-- 自定义格式化函数，实现丰富的高亮
+					local function git_log_oneline(item, picker)
+						local ret = {} ---@type snacks.picker.Highlight[]
+						local text = item.text
+
+						-- 1. 高亮图形符号
+						local graph_end = text:find("[^%s*|\\/_%-%.]") or 1
+						if graph_end > 1 then
+							ret[#ret + 1] = { text:sub(1, graph_end - 1), "GitLogDiagnosticInfo" }
+							text = text:sub(graph_end)
+						end
+
+						-- 2. 高亮提交哈希
+						local hash_match = text:match("^(%x+)")
+						if hash_match then
+							ret[#ret + 1] = { hash_match .. " ", "Keyword" }
+							text = text:sub(#hash_match + 1)
+							text = text:gsub("^%s*", "")
+						end
+
+						-- 3. 高亮分支和标签信息
+						if text:sub(1, 1) == "(" then
+							local decorations_end = text:find(")")
+							if decorations_end then
+								local decorations = text:sub(2, decorations_end - 1)
+								ret[#ret + 1] = { "(", "GitLogComment" }
+
+								local first = true
+								for part in (decorations .. ","):gmatch("(.-),") do
+									part = part:match("^%s*(.-)%s*$") -- trim whitespace
+									if #part > 0 then
+										if not first then
+											ret[#ret + 1] = { ", ", "GitLogComment" }
+										end
+										first = false
+
+										if part:match("^HEAD%s*->") then
+											ret[#ret + 1] = { "HEAD", "GitLogHead" } -- 使用自定义的紫色高亮
+											ret[#ret + 1] = { " -> ", "GitLogDiagnosticInfo" }
+											local branch = part:gsub("^HEAD%s*->%s*", "")
+											ret[#ret + 1] = { branch, "GitLogBranch" }
+										elseif part:match("^tag:%s*") then
+											ret[#ret + 1] = { "tag:", "GitLogType" }
+											local tag = part:gsub("^tag:%s*", "")
+											ret[#ret + 1] = { tag, "GitLogTag" }
+										elseif part:find("/") then -- 简单判断是否为远程分支
+											ret[#ret + 1] = { part, "GitLogRemote" }
+										else
+											ret[#ret + 1] = { part, "GitLogBranch" }
+										end
+									end
+								end
+								ret[#ret + 1] = { ")", "GitLogComment" }
+								text = text:sub(decorations_end + 1)
+								text = text:gsub("^%s*", "")
+							end
+						end
+
+						-- 4. 提交信息
+						ret[#ret + 1] = { text, "Normal" }
+
+						return ret
+					end
+
+					-- 直接使用 git log 命令
+					local result = vim.fn.systemlist("git log --oneline --all --graph --decorate -100")
+					if vim.v.shell_error ~= 0 then
+						vim.notify("获取 Git 日志失败", vim.log.levels.ERROR)
+						return
+					end
+
+					-- 解析并创建 items
+					local items = {}
+					for _, line in ipairs(result) do
+						local commit = line:match("(%w%x+)") -- 匹配十六进制提交哈希
+						if commit then
+							table.insert(items, {
+								commit = commit,
+								msg = line, -- 保存整行作为消息
+								text = line,
+							})
+						end
+					end
+
+					require("snacks").picker({
+						title = " Git提交图 ",
+						title_pos = "center",
+						items = items,
+						format = git_log_oneline,
 						confirm = function(picker, item)
 							picker:close()
-							if item then
-								local hash = item.commit
-								if hash then
-									require("snacks").terminal("git show " .. hash, {
-										win = {
-											position = "float",
-											backdrop = false,
-											border = "rounded",
-											title = " Git Diff: " .. hash .. " ",
-											title_pos = "center",
-										},
-										interactive = false,
-									})
-								end
+							if item and item.commit then
+								require("snacks").terminal("git show " .. item.commit, {
+									win = {
+										position = "float",
+										backdrop = false,
+										border = "rounded",
+										title = " Git Diff: " .. item.commit .. " ",
+										title_pos = "center",
+									},
+									interactive = false,
+								})
 							end
 						end,
-						layout = { preset = "select" }, -- 优化：使用精简布局防止卡顿
+						layout = { preset = "select" },
 					})
 				end,
 				desc = "Git提交详情",
