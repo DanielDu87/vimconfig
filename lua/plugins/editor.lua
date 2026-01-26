@@ -53,6 +53,12 @@ vim.api.nvim_create_autocmd("User", {
 		pcall(vim.keymap.del, "n", "<leader>cr") -- 删除 LazyVim 默认的 LSP 重命名映射（如果存在）
 
 		-- ---------------------------------------------------------------------------
+		-- 删除查找菜单中的终端操作（移到 <leader>t 菜单）
+		-- ---------------------------------------------------------------------------
+		pcall(vim.keymap.del, "n", "<leader>ft") -- 删除 Toggle Terminal
+		pcall(vim.keymap.del, "n", "<leader>fT") -- 删除 Terminal (cwd)
+
+		-- ---------------------------------------------------------------------------
 		-- 性能分析快捷键（放在 <leader>dp 子菜单）
 		-- ---------------------------------------------------------------------------
 		vim.keymap.set("n", "<leader>dpp", function()
@@ -336,7 +342,6 @@ return {
 				{ "<leader>bb", desc = "切换到其他Buffer", icon = "🔄" },
 				{ "<leader>bd", desc = "关闭当前Buffer", icon = "❌" },
 				{ "<leader>bD", desc = "关闭Buffer和窗口", icon = "❌" },
-				{ "<leader>bf", desc = "Buffer列表", icon = "📋" },
 				{ "<leader>bh", desc = "上一个Buffer", icon = "⬅️" },
 				{ "<leader>bl", desc = "下一个Buffer", icon = "➡️" },
 				{ "<leader>bo", desc = "关闭其他Buffer", icon = "🗑️" },
@@ -376,7 +381,16 @@ return {
 				{ "<leader>x", group = "诊断/修复", icon = "⚠️" },
 				{ "<leader>e", group = "文件浏览器", icon = "📂" },
 				{ "<leader>f", group = "文件/查找", icon = "📁" },
-				{ "<leader>ff", desc = "查找文件", icon = "🔍" },
+				{ "<leader>ff", desc = "查找文件（根目录）", icon = "🔍" },
+				{ "<leader>fb", desc = "查找Buffer" },
+				{ "<leader>fF", desc = "查找文件（当前目录）" },
+				{ "<leader>fg", desc = "查找Git文件" },
+				{ "<leader>fB", desc = "查找Buffer（所有）" },
+				{ "<leader>fr", desc = "最近文件（根目录）" },
+				{ "<leader>fR", desc = "最近文件（当前目录）" },
+				{ "<leader>fc", desc = "查找配置文件" },
+				{ "<leader>fe", desc = "文件浏览器（根目录）" },
+				{ "<leader>fE", desc = "文件浏览器（当前目录）" },
 				{ "<leader>g", group = "Git", icon = "🧡" },
 				{ "<leader>gh", group = "变更", icon = "🔄" },
 				{ "<leader>h", group = "历史", icon = "📜" },
@@ -391,6 +405,14 @@ return {
 				{ "<leader>q", group = "退出/会话", icon = "🚪" },
 				{ "<leader>s", group = "搜索", icon = "🔍" },
 				{ "<leader>S", group = "临时Buffer", icon = "📝" },
+				{ "<leader>t", group = "终端", icon = "💻" },
+				{ "<leader>tf", desc = "浮动终端" },
+				{ "<leader>th", desc = "水平终端" },
+				{ "<leader>tv", desc = "垂直终端" },
+				{ "<leader>tt", desc = "标签页终端" },
+				{ "<leader>ts", desc = "切换终端" },
+				{ "<leader>tc", desc = "当前目录终端" },
+				{ "<leader>tl", desc = "Lazy终端" },
 				{ "<leader>Ss", desc = "打开默认临时Buffer" },
 				{ "<leader>Sn", desc = "新建命名临时Buffer" },
 				{ "<leader>S.", desc = "打开默认临时Buffer" },
@@ -426,16 +448,17 @@ return {
 					{ "Keywordprg", "关键词查询" },
 					{ "Explorer", "文件浏览器" },
 					{ "Notification History", "通知历史" },
-					{ "Buffers", "Buffer" },
-					{ "Git Diff", "Git 差异" },
-					{ "Git Status", "Git 状态" },
-					{ "Git Stash", "Git 暂存" },
-					{ "GitHub Issues", "GitHub 问题" },
-					{ "GitHub Pull Requests", "GitHub 拉取请求" },
+					{ "Buffers", "查找Buffer" },
+					{ "Buffers (all)", "查找Buffer（所有）" },
+					{ "Git Diff", "Git差异" },
+					{ "Git Status", "Git状态" },
+					{ "Git Stash", "Git暂存" },
+					{ "GitHub Issues", "GitHub问题" },
+					{ "GitHub Pull Requests", "GitHub拉取请求" },
 					{ "Recent", "最近文件" },
 					{ "Projects", "项目列表" },
 					{ "Command History", "命令历史" },
-					{ "Buffer Lines", "Buffer行" },
+					{ "Buffer Lines", "查找Buffer行" },
 					{ "Grep Open Buffers", "搜索已打开Buffer" },
 					{ "Search for Plugin Spec", "搜索插件配置" },
 					{ "Visual selection or word", "选区或单词" },
@@ -459,8 +482,8 @@ return {
 					{ "Undotree", "撤销树" },
 					{ "Colorschemes", "配色方案" },
 					{ "Todo", "待办事项" },
-					{ "LSP Symbols", "LSP 符号" },
-					{ "LSP Workspace Symbols", "LSP 工作区符号" },
+					{ "LSP Symbols", "LSP符号" },
+					{ "LSP Workspace Symbols", "LSP工作区符号" },
 					{ "Goto Definition", "跳转到定义" },
 					{ "Goto Declaration", "跳转到声明" },
 					{ "Goto Implementation", "跳转到实现" },
@@ -555,16 +578,19 @@ return {
 					{ "Add Comment Above", "在上方添加注释" },
 					{ "Run Lua", "运行 Lua" },
 					-- 文件/查找相关
-					{ "Find Files", "查找文件" },
-					{ "Find Files (Root Dir)", "查找文件 (根目录)" },
-					{ "Find Files (cwd)", "查找文件 (当前目录)" },
-					{ "Find Files (git-files)", "查找文件 (Git)" },
-					{ "Recent Files", "最近文件" },
-					{ "Recent (cwd)", "最近文件 (当前目录)" },
+					{ "Find Config File", "查找配置文件" },
+					{ "Find", "查找" },
+					{ "Find Files", "查找文件（根目录）" },
+					{ "Find Files (Root Dir)", "查找文件（根目录）" },
+					{ "Find Files (cwd)", "查找文件（当前目录）" },
+					{ "Find Files (git-files)", "查找Git文件" },
+					{ "Find Files (unrestricted)", "查找所有文件" },
+					{ "Recent Files", "最近文件（根目录）" },
+					{ "Recent (cwd)", "最近文件（当前目录）" },
 					{ "Current File Search", "当前文件搜索" },
 					{ "File Browser", "文件浏览器" },
-					{ "File Browser (Root Dir)", "文件浏览器 (根目录)" },
-					{ "File Browser (Cwd)", "文件浏览器 (当前目录)" },
+					{ "File Browser (Root Dir)", "文件浏览器（根目录）" },
+					{ "File Browser (Cwd)", "文件浏览器（当前目录）" },
 					-- 通知相关
 					{ "Notifications", "通知" },
 					{ "Noice", "通知" },
@@ -575,20 +601,29 @@ return {
 					{ "Last", "最后一条" },
 					{ "Picker (Telescope)", "选择器" },
 					{ "All", "全部" },
-					{ "Config", "配置" },
+					{ "Config", "配置文件" },
 					{ "Explorer", "文件浏览器" },
 					-- GitHub 相关
-					{ "GitHub Issues (all)", "GitHub 问题 (全部)" },
-					{ "GitHub Issues (open)", "GitHub 问题 (打开)" },
-					{ "GitHub Pull Requests (all)", "GitHub 拉取请求 (全部)" },
-					{ "GitHub Pull Requests (open)", "GitHub 拉取请求 (打开)" },
+					{ "GitHub Issues (all)", "GitHub问题（所有）" },
+					{ "GitHub Issues (open)", "GitHub问题（打开）" },
+					{ "GitHub Pull Requests (all)", "GitHub拉取请求（所有）" },
+					{ "GitHub Pull Requests (open)", "GitHub拉取请求（打开）" },
 					-- 缺失补全项 (采用原始风格)
 					{ "picker_grep", "正则搜索" },
 					{ "picker_files", "查找文件" },
-					{ "Grep (Root Dir)", "查找文件 (根目录)" },
-					{ "Grep (cwd)", "查找文件 (当前目录)" },
-					{ "Word (Root Dir)", "搜索单词 (根目录)" },
-					{ "Word (cwd)", "搜索单词 (当前目录)" },
+					{ "Grep (Root Dir)", "正则搜索（根目录）" },
+					{ "Grep (cwd)", "正则搜索（当前目录）" },
+					{ "Word (Root Dir)", "搜索单词（根目录）" },
+					{ "Word (cwd)", "搜索单词（当前目录）" },
+					-- 终端相关
+					{ "Terminal", "终端" },
+					{ "Term (float)", "浮动终端" },
+					{ "Term (horizontal)", "水平终端" },
+					{ "Term (vertical)", "垂直终端" },
+					{ "Term (tab)", "标签页终端" },
+					{ "Toggle Terminal", "切换终端" },
+					{ "Terminal (cwd)", "当前目录终端" },
+					{ "LazyTerm", "Lazy终端" },
 				},
 			},
 		},
@@ -639,16 +674,66 @@ return {
 				function()
 					require("snacks").explorer({ cwd = require("lazyvim.util").root() })
 				end,
-				desc = "文件浏览器 (根目录)",
+				desc = "文件浏览器（根目录）",
 			},
 			{
 				"<leader>fE",
 				function()
 					require("snacks").explorer()
 				end,
-				desc = "文件浏览器 (当前目录)",
+				desc = "文件浏览器（当前目录）",
 			},
 			{ "<leader>e", "<leader>fe", desc = "文件浏览器", remap = true },
+
+			-- 最近文件
+			{
+				"<leader>fr",
+				function()
+					require("snacks").picker.recent()
+				end,
+				desc = "最近文件（根目录）",
+			},
+			{
+				"<leader>fR",
+				function()
+					require("snacks").picker.recent({ cwd = vim.fn.getcwd() })
+				end,
+				desc = "最近文件（当前目录）",
+			},
+
+			-- Git 文件
+			{
+				"<leader>fg",
+				function()
+					require("snacks").picker.files({ cmd = "git ls-files" })
+				end,
+				desc = "查找Git文件",
+			},
+
+			-- Buffer 列表
+			{
+				"<leader>fb",
+				function()
+					require("snacks").picker.buffers()
+				end,
+				desc = "查找Buffer",
+			},
+			{
+				"<leader>fB",
+				function()
+					require("snacks").picker.buffers({ hidden = true, nofile = true })
+				end,
+				desc = "查找Buffer（所有）",
+			},
+
+			-- 配置文件
+			{
+				"<leader>fc",
+				function()
+					require("snacks").picker.config_files()
+				end,
+				desc = "查找配置文件",
+			},
 
 			-- 临时Buffer操作
 			{
@@ -682,13 +767,6 @@ return {
 
 			-- Buffer与窗口操作
 			{ "<leader>bb", "<cmd>e #<cr>", desc = "切换到其他Buffer" },
-			{
-				"<leader>bf",
-				function()
-					require("snacks").picker.buffers()
-				end,
-				desc = "Buffer列表",
-			},
 
 			-- 窗口管理：原生操作符映射
 			{ "<leader>w-", "<C-W>s", desc = "向下分割窗口", remap = true },

@@ -7,10 +7,11 @@
 ### 1. 🎨 极致 UI 与主题
 - **全局透明化**：编辑器背景、浮动窗口、侧边栏、补全菜单等均已配置为透明，完美融入终端背景（配置位于 `lua/plugins/theme.lua`）。
 - **主题配置**：默认使用 Tokyo Night 主题，支持透明背景和自定义高亮。
-- **中文本地化**：
-  - `Which-Key` 快捷键菜单全中文注释。
+- **深度中文本地化**：
+  - `Which-Key` 快捷键菜单全中文注释，覆盖所有主要功能菜单。
   - `Lazy.nvim` 插件管理器界面中文化。
   - 文件资源管理器操作菜单中文化。
+  - 统一的中文括号格式：`功能（说明）`，如 `查找文件（根目录）`、`查找文件（当前目录）`。
 - **界面美化**：集成 `Snacks.nvim` 提供现代化的 UI 组件（Picker、Notifier、Terminal 等）。
 
 ### 2. ⚡️ 高效文件管理 (Explorer)
@@ -121,6 +122,7 @@
 │   ├── plugins/                # 🧩 插件定义 (按功能分类)
 │   │   ├── editor.lua          # 编辑器增强 (Snacks, WhichKey, 中文翻译)
 │   │   ├── explorer.lua        # 文件浏览器配置 (Snacks.nvim)
+│   │   ├── terminal.lua        # 终端管理配置 (ToggleTerm.nvim)
 │   │   ├── formatting.lua      # 格式化核心配置 (Conform.nvim)
 │   │   ├── lsp.lua             # LSP 配置 + nvim-lint 实时检查
 │   │   ├── diagnostics.lua     # 诊断显示 (tiny-inline-diagnostic + 重构键位)
@@ -143,13 +145,31 @@
 | 快捷键 | 描述 |
 | :--- | :--- |
 | `<leader><space>` | **命令面板** (查找文件、命令、符号) |
-| `<leader>e` / `<leader>fe` | 打开/切换 **文件资源管理器** |
+| `<leader>e` / `<leader>fe` | 打开/切换 **文件资源管理器（根目录）** |
 | `<leader>cf` | **格式化代码** (强制 Tab 缩进) |
 | `<leader>sg` / `<leader>/` | **全局搜索** (Grep) |
-| `<leader>ff` | **查找文件** |
+| `<leader>ff` | **查找文件（根目录）** |
+| `<leader>fF` | **查找文件（当前目录）** |
+| `<leader>fg` | **查找Git文件** |
+| `<leader>fb` | **查找Buffer** |
+| `<leader>fB` | **查找Buffer（所有）** |
+| `<leader>fr` | **最近文件（根目录）** |
+| `<leader>fR` | **最近文件（当前目录）** |
+| `<leader>fc` | **查找配置文件** |
 | `<leader>bd` | 关闭当前缓冲区 (Buffer) |
 | `<M-=>` / `<M-->` | 下一个/上一个缓冲区 |
 | `<M-q>` | 切换文件资源管理器 |
+
+### 💻 终端操作 (Terminal)
+| 快捷键 | 描述 |
+| :--- | :--- |
+| `<leader>tf` | **浮动终端** |
+| `<leader>th` | **水平终端** |
+| `<leader>tv` | **垂直终端** |
+| `<leader>tt` | **标签页终端** |
+| `<leader>ts` | **切换终端** |
+| `<leader>tc` | **当前目录终端** |
+| `<leader>tl` | **Lazy终端** |
 
 ### 🐞 调试 (DAP)
 | 快捷键 | 描述 |
@@ -198,6 +218,7 @@
 ### 核心插件
 - **lazy.nvim** - 插件管理器
 - **Snacks.nvim** - 现代 UI 组件（Explorer, Picker, Notifier, Terminal, Scratch）
+- **toggleterm.nvim** - 终端管理器（支持浮动、水平、垂直、标签页终端）
 - **blink.cmp** - 高性能代码补全
 - **nvim-lspconfig** - LSP 客户端配置
 - **nvim-lint** - 非LSP 代码检查（实时）
