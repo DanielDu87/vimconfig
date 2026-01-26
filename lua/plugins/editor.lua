@@ -1044,7 +1044,7 @@ return {
 										end
 									end
 								end
-								ret[#ret + 1] = { ")", "GitLogComment" }
+								ret[#ret + 1] = { ") ", "GitLogComment" } -- Add a space after the closing parenthesis
 								text = text:sub(decorations_end + 1)
 								text = text:gsub("^%s*", "")
 							end
