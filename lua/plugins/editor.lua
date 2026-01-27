@@ -853,16 +853,16 @@ return {
 					require("snacks").picker.git_branches({
 						format = git_branch_compact,
 						confirm = function(picker, item)
-							picker:close()
 							local branch = type(item) == "table" and item.branch or item
-							-- 使用 git switch 切换分支（Git推荐命令）
-							local cmd = "git switch " .. vim.fn.shellescape(branch)
-							local result = vim.fn.system(cmd)
+							vim.fn.system("git switch " .. vim.fn.shellescape(branch))
 							if vim.v.shell_error == 0 then
 								vim.notify("已切换到分支: " .. branch, vim.log.levels.INFO)
-								vim.cmd("checktime") -- 刷新缓冲区
+								vim.cmd("checktime")
+								picker:close()
+								vim.cmd("wincmd h") -- 跳到最左边的窗口（explorer）
 							else
-								vim.notify("切换分支失败:\n" .. result, vim.log.levels.ERROR)
+								picker:close()
+								vim.notify("切换分支失败", vim.log.levels.ERROR)
 							end
 						end,
 						previewers = {
