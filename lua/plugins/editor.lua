@@ -471,7 +471,7 @@ return {
 					{ "Buffers (all)", "查找Buffer（所有）" },
 					{ "Git Diff", "Git差异" },
 					{ "Git Status", "Git状态" },
-					{ "Git Stash", "Git暂存" },
+					{ "Git Stash", "Git Stash" },
 					{ "Git Blame", "Git行追溯" },
 					{ "Git Branches", "Git切换分支" },
 					{ "Git Commit", "Git提交记录" },
@@ -970,7 +970,7 @@ return {
 																	interactive = true,
 																})
 															end,
-															desc = "查看git stash以及相关操作",
+															desc = "Git Stash",
 														},			-- Git提交图：显示 git log --oneline --graph --decorate --all
 			{
 				"<leader>gg",
