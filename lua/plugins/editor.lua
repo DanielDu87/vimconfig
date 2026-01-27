@@ -957,9 +957,49 @@ return {
 			{
 				"<leader>gf",
 				function()
-					require("snacks").lazygit.log_file()
+					require("snacks").terminal("lazygit")
 				end,
-				desc = "Git文件历史",
+				desc = "查看本地差异 (LazyGit)",
+			},
+			{
+				"<leader>gF",
+				function()
+					local remote = vim.fn.trim(vim.fn.system("git config --get remote.origin.url"))
+					if remote == "" then
+						vim.notify("未指定远程仓库地址", vim.log.levels.WARN)
+						return
+					end
+					require("snacks").terminal("git fetch && lazygit")
+				end,
+				desc = "查看远程差异 (LazyGit)",
+			},
+			{
+				"<leader>gD",
+				function()
+					local root = require("lazyvim.util").root()
+					local verify_cmd = "git -C " .. vim.fn.shellescape(root) .. " rev-parse --verify origin/main"
+
+					vim.fn.system(verify_cmd)
+					if vim.v.shell_error ~= 0 then
+						vim.notify("远程分支 'origin/main' 不存在", vim.log.levels.WARN)
+						return
+					end
+
+					local diff_cmd = "git -C " .. vim.fn.shellescape(root) .. " diff origin/main"
+					require("snacks").terminal(diff_cmd, {
+						win = {
+							position = "float",
+							backdrop = false,
+							border = "rounded",
+							title = " Diff: origin/main ",
+							title_pos = "center",
+							width = 0.8,
+							height = 0.8,
+						},
+						interactive = false,
+					})
+				end,
+				desc = "Git差异（远程）",
 			},
 			{
 				"<leader>gs",
