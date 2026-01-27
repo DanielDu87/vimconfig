@@ -397,8 +397,7 @@ return {
 				{ "<leader>gB", desc = "which_key_ignore" },
 				{ "<leader>gY", desc = "which_key_ignore" },
 				{ "<leader>ga", desc = "Git暂存" },
-				{ "<leader>gba", desc = "Git行追溯" },
-				{ "<leader>gb", desc = "Git切换分支" },
+				{ "<leader>gb", desc = "Git Blame" },
 				{ "<leader>gc", desc = "Git切换分支" },
 				{ "<leader>gC", desc = "which_key_ignore" },
 				{ "<leader>gF", desc = "which_key_ignore" },
@@ -413,8 +412,8 @@ return {
 				{ "<leader>gr", group = "Git远程仓库", icon = "🔗" },
 				{ "<leader>gro", desc = "浏览器打开" },
 				{ "<leader>gry", desc = "复制链接" },
-				{ "<leader>gs", desc = "Git状态" },
-				{ "<leader>gS", desc = "Git切换" },
+				{ "<leader>gs", desc = "Git Stash" },
+				{ "<leader>gS", desc = "which_key_ignore" },
 				{ "<leader>gh", group = "变更", icon = "🔄" },
 				{ "<leader>h", group = "历史", icon = "📜" },
 				{ "<leader>hn", desc = "通知历史", icon = "🔔" },
@@ -832,75 +831,16 @@ return {
 			{
 				"<leader>gc",
 				function()
-					-- 自定义格式化函数，减少分支名称占用的宽度
-					local function git_branch_compact(item, picker)
-						local a = require("snacks.picker.util").align
-						local ret = {} ---@type snacks.picker.Highlight[]
-						if item.current then
-							ret[#ret + 1] = { a("", 2), "SnacksPickerGitBranchCurrent" }
-						else
-							ret[#ret + 1] = { a("", 2) }
-						end
-						if item.detached then
-							ret[#ret + 1] = { a("(detached HEAD)", 5, { truncate = true }), "SnacksPickerGitDetached" }
-						else
-							ret[#ret + 1] = { a(item.branch, 5, { truncate = true }), "SnacksPickerGitBranch" }
-						end
-						ret[#ret + 1] = { "        " }  -- 增加间隔为8个空格
-						-- 只添加提交哈希，不添加日期时间
-						if item.commit then
-							ret[#ret + 1] = { a(item.commit, 8, { truncate = true }), "SnacksPickerGitCommit" }
-						end
-						return ret
-					end
-
-					-- 直接使用 snacks 的 git_branches picker，并使用git switch
-					require("snacks").picker.git_branches({
-						format = git_branch_compact,
-						confirm = function(picker, item)
-							local branch = type(item) == "table" and item.branch or item
-							vim.fn.system("git switch " .. vim.fn.shellescape(branch))
-							if vim.v.shell_error == 0 then
-								vim.notify("已切换到分支: " .. branch, vim.log.levels.INFO)
-								vim.cmd("checktime")
-								picker:close()
-								vim.cmd("wincmd h") -- 跳到最左边的窗口（explorer）
-							else
-								picker:close()
-								vim.notify("切换分支失败", vim.log.levels.ERROR)
-							end
-						end,
-						previewers = {
-							git_log = {
-								wo = {
-									wrap = false, -- 禁用自动换行
-								},
-							},
-						},
+					local root = require("lazyvim.util").root()
+					require("snacks").terminal("lazygit branch", {
+						cwd = root,
 						win = {
-							preview = {
-								padding = { 0, 0, 0, 0 }, -- 右上左下，完全去掉内边距
-								wo = {
-									fillchars = "eob: ,lastline: ", -- 隐藏底部虚线
-								},
-							},
+							position = "float",
+							title = " Git Branch ",
+							width = 0.8,
+							height = 0.8,
 						},
-						layout = {
-							layout = {
-								box = "horizontal",
-								width = 0.8,
-								height = 0.8,
-								{
-									box = "vertical",
-									border = "rounded",
-									title = " Git切换分支 ",
-									title_pos = "center",
-									{ win = "input", height = 1, border = "bottom" },
-									{ win = "list", border = "none" },
-								},
-								{ win = "preview", title = "{preview}", border = "rounded", width = 0.7 },
-							},
-						},
+						interactive = true,
 					})
 				end,
 				desc = "Git切换分支",
@@ -962,13 +902,13 @@ return {
 				desc = "Git暂存",
 			},
 			{
-				"<leader>gba",
+				"<leader>gb",
 				function()
 					require("snacks").git.blame_line()
 				end,
-				desc = "Git行追溯",
+				desc = "Git Blame",
 			},
-			{
+						{
 				"<leader>gf",
 				function()
 					require("snacks").terminal("lazygit")
@@ -1015,15 +955,23 @@ return {
 				end,
 				desc = "Git差异（远程）",
 			},
-			{
-				"<leader>gs",
-				function()
-					require("snacks").picker.git_status()
-				end,
-				desc = "Git状态",
-			},
-
-			-- Git提交图：显示 git log --oneline --graph --decorate --all
+															{
+															"<leader>gs",
+															function()
+																local root = require("lazyvim.util").root()
+																require("snacks").terminal("lazygit stash", {
+																	cwd = root,
+																	win = {
+																		position = "float",
+																		title = " Git Stash ",
+																		width = 0.8,
+																		height = 0.8,
+																	},
+																	interactive = true,
+																})
+															end,
+															desc = "查看git stash以及相关操作",
+														},			-- Git提交图：显示 git log --oneline --graph --decorate --all
 			{
 				"<leader>gg",
 				function()
