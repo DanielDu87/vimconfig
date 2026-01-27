@@ -1188,97 +1188,146 @@ return {
 			{ "/", snacks_lines, desc = "当前文件搜索", mode = { "n", "v" } },
 			{ "?", snacks_lines, desc = "当前文件搜索", mode = { "n", "v" } },
 		},
-		opts = function(_, opts)
-			-- ... (rest of snacks opts)
-			-- Picker 全局视觉美化
-			opts.picker = opts.picker or {}
-			opts.picker.prompt = "" -- 严格还原原始设置
-
-			-- 添加清除选择的动作
-			opts.picker.actions = opts.picker.actions or {}
-			opts.picker.actions.list_clear_selected = function(picker)
-				picker.list:set_selected({})
-			end
-
-			opts.picker.win = opts.picker.win or {}
-
-			-- 输入框：居中并使用圆角
-			opts.picker.win.input = {
-				row = 0.3,
-				height = 1,
-				width = 0.6,
-				col = 0.2,
-				border = "rounded",
-				wo = { statuscolumn = "", signcolumn = "no" },
-			}
-
-			-- 列表：禁用冗余列
-			opts.picker.win.list = {
-				border = "rounded",
-				wo = {
-					statuscolumn = "",
-					signcolumn = "no",
-					number = false,
-					foldcolumn = "0",
-					conceallevel = 0,
-				},
-				keys = {
-					-- Esc 清除多选，不关闭 picker
-					["<Esc>"] = { "list_clear_selected", mode = "n" },
-				},
-			}
-
-			-- 预览窗口配置
-			opts.picker.win.preview = {
-				border = "rounded",
-			}
-
-			-- 源特定增强
-			opts.picker.sources = opts.picker.sources or {}
-			-- Buffer列表：显示固定状态图标
-			opts.picker.sources.buffers = {
-				format = function(item, picker)
-					local formatted = require("snacks").picker.format.buffer(item, picker)
-					-- 如果文件被固定 (Pinned)，则在前面显示图钉图标
-					local ok_groups, groups = pcall(require, "bufferline.groups")
-					local ok_state, state = pcall(require, "bufferline.state")
-					if ok_groups and ok_state and state.components then
-						for _, element in ipairs(state.components) do
-							if element.id == item.buf and groups._is_pinned(element) then
-								table.insert(formatted, 1, { "📌 ", "Special" })
-								break
-							end
-						end
-					end
-					return formatted
-				end,
-			}
-
-			-- 历史命令布局：基于 VSCode 风格但带完整边框
-			opts.picker.sources.command_history = {
-				layout = {
-					preset = "custom",
-					layout = {
-						backdrop = false,
-						row = 1,
-						width = 0.4,
-						min_width = 80,
-						height = 0.4,
-						border = "none",
-						box = "vertical",
-						{
-							win = "input",
-							height = 1,
-							border = "rounded",
-							title = "{title} {live} {flags}",
-							title_pos = "center",
-						},
-						{ win = "list", border = "rounded" },
-					},
-				},
-			}
-
-			return opts
-		end,
-	},
+		        		opts = function(_, opts)
+		        			-- 1. 通知系统优化：开启自动换行与高度自适应
+		        			opts.notifier = vim.tbl_deep_extend("force", opts.notifier or {}, {
+		        				style = "detailed",
+		        				wrap = true,
+		        				width = { min = 20, max = 0.4 },
+		        				height = { min = 1, max = 0.8 },
+		        			})
+		        
+		        			-- 2. 全局样式覆盖：确保换行在底层生效
+		        			opts.styles = vim.tbl_deep_extend("force", opts.styles or {}, {
+		        				notification = { wo = { wrap = true, linebreak = true, breakindent = true } },
+		        				detailed = { wo = { wrap = true, linebreak = true, breakindent = true } },
+		        			})
+		        
+		        			-- 3. Picker 全局视觉美化
+		        			opts.picker = opts.picker or {}
+		        			opts.picker.prompt = "" -- 严格还原原始设置
+		        
+		        			-- 添加清除选择的动作
+		        			opts.picker.actions = opts.picker.actions or {}
+		        			opts.picker.actions.list_clear_selected = function(picker)
+		        				picker.list:set_selected({})
+		        			end
+		        
+		        			opts.picker.win = opts.picker.win or {}
+		        
+		        			-- 输入框：居中并使用圆角
+		        			opts.picker.win.input = {
+		        				row = 0.3,
+		        				height = 1,
+		        				width = 0.6,
+		        				col = 0.2,
+		        				border = "rounded",
+		        				wo = { statuscolumn = "", signcolumn = "no" },
+		        			}
+		        
+		        			-- 列表：禁用冗余列
+		        			opts.picker.win.list = {
+		        				border = "rounded",
+		        				wo = {
+		        					statuscolumn = "",
+		        					signcolumn = "no",
+		        					number = false,
+		        					foldcolumn = "0",
+		        					conceallevel = 0,
+		        				},
+		        				keys = {
+		        					-- Esc 清除多选，不关闭 picker
+		        					["<Esc>"] = { "list_clear_selected", mode = "n" },
+		        				},
+		        			}
+		        
+		        			-- 预览窗口配置
+		        			opts.picker.win.preview = {
+		        				border = "rounded",
+		        			}
+		        
+		        			-- 源特定增强
+		        			opts.picker.sources = opts.picker.sources or {}
+		        			-- Buffer列表：显示固定状态图标
+		        			opts.picker.sources.buffers = {
+		        				format = function(item, picker)
+		        					local formatted = require("snacks").picker.format.buffer(item, picker)
+		        					-- 如果文件被固定 (Pinned)，则在前面显示图钉图标
+		        					local ok_groups, groups = pcall(require, "bufferline.groups")
+		        					local ok_state, state = pcall(require, "bufferline.state")
+		        					if ok_groups and ok_state and state.components then
+		        						for _, element in ipairs(state.components) do
+		        							if element.id == item.buf and groups._is_pinned(element) then
+		        								table.insert(formatted, 1, { "📌 ", "Special" })
+		        								break
+		        							end
+		        						end
+		        					end
+		        					return formatted
+		        				end,
+		        			}
+		        
+		        			-- 历史命令布局：基于 VSCode 风格但带完整边框
+		        			opts.picker.sources.command_history = {
+		        				layout = {
+		        					preset = "custom",
+		        					layout = {
+		        						backdrop = false,
+		        						row = 1,
+		        						width = 0.4,
+		        						min_width = 80,
+		        						height = 0.4,
+		        						border = "none",
+		        						box = "vertical",
+		        						{
+		        							win = "input",
+		        							height = 1,
+		        							border = "rounded",
+		        							title = "{title} {live} {flags}",
+		        							title_pos = "center",
+		        						},
+		        						{ win = "list", border = "rounded" },
+		        					},
+		        				},
+		        			}
+		        
+		        			return opts
+		        		end,
+		        		config = function(_, opts)
+		        			require("snacks").setup(opts)
+		        
+		        			-- 汉化 Snacks Picker 的无结果提示
+		        			local original_notify = vim.notify
+		        			vim.notify = function(msg, level, notify_opts)
+		        				if type(msg) == "string" then
+		        					if msg == "No results" then
+		        						msg = "未找到相关结果"
+		        					else
+		        						local source = msg:match("^No results found for `(.+)`$")
+		        						if source then
+		        														local translations = {
+		        															diagnostics = "诊断",
+		        															files = "文件",
+		        															buffers = "已打开文件",
+		        															grep = "全局搜索",
+		        															command_history = "命令历史",
+		        															search_history = "搜索历史",
+		        															git_status = "Git 状态",
+		        															git_branches = "Git 分支",
+		        															git_log = "Git 日志",
+		        															git_files = "Git 文件",
+		        															undo = "撤销历史",
+		        															icons = "图标插件",
+		        															keymaps = "快捷键",
+		        															marks = "标记",
+		        															projects = "项目",
+		        															todo_comments = "待办事项",
+		        														}		        							source = translations[source] or source
+		        							msg = ("未找到 `%s` 的相关结果"):format(source)
+		        						end
+		        					end
+		        				end
+		        				original_notify(msg, level, notify_opts)
+		        			end
+		        		end,	},
 }
