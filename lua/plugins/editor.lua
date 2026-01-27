@@ -59,12 +59,12 @@ vim.api.nvim_create_autocmd("User", {
 		pcall(vim.keymap.del, "n", "<leader>fT") -- 删除 Terminal (cwd)
 
 		-- ---------------------------------------------------------------------------
-		-- 性能分析快捷键（放在 <leader>dp 子菜单）
+		-- 性能分析快捷键（直接放在 <leader>d 菜单）
 		-- ---------------------------------------------------------------------------
-		vim.keymap.set("n", "<leader>dpp", function()
+		vim.keymap.set("n", "<leader>dp", function()
 			require("snacks").toggle.profiler()
 		end, { desc = "切换性能分析器" })
-		vim.keymap.set("n", "<leader>dph", function()
+		vim.keymap.set("n", "<leader>dh", function()
 			require("snacks").toggle.profiler_highlights()
 		end, { desc = "性能分析高亮" })
 
@@ -364,7 +364,9 @@ return {
 				{ "<leader>cs", desc = "显示符号结构", icon = "🔍" },
 				{ "<leader>cr", desc = "智能重构", icon = "🔨" },
 				{ "<leader>rv", desc = "选择Python虚拟环境", icon = "🐍" },
-				{ "<leader>d", group = "调试", icon = "🔧" },
+				{ "<leader>d", group = "调试/诊断", icon = "🔧" },
+				{ "<leader>dd", desc = "文档诊断", icon = "🔍" },
+				{ "<leader>dD", desc = "项目诊断", icon = "🚨" },
 				{ "<leader>db", desc = "切换断点（持久化）", icon = "🔴" },
 				{ "<leader>dB", desc = "条件断点（持久化）", icon = "⭕" },
 				{ "<leader>dC", desc = "调试类（Class）", icon = "🐍" },
@@ -375,9 +377,8 @@ return {
 				{ "<leader>du", desc = "步出（Out）", icon = "⬆️" },
 				{ "<leader>dt", desc = "切换调试面板", icon = "🖥️" },
 				{ "<leader>dm", desc = "调试方法（Method）", icon = "🐍" },
-				{ "<leader>dp", group = "性能分析", icon = "📊" },
-				{ "<leader>dpp", desc = "切换性能分析器", icon = "📊" },
-				{ "<leader>dph", desc = "性能分析高亮", icon = "✨" },
+				{ "<leader>dp", desc = "切换性能分析器", icon = "📊" },
+				{ "<leader>dh", desc = "性能分析高亮", icon = "✨" },
 				{ "<leader>x", group = "诊断/修复", icon = "⚠️" },
 				{ "<leader>e", group = "文件浏览器", icon = "📂" },
 				{ "<leader>f", group = "文件/查找", icon = "📁" },
@@ -439,12 +440,10 @@ return {
 				{ "<leader>qd", desc = "不保存退出", icon = "❌" },
 				{ "<leader>qq", desc = "退出所有", icon = "🚪" },
 				{ "<leader>s", group = "搜索", icon = "🔍" },
-				{ "<leader>sa", desc = "自动命令", icon = "⚡" },
-				{ "<leader>sb", desc = "当前Buffer行", icon = "📑" },
+				{ "<leader>sa", desc = "自动执行命令", icon = "🤖" },
+				{ "<leader>sb", desc = "查找当前文件行", icon = "📑" },
 				{ "<leader>sc", desc = "命令历史", icon = "💬" },
 				{ "<leader>sC", desc = "所有命令", icon = "💻" },
-				{ "<leader>sd", desc = "文档诊断", icon = "🔍" },
-				{ "<leader>sD", desc = "项目诊断", icon = "🚨" },
 				{ "<leader>sg", desc = "全局搜索（根目录）", icon = "🔍" },
 				{ "<leader>sG", desc = "全局搜索（当前目录）", icon = "📂" },
 				{ "<leader>sh", desc = "帮助文档", icon = "❓" },
@@ -456,9 +455,16 @@ return {
 				{ "<leader>sm", desc = "标记管理", icon = "🔖" },
 				{ "<leader>sq", desc = "快速修复列表", icon = "🛠️" },
 				{ "<leader>sR", desc = "恢复上次搜索", icon = "↩️" },
+				{ "<leader>sr", desc = "查找并替换", icon = "🔄" },
 				{ "<leader>su", desc = "撤销历史", icon = "📜" },
 				{ "<leader>sw", desc = "搜索单词（项目）", icon = "🔎" },
 				{ "<leader>sW", desc = "搜索单词（目录）", icon = "📂" },
+				{ "<leader>s/", desc = "在打开文件中查找", icon = "📂" },
+				{ "<leader>sB", desc = "查找所有打开文件", icon = "🗃️" },
+				{ "<leader>sp", desc = "搜索插件配置", icon = "🧩" },
+				{ "<leader>st", desc = "待办事项(TODO/FIX)", icon = "✅" },
+				{ "<leader>ss", desc = "文档符号", icon = "💎" },
+				{ "<leader>sS", desc = "项目符号", icon = "⚛️" },
 				{ "<leader>S", group = "临时Buffer", icon = "📝" },
 				{ "<leader>t", group = "终端", icon = "💻" },
 				{ "<leader>tf", desc = "浮窗终端", icon = "💎" },
@@ -524,7 +530,6 @@ return {
 					{ "Projects", "项目列表" },
 					{ "Command History", "命令历史" },
 					{ "Buffer Lines", "查找Buffer行" },
-					{ "Grep Open Buffers", "搜索已打开Buffer" },
 					{ "Search for Plugin Spec", "搜索插件配置" },
 					{ "Visual selection or word", "选区或单词" },
 					{ "Registers", "寄存器" },
@@ -838,6 +843,22 @@ return {
 
 			-- Buffer与窗口操作
 			{ "<leader>bb", "<cmd>e #<cr>", desc = "切换到其他Buffer" },
+
+			-- 诊断相关 (从 <leader>s 迁移)
+			{
+				"<leader>dd",
+				function()
+					require("snacks").picker.diagnostics()
+				end,
+				desc = "文档诊断",
+			},
+			{
+				"<leader>dD",
+				function()
+					require("snacks").picker.diagnostics({ root = true })
+				end,
+				desc = "项目诊断",
+			},
 
 			-- 窗口管理：原生操作符映射
 			{ "<leader>w-", "<C-W>s", desc = "向下分割窗口", remap = true },
