@@ -392,21 +392,24 @@ return {
 				{ "<leader>fe", desc = "文件浏览器（根目录）" },
 				{ "<leader>fE", desc = "文件浏览器（当前目录）" },
 				{ "<leader>g", group = "Git", icon = "🧡" },
+				{ "<leader>gi", desc = "Github Issues" },
+				{ "<leader>gI", desc = "Github Pull Request" },
 				{ "<leader>gB", desc = "which_key_ignore" },
 				{ "<leader>gY", desc = "which_key_ignore" },
 				{ "<leader>ga", desc = "Git暂存" },
 				{ "<leader>gba", desc = "Git行追溯" },
 				{ "<leader>gb", desc = "Git切换分支" },
-				{ "<leader>gc", desc = "Git检出分支" },
+				{ "<leader>gc", desc = "Git切换分支" },
 				{ "<leader>gC", desc = "which_key_ignore" },
 				{ "<leader>gF", desc = "which_key_ignore" },
 				{ "<leader>gd", desc = "Git差异" },
 				{ "<leader>gf", desc = "Git面板" },
 				{ "<leader>gg", desc = "Git提交图" },
 				{ "<leader>gG", desc = "which_key_ignore" },
-				{ "<leader>gl", desc = "Git提交详情" },
-				{ "<leader>gp", desc = "Git拉取" },
-				{ "<leader>gP", desc = "Git推送" },
+				{ "<leader>gl", desc = "Git日志（简洁）" },
+				{ "<leader>gL", desc = "Git日志（详细）" },
+				{ "<leader>gp", desc = "Git推送" },
+				{ "<leader>gP", desc = "Git拉取" },
 				{ "<leader>gr", group = "Git远程仓库", icon = "🔗" },
 				{ "<leader>gro", desc = "浏览器打开" },
 				{ "<leader>gry", desc = "复制链接" },
@@ -890,7 +893,7 @@ return {
 								{
 									box = "vertical",
 									border = "rounded",
-									title = " Git检出分支 ",
+									title = " Git切换分支 ",
 									title_pos = "center",
 									{ win = "input", height = 1, border = "bottom" },
 									{ win = "list", border = "none" },
@@ -900,7 +903,7 @@ return {
 						},
 					})
 				end,
-				desc = "Git检出分支",
+				desc = "Git切换分支",
 			},
 			-- Git远程仓库子菜单（leader gr）
 			{
@@ -1128,7 +1131,7 @@ return {
 					end
 
 					require("snacks").picker({
-						title = " Git提交图 ",
+						title = " Git日志（简洁） ",
 						title_pos = "center",
 						items = items,
 						format = git_log_oneline,
@@ -1150,7 +1153,31 @@ return {
 						layout = { preset = "select" },
 					})
 				end,
-				desc = "Git提交详情",
+				desc = "Git日志（简洁）",
+			},
+			{
+				"<leader>gp",
+				function()
+					local root = require("lazyvim.util").root()
+					local cmd = "git -C " .. vim.fn.shellescape(root) .. " push"
+					require("snacks").terminal(cmd, {
+						win = { position = "float", title = " Git Push ", width = 0.8, height = 0.8 },
+						interactive = true, -- Push might require credentials
+					})
+				end,
+				desc = "Git推送",
+			},
+			{
+				"<leader>gP",
+				function()
+					local root = require("lazyvim.util").root()
+					local cmd = "git -C " .. vim.fn.shellescape(root) .. " pull"
+					require("snacks").terminal(cmd, {
+						win = { position = "float", title = " Git Pull ", width = 0.8, height = 0.8 },
+						interactive = true, -- Pull can have merge conflicts
+					})
+				end,
+				desc = "Git拉取",
 			},
 
 			-- 快捷搜索：/ 和 ?
