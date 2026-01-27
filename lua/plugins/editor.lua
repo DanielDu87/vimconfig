@@ -1294,40 +1294,72 @@ return {
 		        			return opts
 		        		end,
 		        		config = function(_, opts)
-		        			require("snacks").setup(opts)
-		        
-		        			-- 汉化 Snacks Picker 的无结果提示
-		        			local original_notify = vim.notify
-		        			vim.notify = function(msg, level, notify_opts)
-		        				if type(msg) == "string" then
-		        					if msg == "No results" then
-		        						msg = "未找到相关结果"
-		        					else
-		        						local source = msg:match("^No results found for `(.+)`$")
-		        						if source then
-		        														local translations = {
-		        															diagnostics = "诊断",
-		        															files = "文件",
-		        															buffers = "已打开文件",
-		        															grep = "全局搜索",
-		        															command_history = "命令历史",
-		        															search_history = "搜索历史",
-		        															git_status = "Git 状态",
-		        															git_branches = "Git 分支",
-		        															git_log = "Git 日志",
-		        															git_files = "Git 文件",
-		        															undo = "撤销历史",
-		        															icons = "图标插件",
-		        															keymaps = "快捷键",
-		        															marks = "标记",
-		        															projects = "项目",
-		        															todo_comments = "待办事项",
-		        														}		        							source = translations[source] or source
-		        							msg = ("未找到 `%s` 的相关结果"):format(source)
-		        						end
-		        					end
-		        				end
-		        				original_notify(msg, level, notify_opts)
-		        			end
-		        		end,	},
+			require("snacks").setup(opts)
+
+			-- 汉化翻译映射表
+			local translations = {
+				diagnostics = "诊断",
+				files = "文件",
+				buffers = "已打开文件",
+				grep = "全局搜索",
+				live_grep = "实时搜索",
+				command_history = "命令历史",
+				search_history = "搜索历史",
+				git_status = "Git 状态",
+				git_branches = "Git 分支",
+				git_log = "Git 日志",
+				git_files = "Git 文件",
+				undo = "撤销历史",
+				icons = "图标插件",
+				keymaps = "快捷键",
+				marks = "标记",
+				projects = "项目",
+				todo_comments = "待办事项",
+			}
+
+			-- 核心汉化逻辑函数
+			local function translate_msg(msg)
+				if type(msg) ~= "string" then
+					return msg
+				end
+				local msg_low = msg:lower()
+				if msg_low:find("no results") then
+					local source = msg:match("`(.+)`") or msg:match("for%s+(.+)$")
+					if source then
+						local translated_source = translations[source] or source
+						return ("未找到“%s”的相关结果"):format(translated_source)
+					else
+						return "未找到相关结果"
+					end
+				end
+				return msg
+			end
+
+			-- 1. 拦截标准通知系统
+			local original_notify = vim.notify
+			vim.notify = function(msg, level, notify_opts)
+				original_notify(translate_msg(msg), level, notify_opts)
+			end
+
+			-- 2. 拦截 Snacks 内部通知系统 (核心：彻底根治)
+			local Snacks = require("snacks")
+			if Snacks.notify then
+				-- 拦截所有级别的通知函数 (info, warn, error, etc.)
+				for _, method in ipairs({ "info", "warn", "error", "debug" }) do
+					if Snacks.notify[method] then
+						local original_method = Snacks.notify[method]
+						Snacks.notify[method] = function(msg, notify_opts)
+							original_method(translate_msg(msg), notify_opts)
+						end
+					end
+				end
+				-- 拦截通用 notify 方法
+				local original_snack_notify = Snacks.notify.notify or Snacks.notify
+				if type(original_snack_notify) == "function" then
+					Snacks.notify.notify = function(msg, level, notify_opts)
+						original_snack_notify(translate_msg(msg), level, notify_opts)
+					end
+				end
+			end
+		end,	},
 }
