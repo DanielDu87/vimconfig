@@ -394,14 +394,16 @@ return {
 				{ "<leader>g", group = "Git", icon = "🧡" },
 				{ "<leader>gB", desc = "which_key_ignore" },
 				{ "<leader>gY", desc = "which_key_ignore" },
+				{ "<leader>ga", desc = "Git暂存" },
 				{ "<leader>gba", desc = "Git行追溯" },
 				{ "<leader>gb", desc = "Git切换分支" },
 				{ "<leader>gc", desc = "Git检出分支" },
-				{ "<leader>gC", desc = "Git检出" },
+				{ "<leader>gC", desc = "which_key_ignore" },
+				{ "<leader>gF", desc = "which_key_ignore" },
 				{ "<leader>gd", desc = "Git差异" },
-				{ "<leader>gf", desc = "Git文件" },
+				{ "<leader>gf", desc = "Git面板" },
 				{ "<leader>gg", desc = "Git提交图" },
-				{ "<leader>gG", desc = "Git暂存" },
+				{ "<leader>gG", desc = "which_key_ignore" },
 				{ "<leader>gl", desc = "Git提交详情" },
 				{ "<leader>gp", desc = "Git拉取" },
 				{ "<leader>gP", desc = "Git推送" },
@@ -946,6 +948,15 @@ return {
 				end,
 				desc = "复制链接",
 				mode = { "n", "v" },
+			},
+			{
+				"<leader>ga",
+				function()
+					local root = require("lazyvim.util").root()
+					vim.fn.system("git -C " .. vim.fn.shellescape(root) .. " add -A")
+					vim.notify("所有更改已添加到暂存区", vim.log.levels.INFO, { title = "Git" })
+				end,
+				desc = "Git暂存",
 			},
 			{
 				"<leader>gba",
