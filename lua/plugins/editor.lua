@@ -444,8 +444,8 @@ return {
 				{ "<leader>gY", desc = "which_key_ignore" },
 				{ "<leader>ga", desc = "Git暂存", icon = "📥" },
 				{ "<leader>gb", desc = "Git Blame", icon = "🕵️" },
-				{ "<leader>gc", desc = "Git切换分支", icon = "🔀" },
-				{ "<leader>gC", desc = "which_key_ignore" },
+				{ "<leader>gc", desc = "Git提交", icon = "📝" },
+				{ "<leader>gC", desc = "Git切换分支", icon = "🔀" },
 				{ "<leader>gF", desc = "which_key_ignore" },
 				{ "<leader>gd", desc = "Git差异", icon = "🌓" },
 				{ "<leader>gD", desc = "Git差异（远程）", icon = "📡" },
@@ -971,19 +971,19 @@ return {
 			},
 
 			-- 窗口管理：原生操作符映射
-			{ "<leader>w-", "<C-W>s", desc = "向下分割窗口", remap = true },
-			{ "<leader>w|", "<C-W>v", desc = "向右分割窗口", remap = true },
-			{ "<leader>wd", "<C-W>c", desc = "关闭当前窗口", remap = true },
-			{ "<leader>wh", "<C-W>h", desc = "切换到左侧窗口", remap = true },
-			{ "<leader>wj", "<C-W>j", desc = "切换到下方窗口", remap = true },
-			{ "<leader>wk", "<C-W>k", desc = "切换到上方窗口", remap = true },
-			{ "<leader>wl", "<C-W>l", desc = "切换到右侧窗口", remap = true },
-			{ "<leader>wH", "<C-W>H", desc = "向左移动窗口", remap = true },
-			{ "<leader>wJ", "<C-W>J", desc = "向下移动窗口", remap = true },
-			{ "<leader>wK", "<C-W>K", desc = "向上移动窗口", remap = true },
-			{ "<leader>wL", "<C-W>L", desc = "向右移动窗口", remap = true },
-			{ "<leader>w=", "<C-W>=", desc = "均衡窗口大小", remap = true },
-			{ "<leader>ww", "<C-W>w", desc = "切换到其他窗口", remap = true },
+			{ "<leader>w-", "<C-W>s", mode = "n", desc = "向下分割窗口", remap = true },
+			{ "<leader>w|", "<C-W>v", mode = "n", desc = "向右分割窗口", remap = true },
+			{ "<leader>wd", "<C-W>c", mode = "n", desc = "关闭当前窗口", remap = true },
+			{ "<leader>wh", "<C-W>h", mode = "n", desc = "切换到左侧窗口", remap = true },
+			{ "<leader>wj", "<C-W>j", mode = "n", desc = "切换到下方窗口", remap = true },
+			{ "<leader>wk", "<C-W>k", mode = "n", desc = "切换到上方窗口", remap = true },
+			{ "<leader>wl", "<C-W>l", mode = "n", desc = "切换到右侧窗口", remap = true },
+			{ "<leader>wH", "<C-W>H", mode = "n", desc = "向左移动窗口", remap = true },
+			{ "<leader>wJ", "<C-W>J", mode = "n", desc = "向下移动窗口", remap = true },
+			{ "<leader>wK", "<C-W>K", mode = "n", desc = "向上移动窗口", remap = true },
+			{ "<leader>wL", "<C-W>L", mode = "n", desc = "向右移动窗口", remap = true },
+			{ "<leader>w=", "<C-W>=", mode = "n", desc = "均衡窗口大小", remap = true },
+			{ "<leader>ww", "<C-W>w", mode = "n", desc = "切换到其他窗口", remap = true },
 			{
 				"<leader>wm",
 				function()
@@ -995,7 +995,7 @@ return {
 			-- Git 增强映射 (中文化覆盖)
 			-- Git检出：选择并切换分支（使用git switch）
 			{
-				"<leader>gc",
+				"<leader>gC",
 				function()
 					local root = require("lazyvim.util").root()
 					require("snacks").terminal("lazygit branch", {
@@ -1010,6 +1010,25 @@ return {
 					})
 				end,
 				desc = "Git切换分支",
+			},
+			-- Git提交 (使用 Neogit)
+			{
+				"<leader>gc",
+				function()
+					local root = require("lazyvim.util").root()
+					-- 检查是否有暂存的更改
+					local staged = vim.fn.system("git -C " .. vim.fn.shellescape(root) .. " diff --cached --name-only")
+					
+					local neogit = require("neogit")
+					if staged == "" then
+						vim.notify("没有暂存内容，已打开 Neogit 状态面板", vim.log.levels.INFO, { title = "Neogit" })
+						neogit.open()
+					else
+						-- 直接进入提交模式
+						neogit.open({ "commit" })
+					end
+				end,
+				desc = "Git提交 (Neogit)",
 			},
 			-- Git远程仓库子菜单（leader gr）
 			{
@@ -1070,9 +1089,26 @@ return {
 			{
 				"<leader>gb",
 				function()
-					require("snacks").git.blame_line()
+					local mode = vim.fn.mode()
+
+					if mode == "n" then
+						-- 普通模式：使用最开始的默认样式 (Snacks 内置，行尾弹窗)
+						require("snacks").git.blame_line()
+					else
+						-- 可视化模式：使用 advanced-git-search 追溯选区历史 (交互式)
+						-- 先退出可视化模式
+						vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", true)
+						
+						local ok, telescope = pcall(require, "telescope")
+						if ok then
+							telescope.extensions.advanced_git_search.diff_commit_line()
+						else
+							vim.notify("Telescope/advanced-git-search 未就绪", vim.log.levels.WARN)
+						end
+					end
 				end,
-				desc = "Git Blame",
+				mode = { "n", "v" },
+				desc = "Git Blame/历史追溯",
 			},
 			{
 				"<leader>gf",

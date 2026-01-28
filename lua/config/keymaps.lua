@@ -154,3 +154,10 @@ vim.keymap.set("n", "<leader>rV", function()
 	end
 end, { desc = "选择 TS 工作区版本" })
 
+--==============================================================================
+-- 代码重构 (Visual 模式)
+--==============================================================================
+vim.keymap.set("v", "<leader>r", function()
+	require("util.refactor_smart").smart_visual_refactor()
+end, { desc = "智能重构 (选中)" })
+
