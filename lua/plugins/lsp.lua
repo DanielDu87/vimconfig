@@ -61,29 +61,32 @@ return {
 				},
 				-- 4. HTML
 				html = {
-					filetypes = { "html" }, -- 仅处理标准 HTML
+					-- 恢复为标准支持，包括 htmldjango
+					filetypes = { "html", "htmldjango" },
+					settings = {
+						html = {
+							validate = { scripts = true, styles = true },
+						},
+					},
 				},
 				-- 5. Django 模板 (djlsp)
-				-- 专门处理 htmldjango，提供精准报错
+				-- 此服务器在 htmldjango 上与 html 共存
 				djlsp = {
 					filetypes = { "htmldjango" },
 				},
 				-- 6. JSON
 				jsonls = {
-					settings = {
-						json = {
-							validate = { enable = true },
-						},
-					},
+					settings = { json = { validate = { enable = true } } },
 				},
 				-- 7. Docker
 				dockerls = {
 					root_dir = lspconfig.util.root_pattern("Dockerfile", "docker-compose.yml", "docker-compose.yaml", ".git"),
 				},
-				-- 7. 其他
+				-- 8. 其他
 				bashls = {},
 				marksman = {},
 				emmet_ls = {
+					-- Emmet 应该作为一个辅助，支持尽可能多的 Web 文件
 					filetypes = { "html", "htmldjango", "typescriptreact", "javascriptreact", "css", "sass", "scss", "less", "vue" },
 				},
 			}

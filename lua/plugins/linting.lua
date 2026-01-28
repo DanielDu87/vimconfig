@@ -47,6 +47,7 @@ return {
 				markdown = { "markdownlint" },
 				dockerfile = { "hadolint" },
 				htmldjango = { "djlint" },
+				html = { "htmlhint" },
 			}
 
 			-- 实时触发 lint 的逻辑 (增强版)

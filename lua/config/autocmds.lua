@@ -73,15 +73,6 @@ vim.api.nvim_create_autocmd("FileType", {
 	end,
 })
 
--- 针对 HTML 文件的纠错增强（行内多行 + 自动悬浮窗）
-vim.api.nvim_create_autocmd("FileType", {
-	pattern = { "html" },
-	callback = function(args)
-		-- 强制启用该 Buffer 的诊断引擎
-		pcall(vim.diagnostic.enable, true, { bufnr = args.buf })
-	end,
-})
-
 -- 针对 Runner 日志的语法高亮
 vim.api.nvim_create_autocmd("FileType", {
 	pattern = { "runnerlog" },

@@ -2,23 +2,22 @@ return {
 	-- 1. 配置 tiny-inline-diagnostic 插件（多行换行显示）
 	{
 		"rachartier/tiny-inline-diagnostic.nvim",
-		event = { "LspAttach", "BufReadPre", "BufNewFile" },
+		event = "VeryLazy", -- 改为 VeryLazy 确保稳定加载
+		priority = 1000, -- 提高优先级
 		config = function()
+			-- 必须在这里强制禁用原生虚拟文字，防止冲突
+			vim.diagnostic.config({ virtual_text = false })
+
 			require("tiny-inline-diagnostic").setup({
 				preset = "ghost",
 				options = {
 					show_source = false,
-					throttle = 0, -- 插入模式下建议设为 0，避免延迟
+					throttle = 0,
 					softwrap = 60,
-					multilines = {
-						enabled = true,
-					},
-					overflow = {
-						mode = "wrap",
-					},
-					-- 监听诊断变化事件（包括nvim-lint产生的诊断）
-					overwrite_events = { "LspAttach", "DiagnosticChanged", "BufEnter" },
-					-- 插入模式下也显示诊断
+					multilines = { enabled = true },
+					overflow = { mode = "wrap" },
+					-- 增加更多的监听事件，确保万无一失
+					overwrite_events = { "LspAttach", "DiagnosticChanged", "BufEnter", "BufWritePost" },
 					enable_on_insert = true,
 				},
 			})
@@ -29,30 +28,25 @@ return {
 	{
 		"neovim/nvim-lspconfig",
 		event = "VeryLazy",
-		opts = function(_, opts)
-			-- 禁用默认显示
-			opts.diagnostics = opts.diagnostics or {}
-			opts.diagnostics.virtual_text = false
-			opts.diagnostics.signs = true -- 启用 signs
-
-			-- 对所有级别显示下划线
-			opts.diagnostics.underline = true
-			opts.diagnostics.update_in_insert = true -- 允许插入模式更新诊断
-			opts.diagnostics.severity_sort = true
-
-			-- 浮窗配置：不抢焦点，支持换行
-			opts.diagnostics.float = vim.tbl_deep_extend("force", opts.diagnostics.float or {}, {
-				header = "",
-				source = "if_many",
-				border = "rounded",
-				wrap = true,
-				focusable = false,
-				focus = false,
+		config = function()
+			-- -----------------------------------------------------------------------
+			-- 全局诊断配置：这是确保 tiny-inline-diagnostic 正常工作的关键
+			-- -----------------------------------------------------------------------
+			vim.diagnostic.config({
+				virtual_text = false, -- 禁用原生虚拟文字，由 tiny-inline 接管
+				signs = true,
+				underline = true,
+				update_in_insert = true,
+				severity_sort = true,
+				float = {
+					header = "",
+					source = "if_many",
+					border = "rounded",
+					focusable = false,
+					focus = false,
+				},
 			})
 
-			return opts
-		end,
-		config = function()
 			-- 设置 Visual 模式的智能重构键位
 			vim.api.nvim_create_autocmd("User", {
 				pattern = "LazyVimKeymaps",
