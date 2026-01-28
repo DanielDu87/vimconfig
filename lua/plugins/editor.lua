@@ -298,7 +298,7 @@ return {
 				rules = false, -- 禁用默认图标规则
 			},
 			win = {
-				width = 0.65,
+				width = 0.75,
 				height = { min = 4, max = math.huge },
 				col = 0.5,
 				row = 0.8,
@@ -1251,38 +1251,96 @@ return {
 				picker.list:set_selected({})
 			end
 
-			opts.picker.win = opts.picker.win or {}
-
-			-- 输入框：居中并使用圆角
-			opts.picker.win.input = {
-				row = 0.3,
-				height = 1,
-				width = 0.65,
-				col = 0.2,
-				border = "rounded",
-				wo = { statuscolumn = "", signcolumn = "no" },
-			}
-
-			-- 列表：使用圆角边框并禁用冗余列
-			opts.picker.win.list = {
-				border = "rounded",
-				wo = {
-					statuscolumn = "",
-					signcolumn = "no",
-					number = false,
-					foldcolumn = "0",
-					conceallevel = 0,
+			-- 布局配置 - 控制宽度
+			local picker_width = 0.75 -- Picker 窗口宽度
+			opts.picker.layouts = {
+				default = {
+					layout = {
+						box = "horizontal",
+						width = picker_width,
+						min_width = 80,
+						height = 0.8,
+						{
+							box = "vertical",
+							border = "rounded",
+							title = "{title} {live} {flags}",
+							{ win = "input", height = 1, border = "bottom" },
+							{ win = "list", border = "none" },
+						},
+						{ win = "preview", title = "{preview}", border = "rounded", width = 0.5 },
+					},
 				},
-				keys = {
-					-- Esc 清除多选，不关闭 picker
-					["<Esc>"] = { "list_clear_selected", mode = "n" },
+				vertical = {
+					layout = {
+						backdrop = false,
+						width = picker_width,
+						min_width = 80,
+						height = 0.8,
+						box = "vertical",
+						border = "rounded",
+						title = "{title} {live} {flags}",
+						title_pos = "center",
+						{ win = "input", height = 1, border = "bottom" },
+						{ win = "list", border = "none" },
+						{ win = "preview", title = "{preview}", height = 0.4, border = "top" },
+					},
+				},
+				telescope = {
+					reverse = true,
+					layout = {
+						box = "horizontal",
+						backdrop = false,
+						width = picker_width,
+						height = 0.9,
+						border = "rounded",
+						{
+							box = "vertical",
+							{ win = "list", title = " Results ", title_pos = "center", border = "rounded" },
+							{ win = "input", height = 1, border = "rounded", title = "{title} {live} {flags}", title_pos = "center" },
+						},
+						{
+							win = "preview",
+							title = "{preview:Preview}",
+							width = 0.45,
+							border = "rounded",
+							title_pos = "center",
+						},
+					},
+				},
+				select = {
+					layout = {
+						box = "vertical",
+						backdrop = false,
+						width = picker_width,
+						min_width = 80,
+						height = 0.6,
+						border = "rounded",
+						title = "{title}",
+						title_pos = "center",
+						{ win = "input", height = 1, border = "bottom" },
+						{ win = "list", border = "none" },
+					},
+				},
+				ivy = {
+					layout = {
+						box = "vertical",
+						backdrop = false,
+						row = -1,
+						width = picker_width,
+						height = 0.4,
+						border = "top",
+						title = " {title} {live} {flags}",
+						title_pos = "left",
+						{ win = "input", height = 1, border = "bottom" },
+						{
+							box = "horizontal",
+							{ win = "list", border = "none" },
+							{ win = "preview", title = "{preview}", width = 0.5, border = "left" },
+						},
+					},
 				},
 			}
 
-			-- 预览窗口配置：使用圆角边框
-			opts.picker.win.preview = {
-				border = "rounded",
-			}
 			-- 源特定增强
 			opts.picker.sources = opts.picker.sources or {}
 
@@ -1294,7 +1352,7 @@ return {
 						border = "rounded",
 						title = " 图标插件 ",
 						title_pos = "center",
-						width = 0.65,
+						width = 0.75,
 						height = 0.7,
 						{ win = "input", height = 1, border = "bottom" },
 						{ win = "list", border = "none" },
@@ -1318,7 +1376,7 @@ return {
 
 						title_pos = "center",
 
-						width = 0.65,
+						width = 0.75,
 
 						height = 0.7,
 
@@ -1345,7 +1403,7 @@ return {
 
 						title_pos = "center",
 
-						width = 0.65,
+						width = 0.75,
 
 						height = 0.7,
 
@@ -1372,7 +1430,7 @@ return {
 
 						title_pos = "center",
 
-						width = 0.65,
+						width = 0.75,
 						height = 0.7,
 
 						{ win = "input", height = 1, border = "bottom" },
@@ -1475,14 +1533,6 @@ return {
 
 			-- 2. 拦截 Snacks 内部通知系统 (核心：彻底根治)
 			local Snacks = require("snacks")
-
-			-- 3. 强制全局 Picker 窗口样式：圆角边框 (解决部分界面无边框问题)
-			local picker_styles = { "snacks_picker_input", "snacks_picker_list", "snacks_picker_preview" }
-			for _, style in ipairs(picker_styles) do
-				Snacks.config.style(style, {
-					border = "rounded",
-				})
-			end
 
 			if Snacks.notify then
 				-- 拦截所有级别的通知函数 (info, warn, error, etc.)
