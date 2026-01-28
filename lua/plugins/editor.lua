@@ -294,6 +294,9 @@ return {
 		"folke/which-key.nvim",
 		opts = {
 			layout = { columns = 8, align = "center" },
+			icons = {
+				rules = false, -- 禁用默认图标规则
+			},
 			win = {
 				width = 0.65,
 				height = { min = 4, max = math.huge },
@@ -456,6 +459,7 @@ return {
 				{ "<leader>sq", desc = "快速修复列表", icon = "🛠️" },
 				{ "<leader>sR", desc = "恢复上次搜索", icon = "↩️" },
 				{ "<leader>sr", desc = "查找并替换", icon = "🔄" },
+				{ '<leader>s"', desc = "寄存器", icon = "📋" },
 				{ "<leader>su", desc = "撤销历史", icon = "📜" },
 				{ "<leader>sw", desc = "搜索单词（项目）", icon = "🔎" },
 				{ "<leader>sW", desc = "搜索单词（目录）", icon = "📂" },
@@ -476,6 +480,16 @@ return {
 				{ "<leader>S.", desc = "打开默认临时Buffer", icon = "📝" },
 				{ "<leader>SS", desc = "选择/管理临时Buffer", icon = "🗂️" },
 				{ "<leader>u", group = "界面", icon = "🎨" },
+				{ "<leader>ub", desc = "切换背景模式", icon = "🌓" },
+				{ "<leader>ud", desc = "切换诊断显示", icon = "🔍" },
+				{ "<leader>uf", desc = "切换自动格式化", icon = "🛠️" },
+				{ "<leader>ug", desc = "切换缩进引导线", icon = "📏" },
+				{ "<leader>uh", desc = "切换代码透镜", icon = "💎" },
+				{ "<leader>ul", desc = "切换行号模式", icon = "🔢" },
+				{ "<leader>un", desc = "切换通知系统", icon = "🔔" },
+				{ "<leader>us", desc = "切换拼写检查", icon = "📝" },
+				{ "<leader>uT", desc = "切换透明模式", icon = "👻" },
+				{ "<leader>uw", desc = "切换自动换行", icon = "↩️" },
 				{ "<leader>w", group = "窗口", icon = "🖼️" },
 				{ "<leader>w-", desc = "向下分割窗口", icon = "➖" },
 				{ "<leader>w|", desc = "向右分割窗口", icon = "➕" },
@@ -496,6 +510,7 @@ return {
 				{ "<leader>xX", desc = "当前文件诊断", icon = "🔍" },
 				{ "<leader>xl", desc = "位置列表", icon = "📍" },
 				{ "<leader>xq", desc = "快速修复列表", icon = "🛠️" },
+				{ "<leader>xt", desc = "待办事项列表", icon = "✅" },
 				{ "[", group = "上一个", icon = "⬆️" },
 				{ "]", group = "下一个", icon = "⬇️" },
 				{ "g", group = "跳转", icon = "🔗" },
@@ -536,29 +551,52 @@ return {
 					{ "Search History", "搜索历史" },
 					{ "Autocmds", "自动命令" },
 					{ "Commands", "命令" },
-					{ "Diagnostics", "诊断信息" },
-					{ "Buffer Diagnostics", "Buffer诊断" },
+					{ "Diagnostics", "🚨 诊断信息" },
+					{ "Buffer Diagnostics", "🔍 Buffer诊断" },
 					{ "Help Pages", "帮助文档" },
 					{ "Highlights", "高亮组" },
-					{ "Icons", "图标" },
-					{ "Jumps", "跳转列表" },
+					{ "Icons", "图标插件" },
+					{ "Jumps", "跳转记录" },
 					{ "Keymaps", "快捷键映射" },
-					                    { "Buffer Keymaps (which-key)", "Buffer快捷键查询（which-key）" },					{ "Location List", "位置列表" },
-					{ "Man Pages", "手册页" },
+					{ "Buffer Keymaps (which-key)", "Buffer快捷键查询（which-key）" },
+					{ "Location List", "位置列表" },
+					{ "Man Pages", "📚 手册页" },
 					{ "Marks", "标记" },
 					{ "Resume", "恢复上一次" },
 					{ "Quickfix List", "快速修复列表" },
 					{ "Undotree", "撤销树" },
 					{ "Colorschemes", "配色方案" },
-					{ "Todo", "待办事项" },
+					{ "Todo", "✅ 待办事项" },
 					{ "LSP Symbols", "LSP符号" },
 					{ "LSP Workspace Symbols", "LSP工作区符号" },
-					{ "Goto Definition", "跳转到定义" },
-					{ "Goto Declaration", "跳转到声明" },
-					{ "Goto Implementation", "跳转到实现" },
-					{ "Goto Type Definition", "跳转到类型定义" },
-					{ "Keyword Index", "关键词索引" },
-					{ "Select Scratch Buffer", "选择临时Buffer" },
+					{ "Notifications", "通知" },
+					{ "Noice", "通知" },
+					-- 界面与功能开关
+					{ "Disable Animations", "禁用动画" },
+					{ "Enable Animations", "开启动画" },
+					{ "Disable Tabline", "禁用标签栏" },
+					{ "Enable Tabline", "开启标签栏" },
+					{ "Disable Conceal Level", "禁用文本隐藏" },
+					{ "Enable Conceal Level", "开启文本隐藏" },
+					{ "Enable Dimming", "开启非活动暗化" },
+					{ "Disable Dimming", "禁用非活动暗化" },
+					{ "Disable Auto Format (Buffer)", "禁用本文件自动格式化" },
+					{ "Enable Auto Format (Buffer)", "开启本文件自动格式化" },
+					{ "Disable Git Signs", "禁用 Git 标记" },
+					{ "Enable Git Signs", "开启 Git 标记" },
+					{ "Inspect Pos", "查看位置信息" },
+					{ "Inspect Tree", "查看语法树" },
+					{ "Enable Relative Number", "开启相对行号" },
+					{ "Disable Relative Number", "禁用相对行号" },
+					{ "Disable Mini Pairs", "禁用自动配对" },
+					{ "Enable Mini Pairs", "开启自动配对" },
+					{ "Redraw / Clear hlsearch / Diff Update", "刷新并清除搜索高亮" },
+					{ "Disable Smooth Scroll", "禁用平滑滚动" },
+					{ "Enable Smooth Scroll", "开启平滑滚动" },
+					{ "Enable Zen Mode", "开启禅模式" },
+					{ "Disable Zen Mode", "禁用禅模式" },
+					{ "Enable Zoom Mode", "开启缩放模式" },
+					{ "Disable Zoom Mode", "禁用缩放模式" },
 					-- Buffer相关
 					{ "Switch to Other Buffer", "切换到其他Buffer" },
 					{ "Delete Buffer", "关闭当前Buffer" },
@@ -694,9 +732,9 @@ return {
 			},
 		},
 		config = function(_, opts)
-			-- 设置 which-key 边框颜色 (与当前风格一致)
-			vim.api.nvim_set_hl(0, "WhichKeyBorder", { fg = "#2b85b7", default = true })
-			vim.api.nvim_set_hl(0, "WhichKeyNormal", { bg = "#1a1b26", default = true })
+			-- 设置 which-key 边框颜色 (透明背景)
+			vim.api.nvim_set_hl(0, "WhichKeyBorder", { fg = "#2b85b7", bg = "NONE", default = true })
+			vim.api.nvim_set_hl(0, "WhichKeyNormal", { bg = "NONE", default = true })
 			-- 设置图标和分组颜色
 			vim.api.nvim_set_hl(0, "WhichKeyIcon", { fg = "#9aa5ce", default = true })
 			vim.api.nvim_set_hl(0, "WhichKeyGroup", { fg = "#9aa5ce", default = true })
@@ -964,7 +1002,7 @@ return {
 				end,
 				desc = "Git Blame",
 			},
-						{
+			{
 				"<leader>gf",
 				function()
 					require("snacks").terminal("lazygit")
@@ -1011,23 +1049,23 @@ return {
 				end,
 				desc = "Git差异（远程）",
 			},
-															{
-															"<leader>gs",
-															function()
-																local root = require("lazyvim.util").root()
-																require("snacks").terminal("lazygit stash", {
-																	cwd = root,
-																	win = {
-																		position = "float",
-																		title = " Git Stash ",
-																		width = 0.8,
-																		height = 0.8,
-																	},
-																	interactive = true,
-																})
-															end,
-															desc = "Git Stash",
-														},			-- Git提交图：显示 git log --oneline --graph --decorate --all
+			{
+				"<leader>gs",
+				function()
+					local root = require("lazyvim.util").root()
+					require("snacks").terminal("lazygit stash", {
+						cwd = root,
+						win = {
+							position = "float",
+							title = " Git Stash ",
+							width = 0.8,
+							height = 0.8,
+						},
+						interactive = true,
+					})
+				end,
+				desc = "Git Stash",
+			}, -- Git提交图：显示 git log --oneline --graph --decorate --all
 			{
 				"<leader>gg",
 				function()
@@ -1188,112 +1226,207 @@ return {
 			{ "/", snacks_lines, desc = "当前文件搜索", mode = { "n", "v" } },
 			{ "?", snacks_lines, desc = "当前文件搜索", mode = { "n", "v" } },
 		},
-		        		opts = function(_, opts)
-		        			-- 1. 通知系统优化：开启自动换行与高度自适应
-		        			opts.notifier = vim.tbl_deep_extend("force", opts.notifier or {}, {
-		        				style = "detailed",
-		        				wrap = true,
-		        				width = { min = 20, max = 0.4 },
-		        				height = { min = 1, max = 0.8 },
-		        			})
-		        
-		        			-- 2. 全局样式覆盖：确保换行在底层生效
-		        			opts.styles = vim.tbl_deep_extend("force", opts.styles or {}, {
-		        				notification = { wo = { wrap = true, linebreak = true, breakindent = true } },
-		        				detailed = { wo = { wrap = true, linebreak = true, breakindent = true } },
-		        			})
-		        
-		        			-- 3. Picker 全局视觉美化
-		        			opts.picker = opts.picker or {}
-		        			opts.picker.prompt = "" -- 严格还原原始设置
-		        
-		        			-- 添加清除选择的动作
-		        			opts.picker.actions = opts.picker.actions or {}
-		        			opts.picker.actions.list_clear_selected = function(picker)
-		        				picker.list:set_selected({})
-		        			end
-		        
-		        			opts.picker.win = opts.picker.win or {}
-		        
-		        			-- 输入框：居中并使用圆角
-		        			opts.picker.win.input = {
-		        				row = 0.3,
-		        				height = 1,
-		        				width = 0.6,
-		        				col = 0.2,
-		        				border = "rounded",
-		        				wo = { statuscolumn = "", signcolumn = "no" },
-		        			}
-		        
-		        			-- 列表：禁用冗余列
-		        			opts.picker.win.list = {
-		        				border = "rounded",
-		        				wo = {
-		        					statuscolumn = "",
-		        					signcolumn = "no",
-		        					number = false,
-		        					foldcolumn = "0",
-		        					conceallevel = 0,
-		        				},
-		        				keys = {
-		        					-- Esc 清除多选，不关闭 picker
-		        					["<Esc>"] = { "list_clear_selected", mode = "n" },
-		        				},
-		        			}
-		        
-		        			-- 预览窗口配置
-		        			opts.picker.win.preview = {
-		        				border = "rounded",
-		        			}
-		        
-		        			-- 源特定增强
-		        			opts.picker.sources = opts.picker.sources or {}
-		        			-- Buffer列表：显示固定状态图标
-		        			opts.picker.sources.buffers = {
-		        				format = function(item, picker)
-		        					local formatted = require("snacks").picker.format.buffer(item, picker)
-		        					-- 如果文件被固定 (Pinned)，则在前面显示图钉图标
-		        					local ok_groups, groups = pcall(require, "bufferline.groups")
-		        					local ok_state, state = pcall(require, "bufferline.state")
-		        					if ok_groups and ok_state and state.components then
-		        						for _, element in ipairs(state.components) do
-		        							if element.id == item.buf and groups._is_pinned(element) then
-		        								table.insert(formatted, 1, { "📌 ", "Special" })
-		        								break
-		        							end
-		        						end
-		        					end
-		        					return formatted
-		        				end,
-		        			}
-		        
-		        			-- 历史命令布局：基于 VSCode 风格但带完整边框
-		        			opts.picker.sources.command_history = {
-		        				layout = {
-		        					preset = "custom",
-		        					layout = {
-		        						backdrop = false,
-		        						row = 1,
-		        						width = 0.4,
-		        						min_width = 80,
-		        						height = 0.4,
-		        						border = "none",
-		        						box = "vertical",
-		        						{
-		        							win = "input",
-		        							height = 1,
-		        							border = "rounded",
-		        							title = "{title} {live} {flags}",
-		        							title_pos = "center",
-		        						},
-		        						{ win = "list", border = "rounded" },
-		        					},
-		        				},
-		        			}
-		        
-		        			return opts
-		        		end,
-		        		config = function(_, opts)
+		opts = function(_, opts)
+			-- 1. 通知系统优化：开启自动换行与高度自适应
+			opts.notifier = vim.tbl_deep_extend("force", opts.notifier or {}, {
+				style = "detailed",
+				wrap = true,
+				width = { min = 20, max = 0.4 },
+				height = { min = 1, max = 0.8 },
+			})
+
+			-- 2. 全局样式覆盖：确保换行在底层生效
+			opts.styles = vim.tbl_deep_extend("force", opts.styles or {}, {
+				notification = { wo = { wrap = true, linebreak = true, breakindent = true } },
+				detailed = { wo = { wrap = true, linebreak = true, breakindent = true } },
+			})
+
+			-- 3. Picker 全局视觉美化
+			opts.picker = opts.picker or {}
+			opts.picker.prompt = "" -- 严格还原原始设置
+
+			-- 添加清除选择的动作
+			opts.picker.actions = opts.picker.actions or {}
+			opts.picker.actions.list_clear_selected = function(picker)
+				picker.list:set_selected({})
+			end
+
+			opts.picker.win = opts.picker.win or {}
+
+			-- 输入框：居中并使用圆角
+			opts.picker.win.input = {
+				row = 0.3,
+				height = 1,
+				width = 0.6,
+				col = 0.2,
+				border = "rounded",
+				wo = { statuscolumn = "", signcolumn = "no" },
+			}
+
+			-- 列表：使用圆角边框并禁用冗余列
+			opts.picker.win.list = {
+				border = "rounded",
+				wo = {
+					statuscolumn = "",
+					signcolumn = "no",
+					number = false,
+					foldcolumn = "0",
+					conceallevel = 0,
+				},
+				keys = {
+					-- Esc 清除多选，不关闭 picker
+					["<Esc>"] = { "list_clear_selected", mode = "n" },
+				},
+			}
+
+			-- 预览窗口配置：使用圆角边框
+			opts.picker.win.preview = {
+				border = "rounded",
+			}
+			-- 源特定增强
+			opts.picker.sources = opts.picker.sources or {}
+
+			-- 图标插件布局：增加边框并限制大小
+			opts.picker.sources.icons = {
+				layout = {
+					layout = {
+						box = "vertical",
+						border = "rounded",
+						title = " 图标插件 ",
+						title_pos = "center",
+						width = 0.7,
+						height = 0.7,
+						{ win = "input", height = 1, border = "bottom" },
+						{ win = "list", border = "none" },
+					},
+				},
+			}
+
+			-- 诊断布局：增加边框并限制大小
+
+			opts.picker.sources.diagnostics = {
+
+				layout = {
+
+					layout = {
+
+						box = "vertical",
+
+						border = "rounded",
+
+						title = " 诊断信息 ",
+
+						title_pos = "center",
+
+						width = 0.7,
+
+						height = 0.7,
+
+						{ win = "input", height = 1, border = "bottom" },
+
+						{ win = "list", border = "none" },
+					},
+				},
+			}
+
+			-- 文档符号布局：增加边框并限制大小
+
+			opts.picker.sources.lsp_symbols = {
+
+				layout = {
+
+					layout = {
+
+						box = "vertical",
+
+						border = "rounded",
+
+						title = " 文档符号 ",
+
+						title_pos = "center",
+
+						width = 0.7,
+
+						height = 0.7,
+
+						{ win = "input", height = 1, border = "bottom" },
+
+						{ win = "list", border = "none" },
+					},
+				},
+			}
+
+			-- 项目符号布局：增加边框并限制大小
+
+			opts.picker.sources.lsp_workspace_symbols = {
+
+				layout = {
+
+					layout = {
+
+						box = "vertical",
+
+						border = "rounded",
+
+						title = " 项目符号 ",
+
+						title_pos = "center",
+
+						width = 0.7,
+
+						height = 0.7,
+
+						{ win = "input", height = 1, border = "bottom" },
+
+						{ win = "list", border = "none" },
+					},
+				},
+			} -- Buffer列表：显示固定状态图标
+			opts.picker.sources.buffers = {
+				format = function(item, picker)
+					local formatted = require("snacks").picker.format.buffer(item, picker)
+					-- 如果文件被固定 (Pinned)，则在前面显示图钉图标
+					local ok_groups, groups = pcall(require, "bufferline.groups")
+					local ok_state, state = pcall(require, "bufferline.state")
+					if ok_groups and ok_state and state.components then
+						for _, element in ipairs(state.components) do
+							if element.id == item.buf and groups._is_pinned(element) then
+								table.insert(formatted, 1, { "📌 ", "Special" })
+								break
+							end
+						end
+					end
+					return formatted
+				end,
+			}
+
+			-- 历史命令布局：基于 VSCode 风格但带完整边框
+			opts.picker.sources.command_history = {
+				layout = {
+					preset = "custom",
+					layout = {
+						backdrop = false,
+						row = 1,
+						width = 0.4,
+						min_width = 80,
+						height = 0.4,
+						border = "none",
+						box = "vertical",
+						{
+							win = "input",
+							height = 1,
+							border = "rounded",
+							title = "{title} {live} {flags}",
+							title_pos = "center",
+						},
+						{ win = "list", border = "rounded" },
+					},
+				},
+			}
+
+			return opts
+		end,
+		config = function(_, opts)
 			require("snacks").setup(opts)
 
 			-- 汉化翻译映射表
@@ -1343,6 +1476,15 @@ return {
 
 			-- 2. 拦截 Snacks 内部通知系统 (核心：彻底根治)
 			local Snacks = require("snacks")
+
+			-- 3. 强制全局 Picker 窗口样式：圆角边框 (解决部分界面无边框问题)
+			local picker_styles = { "snacks_picker_input", "snacks_picker_list", "snacks_picker_preview" }
+			for _, style in ipairs(picker_styles) do
+				Snacks.config.style(style, {
+					border = "rounded",
+				})
+			end
+
 			if Snacks.notify then
 				-- 拦截所有级别的通知函数 (info, warn, error, etc.)
 				for _, method in ipairs({ "info", "warn", "error", "debug" }) do
@@ -1361,5 +1503,6 @@ return {
 					end
 				end
 			end
-		end,	},
+		end,
+	},
 }
