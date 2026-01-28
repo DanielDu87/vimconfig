@@ -68,7 +68,15 @@ return {
 				djlsp = {
 					filetypes = { "htmldjango" },
 				},
-				-- 6. Docker
+				-- 6. JSON
+				jsonls = {
+					settings = {
+						json = {
+							validate = { enable = true },
+						},
+					},
+				},
+				-- 7. Docker
 				dockerls = {
 					root_dir = lspconfig.util.root_pattern("Dockerfile", "docker-compose.yml", "docker-compose.yaml", ".git"),
 				},

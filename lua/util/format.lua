@@ -35,23 +35,76 @@ function M.format(opts)
 		lsp_format = config.lsp_format,
 		async = false,
 		timeout_ms = 5000,
-		quiet = false, -- 显式开启错误提示
-	})
+		quiet = true, -- 我们手动处理报错显示
+	}, function(err)
+		if err then
+			-- -----------------------------------------------------------------------
+			-- 通用报错信息深度清洗与美化逻辑 (健壮版)
+			-- -----------------------------------------------------------------------
+			local msg = type(err) == "string" and err or vim.inspect(err)
+			if not msg or msg == "" then
+				return
+			end
+
+			-- 1. 基础噪音过滤 (ANSI 颜色, 各种错误前缀)
+			msg = msg:gsub("\27%[[0-9;]*m", "")
+			msg = msg:gsub("Formatter '.-' .-: ", "")
+			msg = msg:gsub("command failed[:%s]*", "")
+			msg = msg:gsub("stderr[:%s]*", "")
+			-- 移除 Prettier 常见的 [error] 或 error: 前缀
+			msg = msg:gsub("%%[?[Ee][Rr][Rr][Oo][Rr]%%]?[:%s]*", "")
+
+			-- 2. 移除长链接
+			msg = msg:gsub("For more info see https?://%S+", "")
+
+			-- 3. 智能路径缩减：将 /Users/xxx/path/to/file.ext 缩短为 file.ext
+			-- 使用兼容性更好的匹配模式
+			msg = msg:gsub("/[%w%._%-%s/]+/([%w%._%-%s]+)", "%1")
+
+			-- 4. 修复语法错误名称
+			msg = msg:gsub("SyntaxUnexpected", "SyntaxError: Unexpected")
+			msg = vim.trim(msg)
+
+			-- 5. 万能代码预览对齐处理 (使用 pcall 确保安全)
+			local ok, final_msg = pcall(function()
+				local lines_table = {}
+				for line in msg:gmatch("[^\r\n]+") do
+					local trimmed = line:gsub("^%s*", "")
+					if trimmed:match("|") then
+						if trimmed:match("^>") then
+							table.insert(lines_table, trimmed)
+						elseif trimmed:match("^%d+") then
+							table.insert(lines_table, "  " .. trimmed)
+						elseif trimmed:match("^|") then
+							table.insert(lines_table, "     " .. trimmed)
+						else
+							table.insert(lines_table, "  " .. trimmed)
+						end
+					else
+						table.insert(lines_table, line)
+					end
+				end
+				return table.concat(lines_table, "\n")
+			end)
+
+			-- 发送通知
+			vim.notify(ok and final_msg or msg, vim.log.levels.ERROR, {
+				title = "代码格式化异常",
+				icon = "󰉁",
+			})
+		end
+	end)
 
 	-- 2. 针对 HTML 的特殊智能空行控制
 	if ft == "html" then
-		-- 第一步：删除所有空行
 		vim.cmd([[silent! %g/^\s*$/d]])
-				-- 第二步：仅当 body 为空时 (<body></body>) 强制撑开空行，并保持闭合标签对齐
-				-- 这里插入一个换行，再插入一个空行，最后在闭合标签前加一个 \t (如果您用的是 Tab)
-				vim.cmd([[
-		silent! %s/\(<body[^>]*>\)\(<\/body>\)/\1\r\r\t\2/e]])
-				end
+		vim.cmd([[silent! %s/\(<body[^>]*>\)\(<\/body>\)/\1\r\r\t\2/e]])
+	end
 
 	-- 3. 统一清理行尾空白（通用操作）
 	vim.cmd([[silent! %s/\s\+$//e]])
 
-	-- 3. 恢复光标位置
+	-- 4. 恢复光标位置
 	vim.fn.setpos(".", pos)
 end
 

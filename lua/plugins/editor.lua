@@ -1391,6 +1391,7 @@ return {
 				wrap = true,
 				width = { min = 20, max = safe_int(0.4, cols) },
 				height = { min = 1, max = safe_int(0.8, lines) },
+				top = 3, -- 距离顶部向下移动 3 行（避开标签栏）
 			})
 
 			-- 2. 全局样式覆盖：确保换行在底层生效
