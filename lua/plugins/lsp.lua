@@ -20,7 +20,7 @@ return {
 
 			-- 定义服务器列表
 			local servers = {
-				-- 1. ts_ls（tsserver）仅用于 JS
+				-- 1. JavaScript (ts_ls)
 				ts_ls = {
 					filetypes = { "javascript", "javascriptreact" },
 					settings = {
@@ -37,7 +37,7 @@ return {
 						},
 					},
 				},
-				-- 2. vtsls 用于 TypeScript/Vue
+				-- 2. TypeScript/Vue (vtsls)
 				vtsls = {
 					filetypes = { "typescript", "typescriptreact", "vue" },
 					settings = {
@@ -51,35 +51,38 @@ return {
 								enumMemberValues = { enabled = true },
 							},
 						},
-						vtsls = {
-							autoUseWorkspaceTsdk = true,
-						},
+						vtsls = { autoUseWorkspaceTsdk = true },
 					},
 				},
-				-- 3. pyright 用于 Python
+				-- 3. Python (pyright)
 				pyright = {
 					positionEncoding = "utf-8",
-					settings = {
-						python = {
-							analysis = {},
-						},
-					},
+					settings = { python = { analysis = {} } },
 				},
-				-- 4. html
-				html = {},
-				-- 5. 其他
-				dockerls = {},
+				-- 4. HTML
+				html = {
+					filetypes = { "html" }, -- 仅处理标准 HTML
+				},
+				-- 5. Django 模板 (djlsp)
+				-- 专门处理 htmldjango，提供精准报错
+				djlsp = {
+					filetypes = { "htmldjango" },
+				},
+				-- 6. Docker
+				dockerls = {
+					root_dir = lspconfig.util.root_pattern("Dockerfile", "docker-compose.yml", "docker-compose.yaml", ".git"),
+				},
+				-- 7. 其他
 				bashls = {},
 				marksman = {},
 				emmet_ls = {
-					filetypes = { "html", "typescriptreact", "javascriptreact", "css", "sass", "scss", "less", "vue" },
+					filetypes = { "html", "htmldjango", "typescriptreact", "javascriptreact", "css", "sass", "scss", "less", "vue" },
 				},
 			}
 
 			-- 循环调用 setup
 			for name, config in pairs(servers) do
 				if lspconfig[name] then
-					-- 合并 on_attach
 					config.on_attach = on_attach
 					lspconfig[name].setup(config)
 				end

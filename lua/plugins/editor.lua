@@ -1366,6 +1366,17 @@ return {
 			{ "?", snacks_lines, desc = "当前文件搜索", mode = { "n", "v" } },
 		},
 		opts = function(_, opts)
+			-- 辅助函数：确保返回整数
+			local function safe_int(val, max)
+				if type(val) == "number" and val < 1 then
+					return math.floor(max * val)
+				end
+				return val
+			end
+
+			local lines = vim.o.lines
+			local cols = vim.o.columns
+
 			-- 0. 覆盖 Snacks Toggle 默认图标为 Emoji
 			opts.toggle = vim.tbl_deep_extend("force", opts.toggle or {}, {
 				icon = {
@@ -1378,8 +1389,8 @@ return {
 			opts.notifier = vim.tbl_deep_extend("force", opts.notifier or {}, {
 				style = "detailed",
 				wrap = true,
-				width = { min = 20, max = 0.4 },
-				height = { min = 1, max = 0.8 },
+				width = { min = 20, max = safe_int(0.4, cols) },
+				height = { min = 1, max = safe_int(0.8, lines) },
 			})
 
 			-- 2. 全局样式覆盖：确保换行在底层生效
@@ -1398,15 +1409,14 @@ return {
 				picker.list:set_selected({})
 			end
 
-			-- 布局配置 - 控制宽度
-			local picker_width = 0.75 -- Picker 窗口宽度
+			-- 布局配置 - 控制宽度 (强制取整并为 select 提供固定尺寸)
 			opts.picker.layouts = {
 				default = {
 					layout = {
 						box = "horizontal",
-						width = picker_width,
+						width = math.floor(safe_int(0.75, cols)),
 						min_width = 80,
-						height = 0.8,
+						height = math.floor(safe_int(0.8, lines)),
 						{
 							box = "vertical",
 							border = "rounded",
@@ -1414,22 +1424,22 @@ return {
 							{ win = "input", height = 1, border = "bottom" },
 							{ win = "list", border = "none" },
 						},
-						{ win = "preview", title = "{preview}", border = "rounded", width = 0.5 },
+						{ win = "preview", title = "{preview}", border = "rounded", width = math.floor(safe_int(0.5, cols)) },
 					},
 				},
 				vertical = {
 					layout = {
 						backdrop = false,
-						width = picker_width,
+						width = math.floor(safe_int(0.75, cols)),
 						min_width = 80,
-						height = 0.8,
+						height = math.floor(safe_int(0.8, lines)),
 						box = "vertical",
 						border = "rounded",
 						title = "{title} {live} {flags}",
 						title_pos = "center",
 						{ win = "input", height = 1, border = "bottom" },
 						{ win = "list", border = "none" },
-						{ win = "preview", title = "{preview}", height = 0.4, border = "top" },
+						{ win = "preview", title = "{preview}", height = math.floor(safe_int(0.4, lines)), border = "top" },
 					},
 				},
 				telescope = {
@@ -1437,8 +1447,8 @@ return {
 					layout = {
 						box = "horizontal",
 						backdrop = false,
-						width = picker_width,
-						height = 0.9,
+						width = math.floor(safe_int(0.75, cols)),
+						height = math.floor(safe_int(0.9, lines)),
 						border = "rounded",
 						{
 							box = "vertical",
@@ -1448,7 +1458,7 @@ return {
 						{
 							win = "preview",
 							title = "{preview:Preview}",
-							width = 0.45,
+							width = math.floor(safe_int(0.45, cols)),
 							border = "rounded",
 							title_pos = "center",
 						},
@@ -1458,9 +1468,8 @@ return {
 					layout = {
 						box = "vertical",
 						backdrop = false,
-						width = picker_width,
-						min_width = 80,
-						height = 0.6,
+						width = 60, -- 针对 Mason 等搜索框：使用固定整数宽度
+						height = 12, -- 针对 Mason 等搜索框：使用固定整数高度
 						border = "rounded",
 						title = "{title}",
 						title_pos = "center",
@@ -1473,8 +1482,8 @@ return {
 						box = "vertical",
 						backdrop = false,
 						row = -1,
-						width = picker_width,
-						height = 0.4,
+						width = math.floor(safe_int(0.75, cols)),
+						height = math.floor(safe_int(0.4, lines)),
 						border = "top",
 						title = " {title} {live} {flags}",
 						title_pos = "left",
@@ -1482,7 +1491,7 @@ return {
 						{
 							box = "horizontal",
 							{ win = "list", border = "none" },
-							{ win = "preview", title = "{preview}", width = 0.5, border = "left" },
+							{ win = "preview", title = "{preview}", width = math.floor(safe_int(0.5, cols)), border = "left" },
 						},
 					},
 				},
@@ -1499,8 +1508,8 @@ return {
 						border = "rounded",
 						title = " 图标插件 ",
 						title_pos = "center",
-						width = 0.75,
-						height = 0.7,
+						width = safe_int(0.75, cols),
+						height = safe_int(0.7, lines),
 						{ win = "input", height = 1, border = "bottom" },
 						{ win = "list", border = "none" },
 					},
@@ -1508,80 +1517,48 @@ return {
 			}
 
 			-- 诊断布局：增加边框并限制大小
-
 			opts.picker.sources.diagnostics = {
-
 				layout = {
-
 					layout = {
-
 						box = "vertical",
-
 						border = "rounded",
-
 						title = " 诊断信息 ",
-
 						title_pos = "center",
-
-						width = 0.75,
-
-						height = 0.7,
-
+						width = safe_int(0.75, cols),
+						height = safe_int(0.7, lines),
 						{ win = "input", height = 1, border = "bottom" },
-
 						{ win = "list", border = "none" },
 					},
 				},
 			}
 
 			-- 文档符号布局：增加边框并限制大小
-
 			opts.picker.sources.lsp_symbols = {
-
 				layout = {
-
 					layout = {
-
 						box = "vertical",
-
 						border = "rounded",
-
 						title = " 文档符号 ",
-
 						title_pos = "center",
-
-						width = 0.75,
-
-						height = 0.7,
-
+						width = safe_int(0.75, cols),
+						height = safe_int(0.7, lines),
 						{ win = "input", height = 1, border = "bottom" },
-
 						{ win = "list", border = "none" },
 					},
 				},
 			}
 
 			-- 项目符号布局：增加边框并限制大小
-
 			opts.picker.sources.lsp_workspace_symbols = {
-
 				layout = {
-
 					layout = {
-
 						box = "vertical",
-
 						border = "rounded",
-
 						title = " 项目符号 ",
-
 						title_pos = "center",
-
-						width = 0.75,
-						height = 0.7,
-
+						width = safe_int(0.75, cols),
+						height = safe_int(0.7, lines),
 						{ win = "input", height = 1, border = "bottom" },
-
 						{ win = "list", border = "none" },
 					},
 				},
@@ -1611,9 +1588,9 @@ return {
 					layout = {
 						backdrop = false,
 						row = 1,
-						width = 0.4,
+						width = safe_int(0.4, cols),
 						min_width = 80,
-						height = 0.4,
+						height = safe_int(0.4, lines),
 						border = "none",
 						box = "vertical",
 						{
