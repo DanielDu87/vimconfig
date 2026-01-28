@@ -72,6 +72,9 @@ return {
 				hl.Visual = { bg = "#515c7e" } -- 选中文本背景（更亮的蓝色/灰色）
 				hl.CursorLine = { bg = "#363d59" } -- 编辑器光标行（调亮后的颜色）
 				hl.Comment = { fg = "#7a7a7a", italic = true } -- 注释颜色（纯浅灰色）
+				-- 分割线颜色（WinSeparator 是 Nvim 0.10+ 的标准，VertSplit 是兼容旧版）
+				hl.WinSeparator = { fg = "#565f89", bold = true } 
+				hl.VertSplit = { fg = "#565f89" } 
 			end,
 		},
 	},
