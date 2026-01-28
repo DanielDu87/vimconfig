@@ -1257,7 +1257,7 @@ return {
 			opts.picker.win.input = {
 				row = 0.3,
 				height = 1,
-				width = 0.6,
+				width = 0.65,
 				col = 0.2,
 				border = "rounded",
 				wo = { statuscolumn = "", signcolumn = "no" },
@@ -1294,7 +1294,7 @@ return {
 						border = "rounded",
 						title = " 图标插件 ",
 						title_pos = "center",
-						width = 0.7,
+						width = 0.65,
 						height = 0.7,
 						{ win = "input", height = 1, border = "bottom" },
 						{ win = "list", border = "none" },
@@ -1318,7 +1318,7 @@ return {
 
 						title_pos = "center",
 
-						width = 0.7,
+						width = 0.65,
 
 						height = 0.7,
 
@@ -1345,7 +1345,7 @@ return {
 
 						title_pos = "center",
 
-						width = 0.7,
+						width = 0.65,
 
 						height = 0.7,
 
@@ -1372,8 +1372,7 @@ return {
 
 						title_pos = "center",
 
-						width = 0.7,
-
+						width = 0.65,
 						height = 0.7,
 
 						{ win = "input", height = 1, border = "bottom" },
