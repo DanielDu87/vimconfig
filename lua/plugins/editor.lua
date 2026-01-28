@@ -72,6 +72,7 @@ vim.api.nvim_create_autocmd("User", {
 		safe_del("n", "<leader>,") -- Buffer列表
 		safe_del("n", "<leader>br") -- LazyVim 默认的向右关闭
 		safe_del("n", "<leader>bl") -- LazyVim 默认的向左关闭
+		safe_del("n", "<leader>bD") -- 隐藏默认的关闭Buffer和窗口
 
 		-- ---------------------------------------------------------------------------
 		-- 删除 LSP 默认的重命名键位（被智能重构接管）
@@ -360,6 +361,7 @@ return {
 				{ "<leader>P", desc = "which_key_ignore" },
 				{ "<leader>`", desc = "which_key_ignore" },
 				{ "<leader>,", desc = "which_key_ignore" },
+				{ "<leader>bD", desc = "which_key_ignore" },
 				{ "<leader>br", desc = "which_key_ignore" },
 				{ "<leader>sn", desc = "which_key_ignore" },
 				{ '<leader>s/', desc = "which_key_ignore" },
