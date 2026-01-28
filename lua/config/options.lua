@@ -86,3 +86,10 @@ vim.opt.wrap = true
 
 -- 指定默认浏览器路径 (Dia.app)
 vim.g.browser_path = "/Applications/Dia.app"
+
+--==============================================================================
+-- LSP Configuration
+--==============================================================================
+
+-- Set pyright as the default Python LSP for LazyVim
+vim.g.lazyvim_python_lsp = "pyright"

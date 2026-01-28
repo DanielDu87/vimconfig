@@ -7,7 +7,7 @@ return {
 	-- ---------------------------------------------------------------------------
 	{
 		"akinsho/toggleterm.nvim",
-		version = "*",
+		-- version = "*",
 		opts = {
 			-- 终端基本配置
 			size = function(term)

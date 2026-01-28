@@ -15,7 +15,7 @@ local ft_configs = {
 	-- Go: 禁用 LSP，强制使用 goimports
 	go = { lsp_format = "never" },
 	-- 默认配置
-	["_"] = { lsp_format = "fallback" },
+	["_"] = { lsp_format = "never" },
 }
 
 ---@class FormatOpts

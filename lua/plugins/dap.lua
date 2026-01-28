@@ -137,7 +137,7 @@ return {
 
 			-- 监听窗口大小变化
 			vim.api.nvim_create_autocmd("WinResized", {
-				pattern = "*",
+				pattern = "dapui_*",
 				callback = function()
 					if is_restoring then return end
 					local has_dap_win = false

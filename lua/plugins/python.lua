@@ -6,22 +6,24 @@
 return {
 	{
 		"linux-cultist/venv-selector.nvim",
-        keys = {
-            { "<leader>cv", false }, -- 禁用原快捷键
-            { "<leader>rv", "<cmd>VenvSelect<cr>", desc = "选择Python虚拟环境" },
-        },
+		keys = {
+			{ "<leader>cv", false }, -- 禁用原快捷键
+			{ "<leader>rv", "<cmd>VenvSelect<cr>", desc = "选择Python虚拟环境" },
+		},
 		opts = function(_, opts)
-		        			-- 综合模式：既看本地，也看全局
-		        			opts.search = {
-		        				-- 1. 您的自定义全局仓库
-		        				my_envs = {
-		        					command = "fd 'bin/python$' /Users/dyx/Code/0.python-venv --full-path --color never",
+			-- 综合模式：既看本地，也看全局
+			opts.search = {
+				-- 1. 您的自定义全局仓库
+				my_envs = {
+					command = "fd 'bin/python$' /Users/dyx/Code/0.python-venv --full-path --color never",
 				},
 			}
 			-- 禁用项目本地搜索
 			opts.cache = {
 				enable = false,
 			}
+			-- 自动启动 Pyright（如果尚未运行）
+			opts.venv_select_on_fresh_repo = true
 			return opts
 		end,
 	},

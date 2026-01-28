@@ -122,6 +122,10 @@ vim.api.nvim_create_autocmd("User", {
 		vim.keymap.set("n", "<leader>bh", "<cmd>bprevious<cr>", { desc = "上一个Buffer" })
 		vim.keymap.set("n", "<leader>bl", "<cmd>bnext<cr>", { desc = "下一个Buffer" })
 
+		-- LSP 相关快捷键
+		vim.keymap.set("n", "<leader>cl", "<cmd>LspInfo<cr>", { desc = "LSP信息" })
+		vim.keymap.set("n", "<leader>cm", "<cmd>Mason<cr>", { desc = "Mason插件管理" })
+
 		-- ---------------------------------------------------------------------------
 		-- 辅助函数：批量关闭Buffer逻辑（跳过固定/PinnedBuffer）
 		-- ---------------------------------------------------------------------------
@@ -381,7 +385,6 @@ return {
 				{ "<leader>rV", desc = "选择TS工作区版本", icon = "🏷️" },
 				{ "<leader>bb", desc = "切换到其他Buffer", icon = "🔄" },
 				{ "<leader>bd", desc = "关闭当前Buffer", icon = "❌" },
-				{ "<leader>bD", desc = "关闭Buffer和窗口", icon = "❌" },
 				{ "<leader>bh", desc = "上一个Buffer", icon = "⬅️" },
 				{ "<leader>bl", desc = "下一个Buffer", icon = "➡️" },
 				{ "<leader>bo", desc = "关闭其他Buffer", icon = "🗑️" },
@@ -731,6 +734,7 @@ return {
 					{ "Add Comment Below", "在下方添加注释" },
 					{ "Add Comment Above", "在上方添加注释" },
 					{ "Run Lua", "运行 Lua" },
+					{ "Select VirtualEnv", "选择Python虚拟环境" },
 					-- 文件/查找相关
 					{ "Find Config File", "查找配置文件" },
 					{ "Find", "查找" },

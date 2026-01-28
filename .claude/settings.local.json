@@ -65,7 +65,8 @@
       "Bash(then echo \"文件完全相同\")",
       "Bash(else echo \"文件有差异\")",
       "Bash(fi:*)",
-      "Bash(sn:*)"
+      "Bash(sn:*)",
+      "Bash(ruff:*)"
     ]
   }
 }

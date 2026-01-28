@@ -69,9 +69,6 @@ return {
 
 			-- Dockerfile: 使用 sed 强制将指令转换为大写
 		dockerfile = { "docker_uppercase", "trim_whitespace" },
-
-			-- 其他
-			["_"] = { "trim_whitespace" }, -- 其他文件类型去除空白
 			},
 			-- 格式化器配置：统一使用 Tab，宽度 4
 			formatters = {
