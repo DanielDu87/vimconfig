@@ -51,17 +51,28 @@ return {
 			opts.styles.float.backdrop = 100
 
 			--==============================================================================
-			-- 中文化 Explorer 操作提示
+			-- 加载自定义 Actions
 			--==============================================================================
-			opts.picker = opts.picker or {}
-			opts.picker.explorer = opts.picker.explorer or {}
+			-- 将庞大的自定义操作逻辑移至 lua/util/explorer_actions.lua
+			local Actions = require("snacks.explorer.actions")
+			require("util.explorer_actions").setup(Actions, require("snacks"))
 
 			--==============================================================================
-			-- 配置 Explorer 布局（使用官方推荐方式）
+			-- 配置 Explorer 布局与按键映射
 			--==============================================================================
-			-- 参考: https://github.com/folke/snacks.nvim/discussions/2139
+			opts.picker = opts.picker or {}
 			opts.picker.sources = opts.picker.sources or {}
 			opts.picker.sources.explorer = opts.picker.sources.explorer or {}
+			opts.picker.sources.explorer.win = opts.picker.sources.explorer.win or {}
+			opts.picker.sources.explorer.win.list = opts.picker.sources.explorer.win.list or {}
+			opts.picker.sources.explorer.win.list.keys = opts.picker.sources.explorer.win.list.keys or {}
+
+			-- 设置 x 键映射到剪切操作
+			opts.picker.sources.explorer.win.list.keys["x"] = { "explorer_cut", mode = { "n", "x" } }
+			-- 设置 Esc 键映射到取消多选 (针对 explorer 源)
+			opts.picker.sources.explorer.win.list.keys["<Esc>"] = { "list_clear_selected", mode = { "n" } }
+
+			-- 参考: https://github.com/folke/snacks.nvim/discussions/2139
 			opts.picker.sources.explorer.layout = function()
 				return {
 					preset = "sidebar",
@@ -128,25 +139,6 @@ return {
 					end
 				end,
 			})
-
-			--==============================================================================
-			-- 加载自定义 Actions
-			--==============================================================================
-			-- 将庞大的自定义操作逻辑移至 lua/util/explorer_actions.lua
-			local Actions = require("snacks.explorer.actions")
-			require("util.explorer_actions").setup(Actions, require("snacks"))
-
-			--==============================================================================
-			-- 添加 explorer 键映射
-			--==============================================================================
-			opts.picker.sources.explorer.win = opts.picker.sources.explorer.win or {}
-			opts.picker.sources.explorer.win.list = opts.picker.sources.explorer.win.list or {}
-			opts.picker.sources.explorer.win.list.keys = opts.picker.sources.explorer.win.list.keys or {}
-
-			-- 设置 x 键映射到剪切操作
-			opts.picker.sources.explorer.win.list.keys["x"] = { "explorer_cut", mode = { "n", "x" } }
-			-- 设置 Esc 键映射到取消多选 (针对 explorer 源)
-			opts.picker.sources.explorer.win.list.keys["<Esc>"] = { "list_clear_selected", mode = { "n" } }
 
 			-- 修复从输入模式退出后按键识别问题：确保退出输入模式时焦点返回列表
 			-- 添加自定义动作来聚焦到列表

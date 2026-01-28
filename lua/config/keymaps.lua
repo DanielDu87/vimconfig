@@ -69,20 +69,44 @@ end, { desc = "搜索DevDocs（输入查询）" })
 vim.api.nvim_create_autocmd("User", {
 	pattern = "LazyVimKeymaps",
 	callback = function()
-		-- 删除旧的历史相关键位
-		vim.keymap.del("n", "<leader>n")
-		vim.keymap.del("n", "<leader>:")
-		vim.keymap.del("n", "<leader>s/")
-		vim.keymap.del("n", "<leader>sc")
+		-- 安全删除旧的历史相关键位
+		local safe_del = function(mode, lhs)
+			pcall(vim.keymap.del, mode, lhs)
+		end
+		safe_del("n", "<leader>n")
+		safe_del("n", "<leader>:")
+		safe_del("n", "<leader>s/")
+		safe_del("n", "<leader>sc")
+		-- 删除 LazyVim 默认的通知键位，我们将它们移到顶层 <leader>
+		safe_del("n", "<leader>sn")
+		safe_del("n", "<leader>snl")
+		safe_del("n", "<leader>snh")
+		safe_del("n", "<leader>sna")
+		safe_del("n", "<leader>snd")
 	end,
 })
 
 local Snacks = require("snacks")
 
--- leader+hn: 通知历史
+-- leader+hn: 通知历史记录
 vim.keymap.set("n", "<leader>hn", function()
 	Snacks.picker.notifications()
-end, { desc = "通知历史" })
+end, { desc = "通知历史记录" })
+
+-- leader+hl: 最后一条通知
+vim.keymap.set("n", "<leader>hl", function()
+	require("noice").cmd("last")
+end, { desc = "最后一条通知" })
+
+-- leader+ha: 所有通知
+vim.keymap.set("n", "<leader>ha", function()
+	require("noice").cmd("all")
+end, { desc = "所有通知" })
+
+-- leader+hx: 清除所有通知
+vim.keymap.set("n", "<leader>hx", function()
+	require("noice").cmd("dismiss")
+end, { desc = "清除所有通知" })
 
 -- leader+hc: 命令历史
 vim.keymap.set("n", "<leader>hc", function()

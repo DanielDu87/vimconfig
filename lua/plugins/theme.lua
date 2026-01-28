@@ -4,6 +4,9 @@
 -- 根据 LazyVim 官方文档配置主题
 -- https://lazyvim.github.io/plugins/colorscheme
 
+-- 默认开启透明模式
+vim.g.transparent_enabled = true
+
 -- 主题保存路径
 local theme_file = vim.fn.stdpath("state") .. "/colorscheme"
 

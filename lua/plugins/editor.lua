@@ -14,10 +14,36 @@ vim.api.nvim_create_autocmd("User", {
 	pattern = "LazyVimKeymaps",
 	callback = function()
 		-- ---------------------------------------------------------------------------
+		-- 删除 LazyVim 默认的 UI Toggle 键位（使用自定义的 emoji 图标版本）
+		-- ---------------------------------------------------------------------------
+		local safe_del = function(mode, lhs)
+			pcall(vim.keymap.del, mode, lhs)
+		end
+		safe_del("n", "<leader>ua") -- 删除默认的动画切换（重新定义）
+		-- safe_del("n", "<leader>ub") -- 保留默认的背景模式切换
+		safe_del("n", "<leader>uc") -- 删除默认的文本隐藏切换（重新定义）
+		safe_del("n", "<leader>uD") -- 删除默认的暗化切换（重新定义）
+		-- safe_del("n", "<leader>uf") -- 保留格式化切换（LazyVim内置）
+		-- safe_del("n", "<leader>uF") -- 保留格式化切换（LazyVim内置）
+		-- safe_del("n", "<leader>ug") -- 保留默认的缩进引导线切换
+		-- safe_del("n", "<leader>uh") -- 保留默认的代码透镜切换
+		safe_del("n", "<leader>uL") -- 删除默认的相对行号切换（重新定义）
+		-- safe_del("n", "<leader>ul") -- 保留默认的行号切换
+		-- safe_del("n", "<leader>us") -- 保留默认的拼写检查切换
+		safe_del("n", "<leader>uS") -- 删除默认的平滑滚动切换（重新定义）
+		safe_del("n", "<leader>uT") -- 删除默认的treesitter切换（我们要用作透明模式）
+		safe_del("n", "<leader>uA") -- 删除默认的标签栏切换（重新定义）
+		-- safe_del("n", "<leader>uw") -- 保留默认的自动换行切换
+		safe_del("n", "<leader>uz") -- 删除默认的禅模式切换（重新定义）
+		safe_del("n", "<leader>uZ") -- 删除默认的缩放模式切换（重新定义）
+		-- safe_del("n", "<leader>ud") -- 保留LazyVim默认的诊断切换
+		-- safe_del("n", "<leader>uG") -- 保留LazyVim默认的Git signs切换
+
+		-- ---------------------------------------------------------------------------
 		-- 窗口管理：统一移到 <leader>w (Windows) 组
 		-- ---------------------------------------------------------------------------
-		vim.keymap.del("n", "<leader>-") -- 删除默认的横向分割
-		vim.keymap.del("n", "<leader>|") -- 删除默认的纵向分割
+		safe_del("n", "<leader>-") -- 删除默认的横向分割
+		safe_del("n", "<leader>|") -- 删除默认的纵向分割
 
 		-- ---------------------------------------------------------------------------
 		-- 删除可能存在的 <leader>P 子项键位
@@ -37,15 +63,15 @@ vim.api.nvim_create_autocmd("User", {
 		-- ---------------------------------------------------------------------------
 		-- 临时Buffer：统一移到 <leader>S (Scratch) 组
 		-- ---------------------------------------------------------------------------
-		vim.keymap.del("n", "<leader>.")
+		safe_del("n", "<leader>.")
 
 		-- ---------------------------------------------------------------------------
 		-- Buffer管理：清理默认的冗余键位
 		-- ---------------------------------------------------------------------------
-		vim.keymap.del("n", "<leader>`") -- 切换到上一个Buffer
-		vim.keymap.del("n", "<leader>,") -- Buffer列表
-		vim.keymap.del("n", "<leader>br") -- LazyVim 默认的向右关闭
-		vim.keymap.del("n", "<leader>bl") -- LazyVim 默认的向左关闭
+		safe_del("n", "<leader>`") -- 切换到上一个Buffer
+		safe_del("n", "<leader>,") -- Buffer列表
+		safe_del("n", "<leader>br") -- LazyVim 默认的向右关闭
+		safe_del("n", "<leader>bl") -- LazyVim 默认的向左关闭
 
 		-- ---------------------------------------------------------------------------
 		-- 删除 LSP 默认的重命名键位（被智能重构接管）
@@ -315,6 +341,13 @@ return {
 			-- 分组定义与中文化 (严格还原原始版本)
 			spec = {
 				{ "<leader><tab>", group = "标签页", icon = "🏷️" },
+				{ "<leader><tab>d", desc = "关闭标签页", icon = "❌" },
+				{ "<leader><tab>f", desc = "第一个标签页", icon = "⏮️" },
+				{ "<leader><tab>l", desc = "最后一条标签页", icon = "⏭️" },
+				{ "<leader><tab>o", desc = "关闭其他标签页", icon = "🗑️" },
+				{ "<leader><tab>p", desc = "上一个标签页", icon = "⬅️" },
+				{ "<leader><tab>n", desc = "下一个标签页", icon = "➡️" },
+				{ "<leader><tab><tab>", desc = "新建标签页", icon = "📄" },
 				{ "<leader><space>", desc = "查找文件", icon = "🔍" },
 				{ "<leader>/", desc = "文件内容查找", icon = "🔍" },
 				{ "<leader>?", desc = "Buffer快捷键查询", icon = "⌨️" },
@@ -328,6 +361,8 @@ return {
 				{ "<leader>`", desc = "which_key_ignore" },
 				{ "<leader>,", desc = "which_key_ignore" },
 				{ "<leader>br", desc = "which_key_ignore" },
+				{ "<leader>sn", desc = "which_key_ignore" },
+				{ '<leader>s/', desc = "which_key_ignore" },
 				-- 按字母分组，大小写放在一起
 				{ "<leader>b", group = "缓冲区", icon = "🗂️" },
 				{ "<leader>r", group = "运行/调试", icon = "🚀" },
@@ -368,8 +403,8 @@ return {
 				{ "<leader>cr", desc = "智能重构", icon = "🔨" },
 				{ "<leader>rv", desc = "选择Python虚拟环境", icon = "🐍" },
 				{ "<leader>d", group = "调试/诊断", icon = "🔧" },
-				{ "<leader>dd", desc = "文档诊断", icon = "🔍" },
-				{ "<leader>dD", desc = "项目诊断", icon = "🚨" },
+				{ "<leader>dd", desc = "文档诊断", icon = "🚨" },
+				{ "<leader>dD", desc = "项目诊断", icon = "🚑" },
 				{ "<leader>db", desc = "切换断点（持久化）", icon = "🔴" },
 				{ "<leader>dB", desc = "条件断点（持久化）", icon = "⭕" },
 				{ "<leader>dC", desc = "调试类（Class）", icon = "🐍" },
@@ -382,7 +417,7 @@ return {
 				{ "<leader>dm", desc = "调试方法（Method）", icon = "🐍" },
 				{ "<leader>dp", desc = "切换性能分析器", icon = "📊" },
 				{ "<leader>dh", desc = "性能分析高亮", icon = "✨" },
-				{ "<leader>x", group = "诊断/修复", icon = "⚠️" },
+				{ "<leader>x", group = "诊断/修复", icon = "🚑" },
 				{ "<leader>e", group = "文件浏览器", icon = "📂" },
 				{ "<leader>f", group = "文件/查找", icon = "📁" },
 				{ "<leader>ff", desc = "查找文件（根目录）", icon = "🔍" },
@@ -428,7 +463,10 @@ return {
 				{ "<leader>ghs", desc = "暂存代码块", icon = "➕" },
 				{ "<leader>ghu", desc = "撤销暂存代码块", icon = "↩️" },
 				{ "<leader>h", group = "历史", icon = "📜" },
-				{ "<leader>hn", desc = "通知历史", icon = "🔔" },
+				{ "<leader>hn", desc = "通知历史记录", icon = "📜" },
+				{ "<leader>hl", desc = "最后一条通知", icon = "💬" },
+				{ "<leader>ha", desc = "所有通知", icon = "📨" },
+				{ "<leader>hx", desc = "清除所有通知", icon = "🗑️" },
 				{ "<leader>hc", desc = "命令历史", icon = "💬" },
 				{ "<leader>hs", desc = "搜索历史", icon = "🔍" },
 				{ "<leader>H", desc = "切换显示隐藏文件", icon = "👁️" },
@@ -444,11 +482,11 @@ return {
 				{ "<leader>qq", desc = "退出所有", icon = "🚪" },
 				{ "<leader>s", group = "搜索", icon = "🔍" },
 				{ "<leader>sa", desc = "自动执行命令", icon = "🤖" },
-				{ "<leader>sb", desc = "查找当前文件行", icon = "📑" },
-				{ "<leader>sc", desc = "命令历史", icon = "💬" },
+				{ "<leader>sb", desc = "查找当前文件行", icon = "📖" },
+				{ "<leader>sc", desc = "命令历史", icon = "🕰️" },
 				{ "<leader>sC", desc = "所有命令", icon = "💻" },
-				{ "<leader>sg", desc = "全局搜索（根目录）", icon = "🔍" },
-				{ "<leader>sG", desc = "全局搜索（当前目录）", icon = "📂" },
+				{ "<leader>sg", desc = "全局搜索（根目录）", icon = "🔭" },
+				{ "<leader>sG", desc = "全局搜索（当前目录）", icon = "🔎" },
 				{ "<leader>sh", desc = "帮助文档", icon = "❓" },
 				{ "<leader>sH", desc = "高亮组", icon = "🎨" },
 				{ "<leader>si", desc = "图标插件", icon = "🎭" },
@@ -461,12 +499,15 @@ return {
 				{ "<leader>sr", desc = "查找并替换", icon = "🔄" },
 				{ '<leader>s"', desc = "寄存器", icon = "📋" },
 				{ "<leader>su", desc = "撤销历史", icon = "📜" },
-				{ "<leader>sw", desc = "搜索单词（项目）", icon = "🔎" },
-				{ "<leader>sW", desc = "搜索单词（目录）", icon = "📂" },
-				{ "<leader>s/", desc = "在打开文件中查找", icon = "📂" },
-				{ "<leader>sB", desc = "查找所有打开文件", icon = "🗃️" },
+				{ "<leader>sw", desc = "搜索单词（项目）", icon = "🔡" },
+				{ "<leader>sW", desc = "搜索单词（目录）", icon = "🔠" },
+				{ "<leader>sB", desc = "查找所有打开文件", icon = "📁" },
 				{ "<leader>sp", desc = "搜索插件配置", icon = "🧩" },
-				{ "<leader>st", desc = "待办事项(TODO/FIX)", icon = "✅" },
+				{ "<leader>st", desc = "待办事项（全部类型）", icon = "✅" },
+				{ "<leader>sT", desc = "待办事项（仅TODO/FIX/FIXME）", icon = "📝" },
+				{ "<leader>sd", desc = "诊断信息", icon = "📋" },
+				{ "<leader>sD", desc = "Buffer诊断信息", icon = "🚑" },
+				{ "<leader>sM", desc = "手册页", icon = "📚" },
 				{ "<leader>ss", desc = "文档符号", icon = "💎" },
 				{ "<leader>sS", desc = "项目符号", icon = "⚛️" },
 				{ "<leader>S", group = "临时Buffer", icon = "📝" },
@@ -480,6 +521,7 @@ return {
 				{ "<leader>S.", desc = "打开默认临时Buffer", icon = "📝" },
 				{ "<leader>SS", desc = "选择/管理临时Buffer", icon = "🗂️" },
 				{ "<leader>u", group = "界面", icon = "🎨" },
+				{ "<leader>ua", desc = "切换动画", icon = "🎬" },
 				{ "<leader>ub", desc = "切换背景模式", icon = "🌓" },
 				{ "<leader>ud", desc = "切换诊断显示", icon = "🔍" },
 				{ "<leader>uf", desc = "切换自动格式化", icon = "🛠️" },
@@ -488,85 +530,85 @@ return {
 				{ "<leader>ul", desc = "切换行号模式", icon = "🔢" },
 				{ "<leader>un", desc = "切换通知系统", icon = "🔔" },
 				{ "<leader>us", desc = "切换拼写检查", icon = "📝" },
-				{ "<leader>uT", desc = "切换透明模式", icon = "👻" },
+				{ "<leader>uT", desc = "切换标签栏", icon = "🏷️" },
+				{ "<leader>ut", desc = "切换透明模式", icon = "👻" },
 				{ "<leader>uw", desc = "切换自动换行", icon = "↩️" },
-				{ "<leader>w", group = "窗口", icon = "🖼️" },
-				{ "<leader>w-", desc = "向下分割窗口", icon = "➖" },
-				{ "<leader>w|", desc = "向右分割窗口", icon = "➕" },
-				{ "<leader>wd", desc = "关闭当前窗口", icon = "❌" },
+				{ "<leader>w", group = "窗口", icon = "🍱" },
+				{ "<leader>w-", desc = "向下分割窗口", icon = "🥞" },
+				{ "<leader>w|", desc = "向右分割窗口", icon = "⏸️" },
+				{ "<leader>wd", desc = "关闭当前窗口", icon = "🗑️" },
 				{ "<leader>wh", desc = "切换到左侧窗口", icon = "⬅️" },
 				{ "<leader>wj", desc = "切换到下方窗口", icon = "⬇️" },
 				{ "<leader>wk", desc = "切换到上方窗口", icon = "⬆️" },
 				{ "<leader>wl", desc = "切换到右侧窗口", icon = "➡️" },
-				{ "<leader>wH", desc = "向左移动窗口", icon = "⏪" },
-				{ "<leader>wJ", desc = "向下移动窗口", icon = "⏬" },
-				{ "<leader>wK", desc = "向上移动窗口", icon = "⏫" },
-				{ "<leader>wL", desc = "向右移动窗口", icon = "⏩" },
-				{ "<leader>w=", desc = "均衡窗口大小", icon = "⚖️" },
-				{ "<leader>wm", desc = "最大化/恢复窗口", icon = "🔎" },
-				{ "<leader>ww", desc = "切换到其他窗口", icon = "🔄", remap = true },
-				{ "<leader>x", group = "诊断/修复", icon = "⚠️" },
-				{ "<leader>xx", desc = "项目诊断面板", icon = "🚨" },
-				{ "<leader>xX", desc = "当前文件诊断", icon = "🔍" },
-				{ "<leader>xl", desc = "位置列表", icon = "📍" },
-				{ "<leader>xq", desc = "快速修复列表", icon = "🛠️" },
-				{ "<leader>xt", desc = "待办事项列表", icon = "✅" },
-				{ "[", group = "上一个", icon = "⬆️" },
-				{ "]", group = "下一个", icon = "⬇️" },
-				{ "g", group = "跳转", icon = "🔗" },
-				{ "gs", group = "环绕", icon = "🔁" },
-				{ "z", group = "折叠", icon = "📁" },
-			},
-			-- 批量描述替换 (严格还原原始版本翻译，并补全缺失项)
-			replace = {
-				desc = {
-					{ "Keywordprg", "关键词查询" },
-					{ "Explorer", "文件浏览器" },
-					{ "Notification History", "通知历史" },
-					{ "Buffers", "查找Buffer" },
-					{ "Buffers (all)", "查找Buffer（所有）" },
-					{ "Git Diff", "Git差异" },
-					{ "Git Status", "Git状态" },
-					{ "Git Stash", "Git Stash" },
-					{ "Git Blame", "Git行追溯" },
-					{ "Git Branches", "Git切换分支" },
-					{ "Git Commit", "Git提交记录" },
-					{ "Git Checkout", "Git检出" },
-					{ "Git Files", "Git文件" },
-					{ "Git Browse", "浏览器打开" },
-					{ "Git Browse (open)", "浏览器打开" },
-					{ "Git Log", "Git日志" },
-					{ "Git Pull", "Git拉取" },
-					{ "Git Push", "Git推送" },
-					{ "Git Switch", "Git切换" },
-					{ "GitHub Issues", "GitHub问题" },
-					{ "GitHub Pull Requests", "GitHub拉取请求" },
-					{ "Recent", "最近文件" },
-					{ "Projects", "项目列表" },
-					{ "Command History", "命令历史" },
-					{ "Buffer Lines", "查找Buffer行" },
-					{ "Search for Plugin Spec", "搜索插件配置" },
-					{ "Visual selection or word", "选区或单词" },
-					{ "Registers", "寄存器" },
-					{ "Search History", "搜索历史" },
-					{ "Autocmds", "自动命令" },
-					{ "Commands", "命令" },
-					{ "Diagnostics", "🚨 诊断信息" },
-					{ "Buffer Diagnostics", "🔍 Buffer诊断" },
-					{ "Help Pages", "帮助文档" },
-					{ "Highlights", "高亮组" },
+				{ "<leader>wH", desc = "向左移动窗口", icon = "◀️" },
+				{ "<leader>wJ", desc = "向下移动窗口", icon = "🔽" },
+				{ "<leader>wK", desc = "向上移动窗口", icon = "🔼" },
+				{ "<leader>wL", desc = "向右移动窗口", icon = "▶️" },
+				{ "<leader>w=", desc = "均衡窗口大小", icon = "📏" },
+				{ "<leader>wm", desc = "最大化/恢复窗口", icon = "🔍" },
+				{ "<leader>ww", desc = "切换到其他窗口", icon = "🔁", remap = true },
+				                { "<leader>x", group = "诊断/修复", icon = "🚑" },
+				                { "<leader>xx", desc = "项目诊断面板", icon = "🚑" },
+				                { "<leader>xX", desc = "当前文件诊断", icon = "🚨" },
+				                { "<leader>xl", desc = "位置列表", icon = "📍" },
+				                { "<leader>xq", desc = "快速修复列表", icon = "🛠️" },
+				                { "<leader>xt", desc = "待办事项列表", icon = "✅" },
+				                { "[", group = "上一个", icon = "⬆️" },
+				                { "]", group = "下一个", icon = "⬇️" },
+				                { "g", group = "跳转", icon = "🔗" },
+				                { "gs", group = "环绕", icon = "🔁" },
+				                { "z", group = "折叠", icon = "📁" },
+				            },
+				            -- 批量描述替换 (严格还原原始版本翻译，并补全缺失项)
+				            replace = {
+				                desc = {
+				                    { "Keywordprg", "关键词查询" },
+				                    { "Explorer", "文件浏览器" },
+				                    { "Notification History", "通知历史" },
+				                    { "Buffers", "查找Buffer" },
+				                    { "Buffers (all)", "查找Buffer（所有）" },
+				                    { "Git Diff", "Git差异" },
+				                    { "Git Status", "Git状态" },
+				                    { "Git Stash", "Git Stash" },
+				                    { "Git Blame", "Git行追溯" },
+				                    { "Git Branches", "Git切换分支" },
+				                    { "Git Commit", "Git提交记录" },
+				                    { "Git Checkout", "Git检出" },
+				                    { "Git Files", "Git文件" },
+				                    { "Git Browse", "浏览器打开" },
+				                    { "Git Browse (open)", "浏览器打开" },
+				                    { "Git Log", "Git日志" },
+				                    { "Git Pull", "Git拉取" },
+				                    { "Git Push", "Git推送" },
+				                    { "Git Switch", "Git切换" },
+				                    { "GitHub Issues", "GitHub问题" },
+				                    { "GitHub Pull Requests", "GitHub拉取请求" },
+				                    { "Recent", "最近文件" },
+				                    { "Projects", "项目列表" },
+				                    { "Command History", "命令历史" },
+				                    { "Buffer Lines", "查找Buffer行" },
+				                    { "Search for Plugin Spec", "搜索插件配置" },
+				                    { "Visual selection or word", "选区或单词" },
+				                    { "Registers", "寄存器" },
+				                    { "Search History", "搜索历史" },
+				                    { "Autocmds", "自动命令" },
+				                    { "Commands", "命令" },
+				                    { "Diagnostics", "诊断信息" },
+				                    { "Buffer Diagnostics", "Buffer诊断信息" },
+				                    { "Help Pages", "帮助文档" },					{ "Highlights", "高亮组" },
 					{ "Icons", "图标插件" },
 					{ "Jumps", "跳转记录" },
 					{ "Keymaps", "快捷键映射" },
 					{ "Buffer Keymaps (which-key)", "Buffer快捷键查询（which-key）" },
 					{ "Location List", "位置列表" },
-					{ "Man Pages", "📚 手册页" },
+					{ "Man Pages", "手册页" },
 					{ "Marks", "标记" },
 					{ "Resume", "恢复上一次" },
 					{ "Quickfix List", "快速修复列表" },
 					{ "Undotree", "撤销树" },
 					{ "Colorschemes", "配色方案" },
-					{ "Todo", "✅ 待办事项" },
+					{ "Todo", "待办事项" },
 					{ "LSP Symbols", "LSP符号" },
 					{ "LSP Workspace Symbols", "LSP工作区符号" },
 					{ "Notifications", "通知" },
@@ -580,8 +622,12 @@ return {
 					{ "Enable Conceal Level", "开启文本隐藏" },
 					{ "Enable Dimming", "开启非活动暗化" },
 					{ "Disable Dimming", "禁用非活动暗化" },
-					{ "Disable Auto Format (Buffer)", "禁用本文件自动格式化" },
-					{ "Enable Auto Format (Buffer)", "开启本文件自动格式化" },
+					{ "Disable Auto Format (Buffer)", "禁用自动格式化（Buffer）" },
+					{ "Enable Auto Format (Buffer)", "开启自动格式化（Buffer）" },
+					{ "Disable Auto Format (Global)", "禁用全局自动格式化" },
+					{ "Enable Auto Format (Global)", "开启全局自动格式化" },
+					{ "Disable Auto Format", "禁用自动格式化" },
+					{ "Enable Auto Format", "开启自动格式化" },
 					{ "Disable Git Signs", "禁用 Git 标记" },
 					{ "Enable Git Signs", "开启 Git 标记" },
 					{ "Inspect Pos", "查看位置信息" },
@@ -604,19 +650,18 @@ return {
 					{ "Delete Other Buffers", "关闭其他Buffer" },
 					{ "Prev Buffer", "上一个Buffer" },
 					{ "Next Buffer", "下一个Buffer" },
-					-- 窗口相关
-					{ "Split Window Below", "向下分割窗口" },
-					{ "Split Window Right", "向右分割窗口" },
-					{ "Delete Window", "关闭当前窗口" },
-					{ "Go to Left Window", "切换到左侧窗口" },
-					{ "Go to Lower Window", "切换到下方窗口" },
-					{ "Go to Upper Window", "切换到上方窗口" },
-					{ "Go to Right Window", "切换到右侧窗口" },
-					{ "Increase Window Height", "增加窗口高度" },
-					{ "Decrease Window Height", "减少窗口高度" },
-					{ "Decrease Window Width", "减少窗口宽度" },
-					{ "Increase Window Width", "增加窗口宽度" },
-					-- 其他
+										-- 窗口相关
+										{ "Split Window Below", "向下分割窗口" },
+										{ "Split Window Right", "向右分割窗口" },
+										{ "Delete Window", "关闭当前窗口" },
+										{ "Go to Left Window", "切换到左侧窗口" },
+										{ "Go to Lower Window", "切换到下方窗口" },
+										{ "Go to Upper Window", "切换到上方窗口" },
+										{ "Go to Right Window", "切换到右侧窗口" },
+										{ "Increase Window Height", "增加窗口高度" },
+										{ "Decrease Window Height", "减少窗口高度" },
+										{ "Decrease Window Width", "减少窗口宽度" },
+										{ "Increase Window Width", "增加窗口宽度" },					-- 其他
 					{ "Save File", "保存文件" },
 					{ "Quit All", "全部退出" },
 					{ "Lazy", "插件管理器" },
@@ -728,6 +773,14 @@ return {
 					{ "Term (horizontal)", "竖直终端（上下）" },
 					{ "Term (vertical)", "水平终端（左右）" },
 					{ "Term (tab)", "标签页终端" },
+					-- 标签页相关
+					{ "Close Tab", "关闭标签页" },
+					{ "First Tab", "第一个标签页" },
+					{ "Last Tab", "最后一条标签页" },
+					{ "Other Tabs", "关闭其他标签页" },
+					{ "Previous Tab", "上一个标签页" },
+					{ "Next Tab", "下一个标签页" },
+					{ "New Tab", "新建标签页" },
 				},
 			},
 		},
@@ -1222,11 +1275,99 @@ return {
 				desc = "Git拉取",
 			},
 
+			-- UI 选项切换（使用 Snacks.toggle API，自动集成 Emoji 图标）
+			{
+				"<leader>ua",
+				function()
+					require("snacks").toggle.animate():toggle()
+				end,
+				desc = "切换动画",
+			},
+			{
+				"<leader>uT",
+				function()
+					require("snacks").toggle.option("showtabline", { off = 0, on = 2, name = "标签栏" }):toggle()
+				end,
+				desc = "切换标签栏",
+			},
+			{
+				"<leader>uc",
+				function()
+					require("snacks").toggle.option("conceallevel", { off = 0, on = 2, name = "文本隐藏" }):toggle()
+				end,
+				desc = "切换文本隐藏",
+			},
+			{
+				"<leader>uD",
+				function()
+					require("snacks").toggle.dim():toggle()
+				end,
+				desc = "切换暗化",
+			},
+			{
+				"<leader>uL",
+				function()
+					require("snacks").toggle.option("relativenumber", { name = "相对行号" }):toggle()
+				end,
+				desc = "切换相对行号",
+			},
+			{
+				"<leader>uS",
+				function()
+					require("snacks").toggle.scroll():toggle()
+				end,
+				desc = "切换平滑滚动",
+			},
+			{
+				"<leader>uz",
+				function()
+					require("snacks").toggle.zen():toggle()
+				end,
+				desc = "切换禅模式",
+			},
+			{
+				"<leader>uZ",
+				function()
+					require("snacks").toggle.zoom():toggle()
+				end,
+				desc = "切换缩放模式",
+			},
+			{
+				"<leader>ut",
+				function()
+					vim.g.transparent_enabled = not vim.g.transparent_enabled
+					if vim.g.transparent_enabled then
+						vim.cmd("set winblend=0")
+						vim.cmd("set pumblend=0")
+						vim.api.nvim_set_hl(0, "Normal", { bg = "NONE" })
+						vim.api.nvim_set_hl(0, "NormalFloat", { bg = "NONE" })
+						vim.api.nvim_set_hl(0, "NormalNC", { bg = "NONE" })
+						vim.notify("已开启透明模式", vim.log.levels.INFO)
+					else
+						vim.cmd("set winblend=0")
+						vim.cmd("set pumblend=0")
+						vim.cmd("hi Normal ctermbg=0 guibg=#1a1b26")
+						vim.api.nvim_set_hl(0, "NormalFloat", { bg = "#1a1b26" })
+						vim.api.nvim_set_hl(0, "NormalNC", { bg = "#1a1b26" })
+						vim.notify("已禁用透明模式", vim.log.levels.INFO)
+					end
+				end,
+				desc = "切换透明模式",
+			},
+
 			-- 快捷搜索：/ 和 ?
 			{ "/", snacks_lines, desc = "当前文件搜索", mode = { "n", "v" } },
 			{ "?", snacks_lines, desc = "当前文件搜索", mode = { "n", "v" } },
 		},
 		opts = function(_, opts)
+			-- 0. 覆盖 Snacks Toggle 默认图标为 Emoji
+			opts.toggle = vim.tbl_deep_extend("force", opts.toggle or {}, {
+				icon = {
+					enabled = "✅ ",
+					disabled = "❌ ",
+				},
+			})
+
 			-- 1. 通知系统优化：开启自动换行与高度自适应
 			opts.notifier = vim.tbl_deep_extend("force", opts.notifier or {}, {
 				style = "detailed",
