@@ -474,6 +474,13 @@ return {
 					-- 设置未激活标签页的文字颜色（更亮）
 					vim.api.nvim_set_hl(0, "BufferLineBackground", { fg = "#9aa5ce", bold = true })
 					vim.api.nvim_set_hl(0, "BufferLineBufferVisible", { fg = "#9aa5ce", bold = true })
+					-- 为当前选中的buffer添加下划线（指定下划线颜色）
+					vim.api.nvim_set_hl(0, "BufferLineBufferSelected", { underline = true, sp = "#2b85b7", bold = true })
+					-- 为有错误/警告的当前buffer也添加下划线
+					vim.api.nvim_set_hl(0, "BufferLineErrorSelected", { underline = true, sp = "#2b85b7", bold = true })
+					vim.api.nvim_set_hl(0, "BufferLineWarningSelected", { underline = true, sp = "#2b85b7", bold = true })
+					vim.api.nvim_set_hl(0, "BufferLineInfoSelected", { underline = true, sp = "#2b85b7", bold = true })
+					vim.api.nvim_set_hl(0, "BufferLineHintSelected", { underline = true, sp = "#2b85b7", bold = true })
 				end,
 			})
 			-- 立即执行一次
