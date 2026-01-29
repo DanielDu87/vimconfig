@@ -28,23 +28,26 @@ return {
 				                    vim.keymap.set("n", "cc", "<cmd>ConventionalCommit<CR>", { buffer = true, desc = "规范化提交" })
 				                    -- 添加 q 直接退出
 				                    vim.keymap.set("n", "q", "<cmd>close<CR>", { buffer = true, desc = "退出 Fugitive" })
-				                    -- 添加 a 全部暂存
-				                    vim.keymap.set("n", "a", function()
-				                        vim.fn.system("git add -A")
-				                        vim.cmd("edit") -- 刷新 Fugitive 面板以显示最新状态
-				                        vim.notify("所有更改已全部暂存", vim.log.levels.INFO, { title = "Git" })
-				                    end, { buffer = true, desc = "全部暂存 (git add -A)" })
-				                    -- 修改回车键为展开/折叠差异
-				                    vim.keymap.set("n", "<CR>", "=", { remap = true, buffer = true, desc = "展开/折叠差异" })
-				
-				                    -- 注入常驻提示
-				                    vim.api.nvim_set_option_value("modifiable", true, { buf = buf })
-				                    vim.api.nvim_buf_set_lines(buf, 0, 0, false, {
-				                        " 💡 [回车:差异] [a:全存] [s:暂存] [u:取消] [c:提交] [q:退出]",
-				                        " -------------------------------------------------------------",
-				                    })
-				                    vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
-				                end,			})
+				                    										-- 添加 a 全部暂存
+				                    										vim.keymap.set("n", "a", function()
+				                    											vim.fn.system("git add -A")
+				                    											vim.cmd("edit") -- 刷新 Fugitive 面板以显示最新状态
+				                    											vim.notify("所有更改已全部暂存", vim.log.levels.INFO, { title = "Git" })
+				                    										end, { buffer = true, desc = "全部暂存 (git add -A)" })
+				                    										
+				                    										-- 回车恢复为 Fugitive 原生的展开/折叠差异
+				                    										vim.keymap.set("n", "<CR>", "=", { remap = true, buffer = true, desc = "展开/折叠差异" })
+				                    										
+				                    															-- d 映射为打开全屏 Diffview
+				                    															vim.keymap.set("n", "d", "<cmd>DiffviewOpen<CR>", { buffer = true, desc = "打开全屏 Diffview" })
+				                    										
+				                    															-- 注入常驻提示
+				                    															vim.api.nvim_set_option_value("modifiable", true, { buf = buf })
+				                    															vim.api.nvim_buf_set_lines(buf, 0, 0, false, {
+				                    																" 💡 [回车:展开] [d:全屏Diff] [a:全存] [s:暂存] [u:取消] [c:提交] [q:退出]",
+				                    																" ----------------------------------------------------------------------",
+				                    															})				                    										vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
+				                    									end,			})
 		end,
 	},
 
@@ -55,6 +58,31 @@ return {
 		opts = {
 			enhanced_diff_hl = true,
 			use_icons = true,
+			keymaps = {
+				file_panel = {
+					{ "n", "c", "<cmd>ConventionalCommit<CR>", { desc = "启动规范化提交" } },
+					{ "n", "s", "s", { desc = "暂存文件" } },
+					{ "n", "u", "u", { desc = "取消暂存" } },
+					-- 修改 q 为关闭后返回 Fugitive 面板
+					{ "n", "q", function()
+						vim.cmd("DiffviewClose")
+						-- 延迟一瞬确保布局清理完成，然后模拟按 leader-gc
+						vim.schedule(function()
+							vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<leader>gc", true, true, true), "m", true)
+						end)
+					end, { desc = "关闭并返回面板" } },
+				},
+				view = {
+					{ "n", "c", "<cmd>ConventionalCommit<CR>", { desc = "启动规范化提交" } },
+					-- 同步修改 view 中的 q
+					{ "n", "q", function()
+						vim.cmd("DiffviewClose")
+						vim.schedule(function()
+							vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<leader>gc", true, true, true), "m", true)
+						end)
+					end, { desc = "关闭并返回面板" } },
+				},
+			},
 		},
 		keys = {
 			{ "<leader>gd", "<cmd>DiffviewOpen<cr>", desc = "Git差异 (工作区)" },

@@ -1015,13 +1015,12 @@ return {
 					local col = math.floor((vim.o.columns - width) / 2)
 					local row = math.floor((vim.o.lines - height) / 2)
 
-					-- 1. 首先在当前上下文执行 Git 命令（它会创建一个名为 fugitive://... 的 buffer）
-					-- 我们使用 :tab Git 是为了避免它破坏当前布局，执行完我们马上把它移动到浮窗
+					-- 1. 首先在当前上下文执行 Git 命令
 					vim.cmd("Git")
 					local git_buf = vim.api.nvim_get_current_buf()
-					vim.cmd("close") -- 关闭刚才 Git 命令自动打开的正常窗口
+					vim.cmd("close") -- 关闭自动弹出的普通窗口
 
-					-- 2. 创建浮动窗口并放入刚才那个 Git buffer
+					-- 2. 创建浮动窗口并放入 Git buffer
 					vim.api.nvim_open_win(git_buf, true, {
 						relative = "editor",
 						width = width,
