@@ -1258,9 +1258,24 @@ return {
 			{
 				"<leader>ua",
 				function()
+					-- 保存当前视图状态
+					local win = vim.api.nvim_get_current_win()
+					local view = vim.fn.winsaveview()
+					local mode = vim.api.nvim_get_mode().mode
+
 					local ok, toggle = pcall(require("snacks").toggle.animate)
 					if ok and toggle then
+						-- 切换动画
 						toggle:toggle()
+
+						-- 延迟恢复视图和模式（确保切换完成）
+						vim.schedule(function()
+							pcall(vim.fn.winrestview, view)
+							-- 如果之前不在插入模式，确保不进入插入模式
+							if mode ~= "i" then
+								vim.cmd("stopinsert")
+							end
+						end)
 					else
 						vim.notify("动画切换功能不可用", vim.log.levels.WARN)
 					end
