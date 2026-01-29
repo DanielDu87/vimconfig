@@ -1457,13 +1457,25 @@ return {
 			-- 源特定增强
 			opts.picker.sources = opts.picker.sources or {}
 
-            -- 修正 git_status (<leader>gs) 的 Tab 键行为，使其用于切换窗口而非暂存
+            -- 修正 git_status (<leader>gs) 的 Tab 键行为
             opts.picker.sources.git_status = {
-                win = {
-                    input = { keys = { ["<Tab>"] = { "focus_next", mode = { "i", "n" } } } },
-                    list = { keys = { ["<Tab>"] = { "focus_next", mode = "n" } } },
-                    preview = { keys = { ["<Tab>"] = { "focus_next", mode = "n" } } },
+              win = {
+                input = {
+                  keys = {
+                    ["<Tab>"] = { "focus_preview", mode = { "i", "n" } },
+                  },
                 },
+                list = {
+                  keys = {
+                    ["<Tab>"] = { "focus_preview", mode = { "n" } },
+                  },
+                },
+                preview = {
+                  keys = {
+                    ["<Tab>"] = { "focus_input", mode = { "n" } },
+                  },
+                },
+              },
             }
 
 			-- 图标插件布局：增加边框并限制大小
