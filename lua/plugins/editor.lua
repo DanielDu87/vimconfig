@@ -1196,7 +1196,7 @@ return {
 						.. vim.fn.shellescape(root)
 						.. " push"
 					require("snacks").terminal(cmd, {
-						win = { position = "float", title = " Git Fetch & Push ", width = 0.8, height = 0.8 },
+						win = { position = "float", title = " Git Fetch & Push ", width = 0.65, height = 0.8 },
 						interactive = true, -- Push might require credentials
 					})
 				end,
