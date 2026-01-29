@@ -1089,26 +1089,16 @@ return {
 			{
 				"<leader>gb",
 				function()
-					local mode = vim.fn.mode()
-
-					if mode == "n" then
-						-- 普通模式：使用最开始的默认样式 (Snacks 内置，行尾弹窗)
-						require("snacks").git.blame_line()
-					else
-						-- 可视化模式：使用 advanced-git-search 追溯选区历史 (交互式)
-						-- 先退出可视化模式
-						vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Esc>", true, false, true), "n", true)
-						
-						local ok, telescope = pcall(require, "telescope")
-						if ok then
-							telescope.extensions.advanced_git_search.diff_commit_line()
-						else
-							vim.notify("Telescope/advanced-git-search 未就绪", vim.log.levels.WARN)
-						end
-					end
+					require("snacks").git.blame_line()
 				end,
-				mode = { "n", "v" },
-				desc = "Git Blame/历史追溯",
+				mode = "n",
+				desc = "Git Blame/行追溯",
+			},
+			{
+				"<leader>gb",
+				":'<,'>BlameInvestigateLines<CR>",
+				mode = "v",
+				desc = "Git Blame (选区)",
 			},
 			{
 				"<leader>gf",
