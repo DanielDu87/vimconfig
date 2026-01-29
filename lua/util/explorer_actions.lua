@@ -608,7 +608,7 @@ function M.setup(Actions, Snacks)
 				if not to or to == "" or to == from then
 					return
 				end
-				o = vim.fs.normalize(to)
+				to = vim.fs.normalize(to)
 				if uv.fs_stat(to) then
 					return Snacks.notify.warn("目标已存在")
 				end

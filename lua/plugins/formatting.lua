@@ -98,8 +98,8 @@ return {
 				-- Black 配置（Python 社区强制使用空格，无法配置 tab）
 				black = {
 					prepend_args = { "--fast" },
-					-- 使用 brew 安装的 black（比 Mason 的更快）
-					command = "/opt/homebrew/bin/black",
+					-- 优先使用 brew 安装的 black（比 Mason 的更快）
+					command = vim.fn.exepath("black") or "/opt/homebrew/bin/black" or "black",
 				},
 				-- Isort 配置（Python 导入排序）
 			isort = {
@@ -123,9 +123,9 @@ return {
 					'{"indentation": "    ", "keywordCase": "upper"}',
 				},
 			},
-				-- Stylelint 配置：使用系统全局版本，并开启自动修复
+				-- Stylelint 配置：优先使用系统全局版本，并开启自动修复
 			stylelint = {
-				command = "/opt/homebrew/bin/stylelint",
+				command = vim.fn.exepath("stylelint") or "/opt/homebrew/bin/stylelint" or "stylelint",
 				args = { "--fix", "--stdin-filename", "$FILENAME" },
 			},
 			},
