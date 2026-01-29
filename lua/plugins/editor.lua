@@ -559,7 +559,7 @@ return {
 				{ "<leader>S.", desc = "打开默认临时Buffer", icon = "📝" },
 				{ "<leader>SS", desc = "选择/管理临时Buffer", icon = "🗂️" },
 				{ "<leader>u", group = "界面", icon = "🎨" },
-				{ "<leader>ua", desc = "切换动画", icon = "🎬" },
+				{ "<leader>ua", desc = "which_key_ignore" },
 				{ "<leader>ub", desc = "切换背景模式", icon = "🌓" },
 				{ "<leader>ud", desc = "切换诊断显示", icon = "🔍" },
 				{ "<leader>uf", desc = "切换自动格式化", icon = "🛠️" },
