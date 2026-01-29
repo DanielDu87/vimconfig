@@ -507,6 +507,23 @@
 | `<leader>ss` | 文档符号               |
 | `<leader>sS` | 项目符号               |
 
+### 🖥️ 外部工具增强 (BetterTouchTool)
+
+本配置配合本地 **BetterTouchTool** 映射，实现了更加符合 macOS 习惯的全局快捷键支持：
+
+| 外部快捷键 (BTT) | 映射到 Neovim 序列 | 功能说明 |
+| :--- | :--- | :--- |
+| `⌃ J` (Ctrl+J) | `⌃⇧ D` | **向下翻页** (Half Page Down) |
+| `⌃ K` (Ctrl+K) | `⌃⇧ U` | **向上翻页** (Half Page Up) |
+| `⌃ D` (Ctrl+D) | `Esc c c` | **修改当前行** (清除并进入插入模式) |
+| `⇧⌃ J` (Ctrl+Shift+J) | `⌃ X` | **数字减** 1 |
+| `⇧⌃ K` (Ctrl+Shift+K) | `⌃ A` | **数字加** 1 |
+| `⌘ A` (Cmd+A) | `gg 0^vG$` | **全选** 文本 |
+| `⌘ S` (Cmd+S) | `Esc :w <CR>` | **保存文件** |
+| `⌘ /` (Cmd+/) | `Esc \` | **切换行注释** |
+| `⌘ Z` (Cmd+Z) | `Esc u` | **撤销** (Undo) |
+| `⌘ C` (Cmd+C) | `Y` | **复制** 选区/行 (到寄存器) |
+
 ## 🔌 主要插件列表
 
 ### 核心插件
