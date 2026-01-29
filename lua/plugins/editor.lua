@@ -1005,6 +1005,24 @@ return {
 				end,
 				desc = "Git暂存 (当前目录)",
 			},
+			-- Git检出：选择并切换分支
+			{
+				"<leader>gC",
+				function()
+					local root = require("lazyvim.util").root()
+					require("snacks").terminal("lazygit branch", {
+						cwd = root,
+						win = {
+							position = "float",
+							title = " Git Branch ",
+							width = 0.8,
+							height = 0.8,
+						},
+						interactive = true,
+					})
+				end,
+				desc = "Git切换分支",
+			},
 			-- Git提交 (悬浮审核)
 			{
 				"<leader>gc",
@@ -1050,6 +1068,33 @@ return {
 				desc = "Git Blame (选区)",
 			},
 			{
+				"<leader>gd",
+				function()
+					require("snacks").terminal("lazygit", {
+						cwd = require("lazyvim.util").root(),
+						win = {
+							position = "float",
+							title = " LazyGit Diff ",
+							width = 0.8,
+							height = 0.8,
+						},
+					})
+				end,
+				desc = "查看本地差异 (LazyGit)",
+			},
+			{
+				"<leader>gD",
+				function()
+					local remote = vim.fn.trim(vim.fn.system("git config --get remote.origin.url"))
+					if remote == "" then
+						vim.notify("未指定远程仓库地址", vim.log.levels.WARN)
+						return
+					end
+					require("snacks").terminal("git fetch && lazygit")
+				end,
+				desc = "查看远程差异 (LazyGit)",
+			},
+			{
 				"<leader>gf",
 				function()
 					require("snacks").terminal("lazygit")
@@ -1091,114 +1136,57 @@ return {
 			{
 				"<leader>gl",
 				function()
-					-- 自定义格式化函数，实现丰富的高亮
-					local function git_log_oneline(item, picker)
-						local ret = {} ---@type snacks.picker.Highlight[]
-						local text = item.text
-
-						-- 1. 高亮图形符号
-						local graph_end = text:find("[^%s*|\\/_%-%.]") or 1
-						if graph_end > 1 then
-							ret[#ret + 1] = { text:sub(1, graph_end - 1), "GitLogDiagnosticInfo" }
-							text = text:sub(graph_end)
-						end
-
-						-- 2. 高亮提交哈希
-						local hash_match = text:match("^(%x+)")
-						if hash_match then
-							ret[#ret + 1] = { hash_match .. " ", "Keyword" }
-							text = text:sub(#hash_match + 1)
-							text = text:gsub("^%s*", "")
-						end
-
-						-- 3. 高亮分支和标签信息
-						if text:sub(1, 1) == "(" then
-							local decorations_end = text:find(")")
-							if decorations_end then
-								local decorations = text:sub(2, decorations_end - 1)
-								ret[#ret + 1] = { "(", "GitLogComment" }
-
-								local first = true
-								for part in (decorations .. ","):gmatch("(.-),") do
-									part = part:match("^%s*(.-)%s*$") -- trim whitespace
-									if #part > 0 then
-										if not first then
-											ret[#ret + 1] = { ", ", "GitLogComment" }
-										end
-										first = false
-
-										if part:match("^HEAD%s*->") then
-											ret[#ret + 1] = { "HEAD", "GitLogHead" } -- 使用自定义的紫色高亮
-											ret[#ret + 1] = { " -> ", "GitLogDiagnosticInfo" }
-											local branch = part:gsub("^HEAD%s*->%s*", "")
-											ret[#ret + 1] = { branch, "GitLogBranch" }
-										elseif part:match("^tag:%s*") then
-											ret[#ret + 1] = { "tag:", "GitLogType" }
-											local tag = part:gsub("^tag:%s*", "")
-											ret[#ret + 1] = { tag, "GitLogTag" }
-										elseif part:find("/") then -- 简单判断是否为远程分支
-											ret[#ret + 1] = { part, "GitLogRemote" }
-										else
-											ret[#ret + 1] = { part, "GitLogBranch" }
-										end
-									end
-								end
-								ret[#ret + 1] = { ") ", "GitLogComment" } -- Add a space after the closing parenthesis
-								text = text:sub(decorations_end + 1)
-								text = text:gsub("^%s*", "")
-							end
-						end
-
-						-- 4. 提交信息
-						ret[#ret + 1] = { text, "Normal" }
-
-						return ret
-					end
-
-					-- 直接使用 git log 命令
-					local result = vim.fn.systemlist("git log --oneline --all --graph --decorate -100")
-					if vim.v.shell_error ~= 0 then
-						vim.notify("获取 Git 日志失败", vim.log.levels.ERROR)
-						return
-					end
-
-					-- 解析并创建 items
-					local items = {}
-					for _, line in ipairs(result) do
-						local commit = line:match("(%w%x+)") -- 匹配十六进制提交哈希
-						if commit then
-							table.insert(items, {
-								commit = commit,
-								msg = line, -- 保存整行作为消息
-								text = line,
-							})
-						end
-					end
-
-					require("snacks").picker({
-						title = " Git日志（简洁） ",
+					require("snacks").picker.git_log({
+						title = " Git 日志 ",
 						title_pos = "center",
-						items = items,
-						format = git_log_oneline,
+						win = {
+							input = {
+								keys = {
+									["<Tab>"] = { "focus_preview", mode = { "i", "n" } },
+								},
+							},
+							list = {
+								keys = {
+									["<Tab>"] = { "focus_preview", mode = { "n" } },
+								},
+							},
+							preview = {
+								keys = {
+									["<Tab>"] = { "focus_input", mode = { "n" } },
+								},
+							},
+						},
+						layout = {
+							layout = {
+								box = "vertical", -- 改为纵向排列
+								width = 0.75,
+								height = 0.7,
+								{
+									box = "vertical",
+									border = "rounded",
+									title = " 提交历史 ",
+									height = 0.4, -- 上方历史占 40% 高度
+									{ win = "input", height = 1, border = "bottom" },
+									{ win = "list", border = "none" },
+								},
+								{
+									win = "preview",
+									title = " 差异预览 ",
+									border = "rounded",
+									height = 0.6, -- 下方预览占 60% 高度
+								},
+							},
+						},
 						confirm = function(picker, item)
 							picker:close()
-							if item and item.commit then
-								require("snacks").terminal("git show " .. item.commit, {
-									win = {
-										position = "float",
-										backdrop = false,
-										border = "rounded",
-										title = " Git Diff: " .. item.commit .. " ",
-										title_pos = "center",
-									},
-									interactive = false,
-								})
+							if item and (item.commit or item.hash) then
+								local commit = item.commit or item.hash
+								vim.cmd("DiffviewOpen " .. commit)
 							end
 						end,
-						layout = { preset = "select" },
 					})
 				end,
-				desc = "Git日志（简洁）",
+				desc = "Git日志（自定义宽布局）",
 			},
 			{
 				"<leader>gp",
