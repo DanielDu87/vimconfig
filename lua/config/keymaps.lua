@@ -171,3 +171,30 @@ vim.keymap.set("n", "<A-k>", ":m .-2<CR>==", { desc = "向上移动行" })
 -- Visual 模式下移动选中区域
 vim.keymap.set("v", "<A-j>", ":m '>+1<CR>gv=gv", { desc = "向下移动选中区域" })
 vim.keymap.set("v", "<A-k>", ":m '<-2<CR>gv=gv", { desc = "向上移动选中区域" })
+
+--==============================================================================
+-- 跳转到指定行
+--==============================================================================
+vim.keymap.set("n", "<leader>cn", function()
+	vim.ui.input({ prompt = "跳转到行号：", default = tostring(vim.api.nvim_win_get_cursor(0)[1]) }, function(input)
+		if not input or #input == 0 then
+			return
+		end
+		local line_num = tonumber(input)
+		if line_num then
+			-- 验证行号是否在有效范围内
+			local line_count = vim.api.nvim_buf_line_count(0)
+			if line_num < 1 then
+				line_num = 1
+			elseif line_num > line_count then
+				line_num = line_count
+			end
+			-- 跳转并居中
+			vim.api.nvim_win_set_cursor(0, { line_num, 0 })
+			vim.cmd("normal! zz")
+			vim.notify(string.format("已跳转到第 %d 行", line_num), vim.log.levels.INFO, { title = "跳转" })
+		else
+			vim.notify("无效的行号", vim.log.levels.ERROR, { title = "跳转" })
+		end
+	end)
+end, { desc = "跳转到指定行" })
