@@ -249,6 +249,10 @@ return {
 					group = vim.api.nvim_create_augroup("SnacksExplorerAutoStart", { clear = true }),
 					once = true,
 					callback = function()
+						-- 如果是 Git 模式，则不自动打开 Explorer
+						if os.getenv("NVIM_GIT_MODE") then
+							return
+						end
 						vim.schedule(function()
 							local ok, Snacks = pcall(require, "snacks")
 							if not ok or not Snacks.explorer then

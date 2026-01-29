@@ -993,98 +993,48 @@ return {
 			},
 
 			-- Git 增强映射 (中文化覆盖)
-			-- Git检出：选择并切换分支（使用git switch）
-			{
-				"<leader>gC",
-				function()
-					local root = require("lazyvim.util").root()
-					require("snacks").terminal("lazygit branch", {
-						cwd = root,
-						win = {
-							position = "float",
-							title = " Git Branch ",
-							width = 0.8,
-							height = 0.8,
-						},
-						interactive = true,
-					})
-				end,
-				desc = "Git切换分支",
-			},
-			-- Git提交 (使用 Neogit)
-			{
-				"<leader>gc",
-				function()
-					local root = require("lazyvim.util").root()
-					-- 检查是否有暂存的更改
-					local staged = vim.fn.system("git -C " .. vim.fn.shellescape(root) .. " diff --cached --name-only")
-					
-					local neogit = require("neogit")
-					if staged == "" then
-						vim.notify("没有暂存内容，已打开 Neogit 状态面板", vim.log.levels.INFO, { title = "Neogit" })
-						neogit.open()
-					else
-						-- 直接进入提交模式
-						neogit.open({ "commit" })
-					end
-				end,
-				desc = "Git提交 (Neogit)",
-			},
-			-- Git远程仓库子菜单（leader gr）
-			{
-				"<leader>gro",
-				function()
-					require("snacks").gitbrowse()
-				end,
-				desc = "浏览器打开",
-				mode = { "n", "v" },
-			},
-			{
-				"<leader>gry",
-				function()
-					-- 获取远程仓库URL并复制到剪贴板
-					local cwd = vim.fn.getcwd()
-					local remote = vim.fn.trim(vim.fn.system("git -C " .. cwd .. " config --get remote.origin.url"))
-
-					if remote == "" then
-						vim.notify("未找到远程仓库", vim.log.levels.WARN)
-						return
-					end
-
-					-- 获取当前文件信息
-					local file = vim.fn.expand("%:.")
-					local branch = vim.fn.trim(vim.fn.system("git -C " .. cwd .. " rev-parse --abbrev-ref HEAD"))
-					local line = vim.api.nvim_win_get_cursor(0)[1]
-
-					-- 构建GitHub/GitLab URL
-					local url = remote
-						:gsub("%.git$", "")
-						:gsub("^git@(.+):(.+)$", "https://%1/%2")
-						:gsub("^git@(.+)/(.+)$", "https://%1/%2")
-						:gsub("^https://.+@", "https://")
-
-					-- 添加文件路径和行号
-					if file and file ~= "" then
-						url = url .. "/blob/" .. branch .. "/" .. file .. "#L" .. line
-					else
-						url = url .. "/tree/" .. branch
-					end
-
-					-- 复制到剪贴板
-					vim.fn.setreg("+", url)
-					vim.notify("已复制远程仓库链接", vim.log.levels.INFO)
-				end,
-				desc = "复制链接",
-				mode = { "n", "v" },
-			},
 			{
 				"<leader>ga",
 				function()
-					local root = require("lazyvim.util").root()
-					vim.fn.system("git -C " .. vim.fn.shellescape(root) .. " add -A")
-					vim.notify("所有更改已添加到暂存区", vim.log.levels.INFO, { title = "Git" })
+					local output = vim.fn.system("git add -A")
+					if vim.v.shell_error == 0 then
+						vim.notify("当前目录下的更改已全部暂存", vim.log.levels.INFO, { title = "Git" })
+					else
+						vim.notify("暂存失败: " .. output, vim.log.levels.ERROR, { title = "Git" })
+					end
 				end,
-				desc = "Git暂存",
+				desc = "Git暂存 (当前目录)",
+			},
+			-- Git提交 (悬浮审核)
+			{
+				"<leader>gc",
+				function()
+					-- 获取屏幕尺寸
+					local width = math.floor(vim.o.columns * 0.65)
+					local height = math.floor(vim.o.lines * 0.8)
+					local col = math.floor((vim.o.columns - width) / 2)
+					local row = math.floor((vim.o.lines - height) / 2)
+
+					-- 1. 首先在当前上下文执行 Git 命令（它会创建一个名为 fugitive://... 的 buffer）
+					-- 我们使用 :tab Git 是为了避免它破坏当前布局，执行完我们马上把它移动到浮窗
+					vim.cmd("Git")
+					local git_buf = vim.api.nvim_get_current_buf()
+					vim.cmd("close") -- 关闭刚才 Git 命令自动打开的正常窗口
+
+					-- 2. 创建浮动窗口并放入刚才那个 Git buffer
+					vim.api.nvim_open_win(git_buf, true, {
+						relative = "editor",
+						width = width,
+						height = height,
+						col = col,
+						row = row,
+						style = "minimal",
+						border = "rounded",
+						title = " Fugitive Status ",
+						title_pos = "center",
+					})
+				end,
+				desc = "Git面板 (Fugitive 悬浮)",
 			},
 			{
 				"<leader>gb",
@@ -1119,51 +1069,7 @@ return {
 				end,
 				desc = "查看远程差异 (LazyGit)",
 			},
-			{
-				"<leader>gD",
-				function()
-					local root = require("lazyvim.util").root()
-					local verify_cmd = "git -C " .. vim.fn.shellescape(root) .. " rev-parse --verify origin/main"
-
-					vim.fn.system(verify_cmd)
-					if vim.v.shell_error ~= 0 then
-						vim.notify("远程分支 'origin/main' 不存在", vim.log.levels.WARN)
-						return
-					end
-
-					local diff_cmd = "git -C " .. vim.fn.shellescape(root) .. " diff origin/main"
-					require("snacks").terminal(diff_cmd, {
-						win = {
-							position = "float",
-							backdrop = false,
-							border = "rounded",
-							title = " Diff: origin/main ",
-							title_pos = "center",
-							width = 0.8,
-							height = 0.8,
-						},
-						interactive = false,
-					})
-				end,
-				desc = "Git差异（远程）",
-			},
-			{
-				"<leader>gs",
-				function()
-					local root = require("lazyvim.util").root()
-					require("snacks").terminal("lazygit stash", {
-						cwd = root,
-						win = {
-							position = "float",
-							title = " Git Stash ",
-							width = 0.8,
-							height = 0.8,
-						},
-						interactive = true,
-					})
-				end,
-				desc = "Git Stash",
-			}, -- Git提交图：显示 git log --oneline --graph --decorate --all
+			-- Git提交图：显示 git log --oneline --graph --decorate --all
 			{
 				"<leader>gg",
 				function()
