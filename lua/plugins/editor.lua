@@ -559,7 +559,7 @@ return {
 				{ "<leader>S.", desc = "打开默认临时Buffer", icon = "📝" },
 				{ "<leader>SS", desc = "选择/管理临时Buffer", icon = "🗂️" },
 				{ "<leader>u", group = "界面", icon = "🎨" },
-				{ "<leader>ua", desc = "which_key_ignore" },
+				{ "<leader>ua", desc = "切换动画", icon = "🎬" },
 				{ "<leader>ub", desc = "切换背景模式", icon = "🌓" },
 				{ "<leader>ud", desc = "切换诊断显示", icon = "🔍" },
 				{ "<leader>uf", desc = "切换自动格式化", icon = "🛠️" },
@@ -1258,7 +1258,12 @@ return {
 			{
 				"<leader>ua",
 				function()
-					require("snacks").toggle.animate():toggle()
+					local ok, toggle = pcall(require("snacks").toggle.animate)
+					if ok and toggle then
+						toggle:toggle()
+					else
+						vim.notify("动画切换功能不可用", vim.log.levels.WARN)
+					end
 				end,
 				desc = "切换动画",
 			},
