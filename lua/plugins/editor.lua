@@ -1189,13 +1189,18 @@ return {
 				"<leader>gp",
 				function()
 					local root = require("lazyvim.util").root()
-					local cmd = "git -C " .. vim.fn.shellescape(root) .. " push"
+					-- 先 fetch 所有远程，然后 push
+					local cmd = "git -C "
+						.. vim.fn.shellescape(root)
+						.. " fetch --all && git -C "
+						.. vim.fn.shellescape(root)
+						.. " push"
 					require("snacks").terminal(cmd, {
-						win = { position = "float", title = " Git Push ", width = 0.8, height = 0.8 },
+						win = { position = "float", title = " Git Fetch & Push ", width = 0.8, height = 0.8 },
 						interactive = true, -- Push might require credentials
 					})
 				end,
-				desc = "Git推送",
+				desc = "Git推送（先fetch）",
 			},
 			{
 				"<leader>gP",

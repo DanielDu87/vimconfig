@@ -67,9 +67,9 @@
 | **分支切换** | `<leader>gC` | **LazyGit** (浮动) | TUI 界面切换分支 |
 | **Stash 管理** | `<leader>gS` | **LazyGit** (浮动) | TUI 界面管理 Stash |
 | **行追溯** | `<leader>gb` | **snacks.git.blame_line** | 显示当前行的 Git Blame |
-| **推送到远程** | `<leader>gp` | **snacks.terminal** | Git push（浮动终端） |
 | **从远程拉取** | `<leader>gP` | **snacks.terminal** | Git pull（浮动终端） |
 | **暂存当前** | `<leader>ga` | **shell** | Git add -A |
+| **推送到远程** | `<leader>gp` | **snacks.terminal** + shell | Fetch 所有远程 + Push（浮动终端） |
 | **关闭 Diffview** | `<leader>gq` | **diffview.nvim** | 关闭差异视图 |
 
 #### 3.2 Git 工作流详解
@@ -410,7 +410,7 @@
 | `<leader>gd` | **本地差异**（LazyGit）       |
 | `<leader>gD` | **远程差异**（LazyGit）       |
 | `<leader>gf` | **Git 面板**（LazyGit）       |
-| `<leader>gp` | **Git 推送**                  |
+| `<leader>gp` | **Git 推送**（先 fetch 所有远程） |
 | `<leader>gP` | **Git 拉取**                  |
 | `<leader>ga` | **Git 暂存**                  |
 | `<leader>gC` | **Git 切换分支**（LazyGit）   |
