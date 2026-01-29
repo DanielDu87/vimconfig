@@ -392,6 +392,7 @@ return {
 				{ "<leader>bH", desc = "关闭左侧Buffer", icon = "🗑️" },
 				{ "<leader>bL", desc = "关闭右侧Buffer", icon = "🗑️" },
 				{ "<leader>c", group = "代码", icon = "🛠️" },
+				{ "<leader>c/", desc = "切换行注释", icon = "💬" },
 				{ "<leader>ca", desc = "代码操作", icon = "💡" },
 				{ "<leader>cA", desc = "项目操作", icon = "⚛️" },
 				{ "<leader>cc", desc = "运行代码透镜", icon = "💎" },
