@@ -161,3 +161,13 @@ vim.keymap.set("v", "<leader>r", function()
 	require("util.refactor_smart").smart_visual_refactor()
 end, { desc = "智能重构 (选中)" })
 
+--==============================================================================
+-- 移动当前行/选中区域 (光标跟随)
+--==============================================================================
+-- Normal 模式下移动当前行
+vim.keymap.set("n", "<A-j>", ":m .+1<CR>==", { desc = "向下移动行" })
+vim.keymap.set("n", "<A-k>", ":m .-2<CR>==", { desc = "向上移动行" })
+
+-- Visual 模式下移动选中区域
+vim.keymap.set("v", "<A-j>", ":m '>+1<CR>gv=gv", { desc = "向下移动选中区域" })
+vim.keymap.set("v", "<A-k>", ":m '<-2<CR>gv=gv", { desc = "向上移动选中区域" })
