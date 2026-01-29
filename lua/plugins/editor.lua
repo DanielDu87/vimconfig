@@ -125,6 +125,43 @@ vim.api.nvim_create_autocmd("User", {
 		-- LSP 相关快捷键
 		vim.keymap.set("n", "<leader>cl", "<cmd>LspInfo<cr>", { desc = "LSP信息" })
 		vim.keymap.set("n", "<leader>cm", "<cmd>Mason<cr>", { desc = "Mason插件管理" })
+		vim.keymap.set({ "n", "v" }, "<leader>ca", vim.lsp.buf.code_action, { desc = "代码操作" })
+		vim.keymap.set({ "n", "v" }, "<leader>cA", function()
+			vim.lsp.buf.code_action({ context = { only = { "source" }, diagnostics = {} } })
+		end, { desc = "项目操作" })
+		vim.keymap.set("n", "<leader>cc", vim.lsp.codelens.run, { desc = "运行代码透镜" })
+		vim.keymap.set("n", "<leader>cC", vim.lsp.codelens.refresh, { desc = "刷新并显示代码透镜" })
+		vim.keymap.set("n", "<leader>cd", vim.diagnostic.open_float, { desc = "显示行诊断信息" })
+
+		-- 针对 vtsls 优化的专有操作 (TypeScript/Vue)
+		local function vtsls_cmd(cmd)
+			return function()
+				local ok, vtsls = pcall(require, "vtsls")
+				if ok and vtsls.commands and vtsls.commands[cmd] then
+					vtsls.commands[cmd]()
+				else
+					-- 回退到通用代码操作
+					local action_map = {
+						organize_imports = "source.organizeImports",
+						remove_unused_imports = "source.removeUnused",
+						add_missing_imports = "source.addMissingImports",
+						fix_all = "source.fixAll",
+					}
+                    -- 如果不是 vtsls 特有命令（如 rename），则回退到标准 LSP
+                    if cmd == "rename" then
+                        vim.lsp.buf.rename()
+                    else
+					    vim.lsp.buf.code_action({ apply = true, context = { only = { action_map[cmd] or "source" }, diagnostics = {} } })
+                    end
+				end
+			end
+		end
+
+		vim.keymap.set("n", "<leader>co", vtsls_cmd("organize_imports"), { desc = "整理导入" })
+		vim.keymap.set("n", "<leader>cu", vtsls_cmd("remove_unused_imports"), { desc = "删除未使用的导入" })
+		vim.keymap.set("n", "<leader>ci", vtsls_cmd("add_missing_imports"), { desc = "添加缺失导入" })
+		vim.keymap.set("n", "<leader>cx", vtsls_cmd("fix_all"), { desc = "修复所有诊断" })
+		vim.keymap.set("n", "<leader>cr", vim.lsp.buf.rename, { desc = "重命名" })
 
 		-- ---------------------------------------------------------------------------
 		-- 辅助函数：批量关闭Buffer逻辑（跳过固定/PinnedBuffer）
@@ -403,10 +440,10 @@ return {
 				{ "<leader>co", desc = "整理导入", icon = "📦" },
 				{ "<leader>cu", desc = "删除未使用的导入", icon = "🗑️" },
 				{ "<leader>ci", desc = "添加缺失导入", icon = "📥" },
-				{ "<leader>cX", desc = "修复所有诊断", icon = "🛠️" },
+				{ "<leader>cx", desc = "修复所有诊断", icon = "🛠️" },
 				{ "<leader>cF", desc = "格式化注入语言", icon = "🛠️" },
 				{ "<leader>cs", desc = "显示符号结构", icon = "🔍" },
-				{ "<leader>cr", desc = "智能重构", icon = "🔨" },
+				{ "<leader>cr", desc = "重命名", icon = "✍️" },
 				{ "<leader>rv", desc = "选择Python虚拟环境", icon = "🐍" },
 				{ "<leader>d", group = "调试/诊断", icon = "🔧" },
 				{ "<leader>dd", desc = "文档诊断", icon = "🚨" },

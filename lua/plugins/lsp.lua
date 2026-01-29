@@ -4,6 +4,9 @@ return {
 	--==========================================================================
 	{
 		"neovim/nvim-lspconfig",
+		dependencies = {
+			{ "yioneko/nvim-vtsls" },
+		},
 		event = "VeryLazy",
 		config = function()
 			-- 阻止 lspconfig 自动为所有文件类型设置服务器
@@ -96,6 +99,17 @@ return {
 				if lspconfig[name] then
 					config.on_attach = on_attach
 					lspconfig[name].setup(config)
+
+					-- 如果是 vtsls，且 nvim-vtsls 插件已加载，则进行额外的 setup
+					if name == "vtsls" then
+						local ok, nvim_vtsls = pcall(require, "nvim-vtsls")
+						if ok then
+							nvim_vtsls.setup({
+								on_attach = config.on_attach, -- 传递 lspconfig 的 on_attach
+								-- 这里可以添加 nvim-vtsls 的其他配置
+							})
+						end
+					end
 				end
 			end
 		end,
