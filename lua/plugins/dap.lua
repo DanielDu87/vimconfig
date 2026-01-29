@@ -135,11 +135,12 @@ return {
 				end))
 			end
 
-			-- 监听窗口大小变化
+			-- 监听窗口大小变化（pattern 用于匹配窗口，"*" 表示所有窗口）
 			vim.api.nvim_create_autocmd("WinResized", {
-				pattern = "dapui_*",
+				pattern = "*",
 				callback = function()
 					if is_restoring then return end
+					-- 检查是否有 dapui 窗口存在
 					local has_dap_win = false
 					for _, win in ipairs(vim.api.nvim_list_wins()) do
 						local buf = vim.api.nvim_win_get_buf(win)
