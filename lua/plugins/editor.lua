@@ -324,15 +324,15 @@ return {
 	{
 		"folke/which-key.nvim",
 		opts = {
-			layout = { columns = 8, align = "center" },
+			layout = { columns = 3, align = "center" },
 			icons = {
 				rules = false, -- 禁用默认图标规则
 			},
 			win = {
-				width = 0.75,
+				width = 0.60,
 				height = { min = 4, max = math.huge },
 				col = 0.5,
-				row = 0.8,
+				row = 0.9,
 				border = "rounded",
 				title = "  ◈ 操作菜单 ◈  ",
 				title_pos = "center",
