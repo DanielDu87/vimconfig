@@ -105,7 +105,7 @@ vim.api.nvim_create_autocmd("User", {
 		pcall(vim.keymap.del, "n", "<leader>P")
 
 		-- 重新定义 Python 调试快捷键（直接放在 <leader>d 下）
-		vim.keymap.set("n", "<leader>dm", function()
+		vim.keymap.set("n", "<leader>dM", function()
 			require("dap-python").test_method()
 		end, { desc = "调试方法（Method）" })
 		vim.keymap.set("n", "<leader>dC", function()
@@ -446,6 +446,7 @@ return {
 				{ "<leader>cr", desc = "重命名", icon = "✍️" },
 				{ "<leader>rv", desc = "选择Python虚拟环境", icon = "🐍" },
 				{ "<leader>d", group = "调试/诊断", icon = "🔧" },
+				{ "<leader>dP", desc = "which_key_ignore" },
 				{ "<leader>dd", desc = "文档诊断", icon = "🚨" },
 				{ "<leader>dD", desc = "项目诊断", icon = "🚑" },
 				{ "<leader>db", desc = "切换断点（持久化）", icon = "🔴" },
@@ -457,7 +458,7 @@ return {
 				{ "<leader>do", desc = "步过（Over）", icon = "➡️" },
 				{ "<leader>du", desc = "步出（Out）", icon = "⬆️" },
 				{ "<leader>dt", desc = "切换调试面板", icon = "🖥️" },
-				{ "<leader>dm", desc = "调试方法（Method）", icon = "🐍" },
+				{ "<leader>dM", desc = "调试方法（Method）", icon = "🐍" },
 				{ "<leader>dp", desc = "切换性能分析器", icon = "📊" },
 				{ "<leader>dh", desc = "性能分析高亮", icon = "✨" },
 				{ "<leader>x", group = "诊断/修复", icon = "🚑" },
