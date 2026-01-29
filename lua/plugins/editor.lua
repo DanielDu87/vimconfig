@@ -459,14 +459,8 @@ return {
 				{ "<leader>gr", group = "Git远程仓库", icon = "🔗" },
 				{ "<leader>gro", desc = "浏览器打开", icon = "🌍" },
 				{ "<leader>gry", desc = "复制链接", icon = "🔗" },
-				{ "<leader>gs", desc = "Git Stash", icon = "📦" },
-				{ "<leader>gS", desc = "which_key_ignore" },
-				{ "<leader>gh", group = "Git变更", icon = "🔄" },
-				{ "<leader>ghb", desc = "恢复代码块", icon = "🔙" },
-				{ "<leader>ghp", desc = "预览代码块", icon = "🔍" },
-				{ "<leader>ghr", desc = "重置代码块", icon = "🧹" },
-				{ "<leader>ghs", desc = "暂存代码块", icon = "➕" },
-				{ "<leader>ghu", desc = "撤销暂存代码块", icon = "↩️" },
+				{ "<leader>gs", desc = "Git状态", icon = "📊" },
+				{ "<leader>gS", desc = "Git Stash", icon = "📦" },
 				{ "<leader>h", group = "历史", icon = "📜" },
 				{ "<leader>hn", desc = "通知历史记录", icon = "📜" },
 				{ "<leader>hl", desc = "最后一条通知", icon = "💬" },
@@ -573,22 +567,6 @@ return {
 				                    { "Notification History", "通知历史" },
 				                    { "Buffers", "查找Buffer" },
 				                    { "Buffers (all)", "查找Buffer（所有）" },
-				                    { "Git Diff", "Git差异" },
-				                    { "Git Status", "Git状态" },
-				                    { "Git Stash", "Git Stash" },
-				                    { "Git Blame", "Git行追溯" },
-				                    { "Git Branches", "Git切换分支" },
-				                    { "Git Commit", "Git提交记录" },
-				                    { "Git Checkout", "Git检出" },
-				                    { "Git Files", "Git文件" },
-				                    { "Git Browse", "浏览器打开" },
-				                    { "Git Browse (open)", "浏览器打开" },
-				                    { "Git Log", "Git日志" },
-				                    { "Git Pull", "Git拉取" },
-				                    { "Git Push", "Git推送" },
-				                    { "Git Switch", "Git切换" },
-				                    { "GitHub Issues", "GitHub问题" },
-				                    { "GitHub Pull Requests", "GitHub拉取请求" },
 				                    { "Recent", "最近文件" },
 				                    { "Projects", "项目列表" },
 				                    { "Command History", "命令历史" },
@@ -1112,6 +1090,30 @@ return {
 					require("snacks").terminal("git fetch && lazygit")
 				end,
 				desc = "查看远程差异 (LazyGit)",
+			},
+			{
+				"<leader>gs",
+				function()
+					require("snacks").picker.git_status()
+				end,
+				desc = "Git状态",
+			},
+			{
+				"<leader>gS",
+				function()
+					local root = require("lazyvim.util").root()
+					require("snacks").terminal("lazygit stash", {
+						cwd = root,
+						win = {
+							position = "float",
+							title = " Git Stash ",
+							width = 0.8,
+							height = 0.8,
+						},
+						interactive = true,
+					})
+				end,
+				desc = "Git Stash",
 			},
 			-- Git提交图：显示 git log --oneline --graph --decorate --all
 			{
