@@ -381,8 +381,10 @@
 | `<leader>di` | **步入** (Step Into)            |
 | `<leader>do` | **步过** (Step Over)            |
 | `<leader>du` | **步出** (Step Out)             |
-| `<leader>dm` | **调试方法**（Python）          |
+| `<leader>dM` | **调试方法**（Python）          |
 | `<leader>dC` | **调试类**（Python）            |
+| `<leader>dp` | **切换性能分析器**              |
+| `<leader>dh` | **性能分析高亮**                |
 
 ### 🔨 代码重构与诊断
 
