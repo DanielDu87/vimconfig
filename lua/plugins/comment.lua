@@ -18,14 +18,9 @@ return {
       require("mini.comment").setup(opts)
     end,
     keys = {
-      {
-        "<leader>c/",
-        function()
-          require("mini.comment").toggle()
-        end,
-        mode = { "n", "v" },
-        desc = "切换行注释",
-      },
+      -- 使用 remap = true 来调用插件内置的 gc 映射，确保逻辑一致且无报错
+      { "<leader>c/", "gcc", mode = "n", remap = true, desc = "切换行注释" },
+      { "<leader>c/", "gc", mode = "v", remap = true, desc = "切换选区注释" },
     },
   },
 }
