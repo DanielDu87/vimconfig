@@ -88,6 +88,7 @@ return {
 				-- 8. 其他
 				bashls = {},
 				marksman = {},
+				tailwindcss = {},
 				emmet_ls = {
 					-- Emmet 应该作为一个辅助，支持尽可能多的 Web 文件
 					filetypes = { "html", "htmldjango", "typescriptreact", "javascriptreact", "css", "sass", "scss", "less", "vue" },

@@ -27,9 +27,38 @@ return {
 					border = "rounded",
 					winblend = 0,
 					scrollbar = false,
-					-- 确保绘制顺序和方式不会覆盖透明背景
+					-- 确保绘制顺序：文字在左，图标（颜色）和类型在右
 					draw = {
 						columns = { { "label", "label_description", gap = 1 }, { "kind_icon", "kind", gap = 1 } },
+						components = {
+							kind_icon = {
+								text = function(ctx)
+									local item = ctx.item
+									local doc = item.documentation
+									if type(doc) == "table" then
+										doc = doc.value
+									end
+									-- 尝试从文档或标签中提取颜色
+									local color_item = require("nvim-highlight-colors").format(doc or item.label, { kind = "Color" })
+									if color_item and color_item.abbr and color_item.abbr ~= "" and color_item.abbr ~= "Color" then
+										return color_item.abbr .. " "
+									end
+									return ctx.kind_icon
+								end,
+								highlight = function(ctx)
+									local item = ctx.item
+									local doc = item.documentation
+									if type(doc) == "table" then
+										doc = doc.value
+									end
+									local color_item = require("nvim-highlight-colors").format(doc or item.label, { kind = "Color" })
+									if color_item and color_item.abbr_hl_group then
+										return color_item.abbr_hl_group
+									end
+									return ctx.kind_icon_hl
+								end,
+							},
+						},
 					},
 				},
 			},

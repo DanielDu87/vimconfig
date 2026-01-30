@@ -143,6 +143,7 @@ return {
 			render = "background", -- 或 'foreground' 或 'virtual'
 			enable_named_colors = true,
 			enable_tailwind = true,
+			exclude_buftypes = { "nofile", "prompt" }, -- 禁用补全菜单的高亮，解决“文字带背景”问题
 		},
 	},
 

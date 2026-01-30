@@ -100,3 +100,49 @@ vim.api.nvim_create_autocmd("FileType", {
 	end,
 })
 
+-------------------------------------------------------------------------------
+-- Tailwind CSS 自动激活逻辑
+-------------------------------------------------------------------------------
+
+-- 编辑 HTML 时，若无 tailwind 配置，则自动创建一个最简版以激活 LSP
+vim.api.nvim_create_autocmd({ "BufReadPost", "BufNewFile" }, {
+	pattern = { "*.html", "*.htm", "*.htmldjango" },
+	callback = function()
+		-- 寻找项目根目录 (优先使用 lspconfig 的 util，若未加载则回退到当前目录)
+		local root = vim.fn.getcwd()
+		local ok, lspconfig_util = pcall(require, "lspconfig.util")
+		if ok then
+			local lsp_root = lspconfig_util.root_pattern(".git", "package.json", "tailwind.config.js")(vim.api.nvim_buf_get_name(0))
+			if lsp_root then
+				root = lsp_root
+			end
+		end
+
+		local tailwind_config = root .. "/tailwind.config.js"
+
+		-- 如果配置文件不存在，则创建一个最简版本
+		if vim.fn.filereadable(tailwind_config) == 0 then
+			local content = {
+				"/** @type {import('tailwindcss').Config} */",
+				"module.exports = {",
+				"	content: [\"./**/*.{html,js,vue,jsx,tsx}\"],",
+				"	theme: {",
+				"		extend: {},",
+				"	},",
+				"	plugins: [],",
+				"}",
+			}
+			vim.fn.writefile(content, tailwind_config)
+
+			-- 提示用户（可选，若不需要静默模式可取消注释）
+			-- vim.notify("已自动生成 tailwind.config.js 以激活 Tailwind CSS 补全", vim.log.levels.INFO)
+
+			-- 重要：文件创建后，需要手动触发一次 LspStart 或重启，让 tailwindcss 意识到环境变了
+			-- 稍微延迟一点确保文件系统已同步
+			vim.defer_fn(function()
+				vim.cmd("LspStart tailwindcss")
+			end, 500)
+		end
+	end,
+})
+
