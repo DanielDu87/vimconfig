@@ -137,15 +137,19 @@ vim.api.nvim_create_autocmd({ "BufReadPost", "BufNewFile" }, {
 			-- 提示用户（可选，若不需要静默模式可取消注释）
 			-- vim.notify("已自动生成 tailwind.config.js 以激活 Tailwind CSS 补全", vim.log.levels.INFO)
 
-			-- 重要：文件创建后，需要手动触发一次 LspStart 或重启，让 tailwindcss 意识到环境变了
-			-- 稍微延迟一点确保文件系统已同步
+			-- 重要：文件创建后，需要强制重启服务器以确保它重新扫描项目根目录
+			-- 稍微延迟一点确保文件写入完成
 			vim.defer_fn(function()
-				vim.cmd("LspStart tailwindcss")
-				-- 自动重载文件以触发 LSP 附加（仅在未修改时）
-				if not vim.api.nvim_get_option_value("modified", { buf = 0 }) then
-					vim.cmd("edit")
-				end
-			end, 800)
+				-- 强制重启 tailwindcss 服务器
+				vim.cmd("LspRestart tailwindcss")
+				
+				-- 再次延迟后重载文件，确保服务器重启完成后能正确附加
+				vim.defer_fn(function()
+					if not vim.api.nvim_get_option_value("modified", { buf = 0 }) then
+						vim.cmd("edit")
+					end
+				end, 500)
+			end, 500)
 		end
 	end,
 })
