@@ -55,22 +55,19 @@
 
 | Git 功能 | 快捷键 | 使用插件 | 功能说明 |
 |---------|--------|---------|---------|
-| **状态面板** | `<leader>gc` | **vim-fugitive** | 浮动窗口显示当前 Git 状态 |
-| **规范化提交** | 在面板中按 `c` | **conventional-commits.nvim** | Conventional Commits 规范提交流程 |
-| **一键备份** | 在面板中按 `C` | **vim-fugitive** + shell | 自动暂存 + 时间戳提交 |
-| **差异查看** | `<leader>gd` | **LazyGit** (浮动) | 本地差异查看（TUI） |
-| **远程差异** | `<leader>gD` | **LazyGit** + shell | 远程差异查看（先 fetch） |
-| **全屏 Diff** | 在面板中按 `d` | **diffview.nvim** | 两侧对比查看差异 |
-| **Git 日志** | `<leader>gl` | **snacks.picker.git_log** | 提交历史 + 差异预览 |
-| **提交图** | `<leader>gg` | **snacks.terminal** | Git graph（终端浮动） |
-| **状态选择器** | `<leader>gs` | **snacks.picker.git_status** | Picker 界面选择文件 |
-| **分支切换** | `<leader>gC` | **LazyGit** (浮动) | TUI 界面切换分支 |
-| **Stash 管理** | `<leader>gS` | **LazyGit** (浮动) | TUI 界面管理 Stash |
-| **行追溯** | `<leader>gb` | **snacks.git.blame_line** | 显示当前行的 Git Blame |
-| **从远程拉取** | `<leader>gP` | **snacks.terminal** | Git pull（浮动终端） |
-| **暂存当前** | `<leader>ga` | **shell** | Git add -A |
-| **推送到远程** | `<leader>gp` | **snacks.terminal** + shell | Fetch 所有远程 + Push（浮动终端） |
-| **关闭 Diffview** | `<leader>gq` | **diffview.nvim** | 关闭差异视图 |
+| **面板（悬浮）** | `<leader>gc` | **vim-fugitive** | 浮动窗口显示当前 Git 状态 |
+| **日志（宽布局）** | `<leader>gl` | **snacks.picker.git_log** | 提交历史 + 差异预览 + Diffview 联动 |
+| **提交图** | `<leader>gg` | **snacks.terminal** | 显示 Git 树状提交图（浮动） |
+| **状态选择器** | `<leader>gs` | **snacks.picker.git_status** | Picker 界面快速选择/跳转文件 |
+| **行追溯** | `<leader>gb` | **snacks.git.blame_line** | 显示当前行的 Git Blame 详情 |
+| **差异查看** | `<leader>gd` | **LazyGit** | 本地代码差异查看（TUI 浮动） |
+| **远程差异** | `<leader>gD` | **LazyGit** | 远程代码差异查看（先自动 fetch） |
+| **分支管理** | `<leader>gC` | **LazyGit** | TUI 界面切换/创建/管理分支 |
+| **Stash 管理** | `<leader>gS` | **LazyGit** | TUI 界面管理 Git Stash |
+| **从远程拉取** | `<leader>gP` | **snacks.terminal** | 浮动终端执行 git pull |
+| **暂存当前** | `<leader>ga` | **shell** | 快速执行 git add -A (当前目录) |
+| **推送到远程** | `<leader>gp` | **snacks.terminal** | Fetch 所有远程并执行 Push |
+| **关闭 Diffview** | `<leader>gq` | **diffview.nvim** | 关闭全屏差异对比视图 |
 
 #### 3.2 Git 工作流详解
 
@@ -342,173 +339,213 @@
 
 ### 🚀 常用操作
 
-| 快捷键                     | 描述                                   |
-| :------------------------- | :------------------------------------- |
-| `<leader><space>`          | **命令面板** (查找文件、命令、符号)    |
+| 快捷键 | 描述 |
+| :--- | :--- |
+| `<leader><space>` | **命令面板** (查找文件、命令、符号) |
 | `<leader>e` / `<leader>fe` | 打开/切换 **文件资源管理器（根目录）** |
-| `<leader>cf`               | **格式化代码** (强制 Tab 缩进)         |
-| `<leader>sg` / `<leader>/` | **全局搜索** (Grep)                    |
-| `<leader>ff`               | **查找文件（根目录）**                 |
-| `<leader>fF`               | **查找文件（当前目录）**               |
-| `<leader>fg`               | **查找Git文件**                        |
-| `<leader>fb`               | **查找Buffer**                         |
-| `<leader>fB`               | **查找Buffer（所有）**                 |
-| `<leader>fr`               | **最近文件（根目录）**                 |
-| `<leader>fR`               | **最近文件（当前目录）**               |
-| `<leader>fc`               | **查找配置文件**                       |
-| `<leader>bd`               | 关闭当前缓冲区 (Buffer)                |
-| `<M-=>` / `<M-->`          | 下一个/上一个缓冲区                    |
-| `<M-q>`                    | 切换文件资源管理器                     |
+| `<leader>cf` | **格式化代码** (强制 Tab 缩进) |
+| `<leader>sg` / `<leader>/` | **全局搜索** (Grep) |
+| `<leader>ff` | **查找文件（根目录）** |
+| `<leader>fF` | **查找文件（当前目录）** |
+| `<leader>fg` | **查找Git文件** |
+| `<leader>fb` | **查找Buffer** |
+| `<leader>fB` | **查找Buffer（所有）** |
+| `<leader>fr` | **最近文件（根目录）** |
+| `<leader>fR` | **最近文件（当前目录）** |
+| `<leader>fc` | **查找配置文件** |
+| `<leader>bd` | 关闭当前缓冲区 (Buffer) |
+| `<M-=>` / `<M-->` | 下一个/上一个缓冲区 |
+| `<M-q>` | 切换文件资源管理器 |
+| `q` | 关闭当前缓冲区 (不关闭窗口，保护布局) |
+
+### 🚀 运行与预览 (Runner)
+
+| 快捷键 | 描述 |
+| :--- | :--- |
+| `<leader>rr` | **运行当前文件** (HTML/JS/Python) |
+| `<leader>rp` | **运行项目** |
+| `<leader>rl` | **查看运行日志** |
+| `<leader>rs` | **停止后台任务** |
+| `<leader>rc` | **配置当前文件运行命令** |
+| `<leader>rC` | **配置项目运行命令** |
+| `<leader>ro` | **在浏览器打开** |
+| `<leader>rb` | **配置文件浏览器URL** |
+| `<leader>rB` | **配置项目浏览器URL** |
+| `<leader>rv` | **选择 Python 虚拟环境** |
+| `<leader>rV` | **选择 TS 工作区版本** |
 
 ### 💻 终端操作 (Terminal)
 
-| 快捷键       | 描述                    |
-| :----------- | :---------------------- |
-| `<leader>tf` | **浮窗终端** 💎         |
+| 快捷键 | 描述 |
+| :--- | :--- |
+| `<leader>tf` | **浮窗终端** 💎 |
 | `<leader>th` | **竖直终端（上下）** ↕️ |
 | `<leader>tv` | **水平终端（左右）** ↔️ |
-| `<leader>tt` | **标签页终端** 📑       |
+| `<leader>tt` | **标签页终端** 📑 |
 
 ### 🐞 调试 (DAP)
 
-| 快捷键       | 描述                            |
-| :----------- | :------------------------------ |
+| 快捷键 | 描述 |
+| :--- | :--- |
 | `<leader>dt` | **切换调试界面** (自动恢复布局) |
-| `<leader>db` | 切换 **断点**（持久化）         |
-| `<leader>dB` | 设置 **条件断点**（持久化）     |
-| `<leader>dX` | **清除所有断点**（持久化）      |
-| `<leader>dc` | **开始 / 继续** (Continue)      |
-| `<leader>di` | **步入** (Step Into)            |
-| `<leader>do` | **步过** (Step Over)            |
-| `<leader>du` | **步出** (Step Out)             |
-| `<leader>dM` | **调试方法**（Python）          |
-| `<leader>dC` | **调试类**（Python）            |
-| `<leader>dp` | **切换性能分析器**              |
-| `<leader>dh` | **性能分析高亮**                |
+| `<leader>db` | 切换 **断点**（持久化） |
+| `<leader>dB` | 设置 **条件断点**（持久化） |
+| `<leader>dX` | **清除所有断点**（持久化） |
+| `<leader>dc` | **开始 / 继续** (Continue) |
+| `<leader>di` | **步入** (Step Into) |
+| `<leader>do` | **步过** (Step Over) |
+| `<leader>du` | **步出** (Step Out) |
+| `<leader>dM` | **调试方法**（Python） |
+| `<leader>dC` | **调试类**（Python） |
+| `<leader>dp` | **切换性能分析器** |
+| `<leader>dh` | **性能分析高亮** |
 
 ### 🔨 代码重构与诊断
 
-> `cr` 在 Normal 模式下打开菜单，在 Visual 模式下直接对选区操作。
-
-| 快捷键       | 描述                                     |
-| :----------- | :--------------------------------------- |
-| `<leader>c/` | **切换行注释**                           |
-| `<leader>cr` | **智能重构** (菜单 / 对选区操作)         |
-| `<leader>cn` | **跳转到指定行**                         |
-| `<leader>cR` | 带实时预览的 **重命名** (LSP)            |
-| `gl`         | **行诊断** (切换浮窗)                    |
-| `<leader>co` | **整理导入** (TypeScript/Vue)            |
-| `<leader>cu` | **删除未使用的导入** (TypeScript/Vue)    |
-| `<leader>ci` | **添加缺失导入**                         |
-| `<leader>cX` | **修复所有诊断**                         |
+| 快捷键 | 描述 |
+| :--- | :--- |
+| `<leader>c/` | **切换行注释** |
+| `<leader>cr` | **重命名** (LSP) |
+| `<leader>ca` | **代码操作** (Code Action) |
+| `<leader>cA` | **项目操作** (Source Action) |
+| `<leader>r` | **智能重构** (Visual 模式对选区操作) |
+| `<leader>cn` | **跳转到指定行** |
+| `gl` | **行诊断** (切换浮窗) |
+| `<leader>co` | **整理导入** (TypeScript/Vue) |
+| `<leader>cu` | **删除未使用的导入** (TypeScript/Vue) |
+| `<leader>ci` | **添加缺失导入** |
+| `<leader>cx` | **修复所有诊断** |
+| `<leader>cl` | **LSP信息** |
+| `<leader>cm" | **Mason插件管理** |
 
 ### 🧡 Git 操作
 
-| 快捷键       | 描述                          |
-| :----------- | :---------------------------- |
-| `<leader>gc` | **Git 状态面板**（Fugitive）  |
-| `<leader>gl` | **Git 日志**（详细视图）      |
-| `<leader>gL` | **Git 日志**（完整视图）      |
-| `<leader>gg` | **Git 提交图**                |
-| `<leader>gs` | **Git 状态**（Picker）        |
-| `<leader>gb` | **Git Blame**（行追溯）       |
-| `<leader>gd` | **本地差异**（LazyGit）       |
-| `<leader>gD` | **远程差异**（LazyGit）       |
-| `<leader>gf` | **Git 面板**（LazyGit）       |
-| `<leader>gp` | **Git 推送**（先 fetch 所有远程） |
-| `<leader>gP` | **Git 拉取**                  |
-| `<leader>ga` | **Git 暂存**                  |
-| `<leader>gC` | **Git 切换分支**（LazyGit）   |
-| `<leader>gS` | **Git Stash**（LazyGit）      |
-
-**Fugitive 状态面板内快捷键**：
-- `c` - 规范化提交（Conventional Commits）
-- `C` - 一键备份（`+YYYY-MM-DD HH:MM 备份`）
-- `a` - 全部暂存（git add -A）
-- `d` - 打开全屏 Diffview
-- `回车` - 展开/折叠差异
-- `q` - 退出
+| 快捷键 | 描述 |
+| :--- | :--- |
+| `<leader>gc` | **Git 面板**（Fugitive 悬浮） |
+| `<leader>gl` | **Git 日志**（自定义宽布局） |
+| `<leader>gg` | **Git 提交图** |
+| `<leader>gs` | **Git 状态** (Picker) |
+| `<leader>gb` | **Git Blame** (行追溯/选区追溯) |
+| `<leader>gd` | **本地差异** (LazyGit) |
+| `<leader>gD` | **远程差异** (LazyGit) |
+| `<leader>ga` | **Git 暂存** (当前目录全部) |
+| `<leader>gC` | **Git 切换分支** (LazyGit) |
+| `<leader>gS` | **Git Stash** (LazyGit) |
+| `<leader>gp` | **Git 推送** (先 fetch) |
+| `<leader>gP` | **Git 拉取** |
 
 ### 📂 文件资源管理器 (Explorer)
 
 > 在 Explorer 窗口中生效
 
-| 快捷键 | 描述                                |
-| :----- | :---------------------------------- |
-| `y`    | **复制** 文件/路径 (到剪贴板)       |
-| `x`    | **剪切** 文件                       |
-| `p`    | **粘贴** 文件 (支持自动重命名/移动) |
-| `d`    | **删除** 文件 (带确认)              |
-| `a`    | **新建** 文件/目录                  |
-| `r`    | **重命名**                          |
-| `q`    | 关闭缓冲区（不关闭窗口）            |
-| `<Esc>` | 取消多选                           |
+| 快捷键 | 描述 |
+| :--- | :--- |
+| `y` | **复制** 文件/路径 (到剪贴板) |
+| `x` | **剪切** 文件 |
+| `p` | **粘贴** 文件 (支持自动重命名/移动) |
+| `d` | **删除** 文件 (带确认) |
+| `a` | **新建** 文件/目录 |
+| `r` | **重命名** |
+| `q` | 关闭缓冲区（不关闭窗口） |
+| `<leader>H` | **切换显示隐藏文件** |
+| `<Esc>` | **取消多选/清除选择** |
 
-### 🎨 光标移动增强
+### 🎨 光标移动与编辑增强
 
-| 快捷键  | 描述                 |
-| :------ | :------------------- |
-| `<M-h>` | 跳转到行首           |
-| `<M-l>` | 跳转到行尾           |
-| `<M-z>` | 跳转到文件末尾并居中 |
-| `Option+j` | 向下移动行/选区    |
-| `Option+k` | 向上移动行/选区    |
+| 快捷键 | 描述 |
+| :--- | :--- |
+| `<M-h>` | 跳转到 **行首** |
+| `<M-l>` | 跳转到 **行尾** |
+| `<M-z>` | 跳转到 **文件末尾并居中** |
+| `<A-j>` | **向下移动** 当前行/选中区域 |
+| `<A-k>` | **向上移动** 当前行/选中区域 |
+| `<leader>k` | **DevDocs 查询** (当前单词) |
+| `<leader>K` | **DevDocs 搜索** (手动输入) |
 
 ### 🗂️ Buffer 管理
 
-| 快捷键       | 描述                       |
-| :----------- | :------------------------- |
-| `<leader>bb` | 切换到其他 Buffer          |
-| `<leader>bd` | 关闭当前 Buffer            |
-| `<leader>bh` | 上一个 Buffer              |
-| `<leader>bl` | 下一个 Buffer              |
-| `<leader>bo` | 关闭其他 Buffer            |
-| `<leader>bH` | 关闭左侧所有 Buffer        |
-| `<leader>bL` | 关闭右侧所有 Buffer        |
-| `<leader>bP` | 清理所有非固定 Buffer      |
-| `<leader>bp` | 切换固定（Pinned）          |
+| 快捷键 | 描述 |
+| :--- | :--- |
+| `<leader>bb` | 切换到 **上一个/其他 Buffer** |
+| `<leader>bd` | 关闭当前 Buffer |
+| `<leader>bh` | **上一个** Buffer |
+| `<leader>bl` | **下一个** Buffer |
+| `<leader>bo` | **关闭其他** Buffer (跳过固定) |
+| `<leader>bH` | **关闭左侧** 所有 Buffer (跳过固定) |
+| `<leader>bL` | **关闭右侧** 所有 Buffer (跳过固定) |
+| `<leader>bP` | **清理所有** 非固定 Buffer (保护侧边栏) |
+| `<leader>bp` | **切换固定** (Pinned) |
 
 ### 📜 历史记录
 
-| 快捷键       | 描述               |
-| :----------- | :----------------- |
-| `<leader>hn` | 通知历史记录      |
-| `<leader>hl` | 最后一条通知      |
-| `<leader>ha` | 所有通知          |
-| `<leader>hx` | 清除所有通知      |
-| `<leader>hc` | 命令历史          |
-| `<leader>hs` | 搜索历史          |
+| 快捷键 | 描述 |
+| :--- | :--- |
+| `<leader>hn` | **通知历史记录** |
+| `<leader>hl` | **最后一条通知** |
+| `<leader>ha` | **所有通知** |
+| `<leader>hx` | **清除所有通知** |
+| `<leader>hc` | **命令历史** |
+| `<leader>hs` | **搜索历史** |
 
 ### 📝 临时 Buffer（Scratch）
 
-| 快捷键       | 描述                   |
-| :----------- | :--------------------- |
-| `<leader>Ss` | 打开默认临时 Buffer    |
-| `<leader>Sn` | 新建命名临时 Buffer    |
-| `<leader>S.` | 切换临时 Buffer        |
-| `<leader>SS` | 选择/管理临时 Buffer   |
+| 快捷键 | 描述 |
+| :--- | :--- |
+| `<leader>Ss` | 打开 **默认临时 Buffer** |
+| `<leader>Sn` | 新建 **命名临时 Buffer** |
+| `<leader>S.` | 切换 **默认临时 Buffer** |
+| `<leader>SS` | **选择/管理** 临时 Buffer |
 
-### 🔍 其他搜索
+### 🔍 搜索与查找
 
-| 快捷键       | 描述                   |
-| :----------- | :--------------------- |
-| `<leader>sb` | 查找当前文件行         |
-| `<leader>sc` | 命令历史               |
-| `<leader>sC` | 所有命令               |
-| `<leader>sh` | 帮助文档               |
-| `<leader>sH` | 高亮组                 |
-| `<leader>si` | 图标插件               |
-| `<leader>sj` | 跳转记录               |
-| `<leader>sk` | 快捷键查看             |
-| `<leader>sl` | 位置列表               |
-| `<leader>sm` | 标记管理               |
-| `<leader>sq` | 快速修复列表           |
-| `<leader>sr` | 查找并替换             |
-| `<leader>su` | 撤销历史               |
-| `<leader>sw` | 搜索单词（项目）       |
-| `<leader>sW` | 搜索单词（目录）       |
-| `<leader>ss` | 文档符号               |
-| `<leader>sS` | 项目符号               |
+| 快捷键 | 描述 |
+| :--- | :--- |
+| `/` / `?` | **当前文件搜索** (精确匹配/列表导航) |
+| `<leader>sb` | 查找当前文件行 |
+| `<leader>sw` | 搜索单词（项目） |
+| `<leader>sW` | 搜索单词（当前目录） |
+| `<leader>sr` | 查找并替换 |
+| `<leader>su` | 撤销历史 |
+| `<leader>sm` | 标记管理 |
+| `<leader>sk` | 快捷键映射查看 |
+| `<leader>ss` | 文档符号 |
+| `<leader>sS` | 项目符号 |
+
+### 🍱 窗口管理
+
+| 快捷键 | 描述 |
+| :--- | :--- |
+| `<leader>w-` | **向下分割** 窗口 |
+| `<leader>w|` | **向右分割** 窗口 |
+| `<leader>wd` | **关闭当前** 窗口 |
+| `<leader>wh` | 切换到 **左侧** 窗口 |
+| `<leader>wj` | 切换到 **下方** 窗口 |
+| `<leader>wk` | 切换到 **上方** 窗口 |
+| `<leader>wl` | 切换到 **右侧** 窗口 |
+| `<leader>wH` | **向左移动** 窗口 |
+| `<leader>wJ` | **向下移动** 窗口 |
+| `<leader>wK` | **向上移动** 窗口 |
+| `<leader>wL` | **向右移动** 窗口 |
+| `<leader>w=` | **均衡窗口大小** |
+| `<leader>wm` | **最大化/恢复** 窗口 |
+
+### 🎨 界面开关 (Toggles)
+
+| 快捷键 | 描述 |
+| :--- | :--- |
+| `<leader>ut` | **切换透明模式** |
+| `<leader>ua` | **切换动画** |
+| `<leader>uT` | **切换标签栏** |
+| `<leader>ub` | **切换背景模式** |
+| `<leader>ud` | **切换诊断显示** |
+| `<leader>uf` | **切换自动格式化** |
+| `<leader>ug` | **切换缩进引导线** |
+| `<leader>ul` | **切换行号模式** |
+| `<leader>uz` | **切换禅模式** |
+| `<leader>uZ` | **切换缩放模式** |
+| `<leader>us` | **切换拼写检查** |
+| `<leader>uw` | **切换自动换行** |
 
 ### 🖥️ 外部工具增强 (BetterTouchTool)
 
