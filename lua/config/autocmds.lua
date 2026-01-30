@@ -141,7 +141,11 @@ vim.api.nvim_create_autocmd({ "BufReadPost", "BufNewFile" }, {
 			-- 稍微延迟一点确保文件系统已同步
 			vim.defer_fn(function()
 				vim.cmd("LspStart tailwindcss")
-			end, 500)
+				-- 自动重载文件以触发 LSP 附加（仅在未修改时）
+				if not vim.api.nvim_get_option_value("modified", { buf = 0 }) then
+					vim.cmd("edit")
+				end
+			end, 800)
 		end
 	end,
 })
