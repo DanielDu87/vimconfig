@@ -407,9 +407,9 @@ return {
 				{ "<leader>sn", desc = "which_key_ignore" },
 				{ "<leader>s/", desc = "which_key_ignore" },
 				-- 按字母分组，大小写放在一起
-				{ "<leader>b", group = "缓冲区", icon = "🗂️" },
+				{ "<leader>b", group = "缓冲区和书签", icon = "🗂️" },
+
 				{ "<leader>r", group = "运行/调试", icon = "🚀" },
-				{ "<leader>rr", desc = "运行当前文件", icon = "▶️" },
 				{ "<leader>rp", desc = "运行项目", icon = "🏗️" },
 				{ "<leader>ro", desc = "打开浏览器", icon = "🌍" },
 				{ "<leader>rl", desc = "查看日志", icon = "📋" },

@@ -141,7 +141,7 @@ end
 -- 打开运行日志窗口
 --
 function M.open_runner_log_window(initial_message)
-	require("snacks").win({
+	local win = require("snacks").win({
 		file = common_log_file,
 		show = true,
 		width = 0.7,
@@ -156,6 +156,37 @@ function M.open_runner_log_window(initial_message)
 			-- 记录日志窗口引用
 			M.active_log_win = self.win
 
+			-- 设置快捷键映射的函数
+			local function setup_keys()
+				if not vim.api.nvim_buf_is_valid(self.buf) then
+					return
+				end
+				-- 清除旧的映射（如果存在）
+				pcall(vim.api.nvim_buf_del_keymap, self.buf, "n", "q")
+				pcall(vim.api.nvim_buf_del_keymap, self.buf, "n", "<Esc>")
+				-- 设置新的映射
+				vim.api.nvim_buf_set_keymap(self.buf, "n", "q", "<Cmd>lua vim.api.nvim_win_close(0, true)<CR>", {
+					nowait = true,
+					silent = true,
+				})
+				vim.api.nvim_buf_set_keymap(self.buf, "n", "<Esc>", "<Cmd>lua vim.api.nvim_win_close(0, true)<CR>", {
+					nowait = true,
+					silent = true,
+				})
+			end
+
+			-- 立即设置一次
+			setup_keys()
+
+			-- 创建自动命令组，确保每次进入缓冲区时重新设置键映射
+			local augroup = vim.api.nvim_create_augroup("RunnerLogKeys", { clear = false })
+			vim.api.nvim_clear_autocmds({ group = augroup, buffer = self.buf })
+			vim.api.nvim_create_autocmd("BufEnter", {
+				group = augroup,
+				buffer = self.buf,
+				callback = setup_keys,
+			})
+
 			vim.schedule(function()
 				if not vim.api.nvim_buf_is_valid(self.buf) then
 					return
@@ -169,7 +200,7 @@ function M.open_runner_log_window(initial_message)
 				-- 每次打开窗口时，清空文件并写入分隔符
 				local f = io.open(common_log_file, "w")
 				if f then f:close() end -- 清空文件
-				
+
 				M.write_separator() -- 写入分隔符
 
 				-- 写入初始消息
@@ -189,6 +220,9 @@ function M.open_runner_log_window(initial_message)
 							return
 						end
 						vim.cmd("checktime")
+
+						-- checktime 后重新设置键映射
+						setup_keys()
 
 						-- 检查是否有需要自动滚动的任务
 						local should_scroll = false
@@ -211,7 +245,6 @@ function M.open_runner_log_window(initial_message)
 				)
 			end)
 		end,
-		keys = { q = "close", ["<esc>"] = "close" },
 	})
 end
 
@@ -272,8 +305,9 @@ end
 -- 获取浏览器打开命令 (带回退机制)
 --
 function M.get_browser_cmd(url)
-	-- 使用 Dia.app 作为默认浏览器
-	local cmd = string.format('open -a "/Applications/Dia.app" "%s"', url)
+	-- 使用全局变量定义的浏览器路径
+	local browser = vim.g.browser_path or "/Applications/Arc.app"
+	local cmd = string.format('open -a "%s" "%s"', browser, url)
 	return cmd
 end
 
@@ -663,6 +697,16 @@ return {
 							-- 记录日志窗口引用
 							M.active_log_win = self.win
 
+							-- 设置快捷键映射 - 使用 Lua API 直接关闭窗口
+							vim.api.nvim_buf_set_keymap(self.buf, "n", "q", "<Cmd>lua vim.api.nvim_win_close(0, true)<CR>", {
+								nowait = true,
+								silent = true,
+							})
+							vim.api.nvim_buf_set_keymap(self.buf, "n", "<Esc>", "<Cmd>lua vim.api.nvim_win_close(0, true)<CR>", {
+								nowait = true,
+								silent = true,
+							})
+
 							vim.schedule(function()
 								if not vim.api.nvim_buf_is_valid(self.buf) then
 									return
@@ -710,7 +754,6 @@ return {
 							)
 						end)
 					end,
-					keys = { q = "close", ["<esc>"] = "close" },
 					})
 				end,
 				desc = "日志",

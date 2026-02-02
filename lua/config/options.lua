@@ -84,8 +84,8 @@ vim.opt.wrap = true
 -- 全局自定义变量
 --==============================================================================
 
--- 指定默认浏览器路径 (Dia.app)
-vim.g.browser_path = "/Applications/Dia.app"
+-- 指定默认浏览器路径 (Arc.app)
+vim.g.browser_path = "/Applications/Arc.app"
 
 --==============================================================================
 -- LSP Configuration
