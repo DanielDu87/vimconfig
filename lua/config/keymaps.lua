@@ -176,7 +176,7 @@ vim.keymap.set("v", "<A-k>", ":m '<-2<CR>gv=gv", { desc = "向上移动选中区
 -- 跳转到指定行
 --==============================================================================
 vim.keymap.set("n", "<leader>cn", function()
-	vim.ui.input({ prompt = "跳转到行号：", default = tostring(vim.api.nvim_win_get_cursor(0)[1]) }, function(input)
+	vim.ui.input({ prompt = "跳转到第n行：" }, function(input)
 		if not input or #input == 0 then
 			return
 		end
