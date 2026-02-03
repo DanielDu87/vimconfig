@@ -1,5 +1,5 @@
 --==============================================================================
--- 主题配置 - Tokyo Night 透明 + 自动保存主题选择
+-- 主题配置 - Tokyo Night / Solarized 透明 + 自动保存主题选择
 --==============================================================================
 -- 根据 LazyVim 官方文档配置主题
 -- https://lazyvim.github.io/plugins/colorscheme
@@ -84,6 +84,55 @@ return {
 				hl.VertSplit = { fg = "#565f89" } 
 			end,
 		},
+	},
+
+	-- Solarized 主题配置
+	{
+		"svrana/neosolarized.nvim",
+		lazy = false,
+		priority = 1000,
+		dependencies = { "tjdevries/colorbuddy.nvim" },
+		config = function()
+			vim.o.background = "dark"
+			require("neosolarized").setup({
+				comment_italics = true,
+				background_set = false, -- 透明背景
+			})
+		end,
+		init = function()
+			-- 在 neosolarized 主题加载后设置透明
+			vim.api.nvim_create_autocmd("ColorScheme", {
+				pattern = "neosolarized",
+				callback = function()
+					-- 浮动窗口透明
+					vim.api.nvim_set_hl(0, "NormalFloat", { bg = "NONE" })
+					vim.api.nvim_set_hl(0, "FloatBorder", { bg = "NONE" })
+					-- 文件浏览器透明
+					vim.api.nvim_set_hl(0, "SnacksExplorer", { bg = "NONE" })
+					vim.api.nvim_set_hl(0, "SnacksExplorerTitle", { bg = "NONE" })
+					-- 状态栏和标签栏透明
+					vim.api.nvim_set_hl(0, "StatusLine", { bg = "NONE" })
+					vim.api.nvim_set_hl(0, "StatusLineNC", { bg = "NONE" })
+					vim.api.nvim_set_hl(0, "TabLine", { bg = "NONE" })
+					vim.api.nvim_set_hl(0, "TabLineFill", { bg = "NONE" })
+					vim.api.nvim_set_hl(0, "WinBar", { bg = "NONE" })
+					vim.api.nvim_set_hl(0, "WinBarNC", { bg = "NONE" })
+					-- WhichKey 菜单透明
+					vim.api.nvim_set_hl(0, "WhichKeyFloat", { bg = "NONE" })
+					vim.api.nvim_set_hl(0, "WhichKeyBorder", { bg = "NONE" })
+					vim.api.nvim_set_hl(0, "WhichKeyTitle", { bg = "NONE" })
+					vim.api.nvim_set_hl(0, "WhichKeyGroup", { bg = "NONE" })
+					vim.api.nvim_set_hl(0, "WhichKeySeparator", { bg = "NONE" })
+					vim.api.nvim_set_hl(0, "WhichKeyValue", { bg = "NONE" })
+					vim.api.nvim_set_hl(0, "WhichKeyIcon", { bg = "NONE" })
+					vim.api.nvim_set_hl(0, "WhichKeyDesc", { bg = "NONE" })
+					-- Snacks WhichKey 透明（LazyVim 使用 Snacks.nvim 的 WhichKey）
+					vim.api.nvim_set_hl(0, "SnacksPicker", { bg = "NONE" })
+					vim.api.nvim_set_hl(0, "SnacksPickerBorder", { bg = "NONE" })
+					vim.api.nvim_set_hl(0, "SnacksPickerTitle", { bg = "NONE" })
+				end,
+			})
+		end,
 	},
 
 	-- 配置 LazyVim 默认颜色方案（支持持久化）
