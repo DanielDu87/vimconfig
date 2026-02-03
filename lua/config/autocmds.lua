@@ -11,6 +11,65 @@
 -- 注意：启动时自动打开 Explorer 的配置已移至 lua/plugins/explorer.lua
 
 -------------------------------------------------------------------------------
+-- 全局透明背景配置（所有主题通用）
+-------------------------------------------------------------------------------
+
+-- 透明设置函数
+local function apply_transparency()
+	local highlights = {
+		-- 浮动窗口
+		"NormalFloat", "FloatBorder",
+		-- 文件浏览器
+		"SnacksExplorer", "SnacksExplorerTitle",
+		-- 状态栏和标签栏
+		"StatusLine", "StatusLineNC", "TabLine", "TabLineFill", "WinBar", "WinBarNC",
+		-- WhichKey 菜单
+		"WhichKeyFloat", "WhichKeyBorder", "WhichKeyTitle", "WhichKeyGroup",
+		"WhichKeySeparator", "WhichKeyValue", "WhichKeyIcon", "WhichKeyDesc",
+		-- Snacks Picker
+		"SnacksPicker", "SnacksPickerBorder", "SnacksPickerTitle",
+		-- 其他常见 UI 元素
+		"Pmenu", "PmenuSel", "PmenuSbar", "PmenuThumb",
+		"TelescopeNormal", "TelescopeBorder", "TelescopeTitle",
+		"LazyNormal", "LazyButton",
+		"MasonNormal", "MasonHeader",
+		"NoiceCmdlinePopup", "NoiceCmdlinePopupBorder", "NoicePopup", "NoicePopupBorder",
+	}
+	for _, name in ipairs(highlights) do
+		vim.api.nvim_set_hl(0, name, { bg = "NONE", force = true })
+	end
+end
+
+-- 延迟应用透明（多次尝试确保覆盖主题设置）
+local function apply_transparency_delayed()
+	local delays = { 0, 10, 50, 100 } -- 多个延迟时间
+	for _, delay in ipairs(delays) do
+		vim.defer_fn(apply_transparency, delay)
+	end
+end
+
+-- 当开启透明模式时，自动应用透明设置到任何主题
+if vim.g.transparent_enabled then
+	-- 主题加载后应用（多次延迟确保生效）
+	vim.api.nvim_create_autocmd("ColorScheme", {
+		callback = function()
+			apply_transparency_delayed()
+		end,
+	})
+	-- User 主题配置加载后再应用一次
+	vim.api.nvim_create_autocmd("User", {
+		pattern = "LazyVimThemeChanged",
+		callback = function()
+			apply_transparency_delayed()
+		end,
+	})
+	-- 启动时应用
+	vim.defer_fn(function()
+		apply_transparency()
+	end, 100)
+end
+
+-------------------------------------------------------------------------------
 -- 文件类型检测
 -------------------------------------------------------------------------------
 
