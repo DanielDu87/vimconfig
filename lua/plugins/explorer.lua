@@ -275,16 +275,20 @@ return {
 							end
 
 							if not has_explorer then
-								-- 检测是否有文件参数
+								-- 检测是否有文件参数，并获取第一个文件所在目录
 								local has_file_arg = false
+								local file_dir = nil
 								for _, a in ipairs(vim.fn.argv()) do
 									if not vim.startswith(a, "-") and vim.fn.isdirectory(a) == 0 and a ~= "" then
 										has_file_arg = true
+										file_dir = vim.fn.fnamemodify(a, ":p:h")
 										break
 									end
 								end
 
-								local root = vim.g.root_dir
+								-- 优先使用文件所在目录，否则使用 root_dir
+								local root = file_dir
+									or vim.g.root_dir
 									or (_G.LazyVim and _G.LazyVim.root and _G.LazyVim.root.get and _G.LazyVim.root.get())
 									or vim.fn.getcwd()
 								Snacks.explorer.open({ cwd = root })
