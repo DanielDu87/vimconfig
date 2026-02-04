@@ -253,6 +253,14 @@ return {
 						if os.getenv("NVIM_GIT_MODE") then
 							return
 						end
+
+						-- 如果参数中包含远程文件（scp:// 等），则不自动打开 Explorer，防止崩溃
+						for _, arg in ipairs(vim.fn.argv()) do
+							if type(arg) == "string" and arg:match("^[a-z]+://") then
+								return
+							end
+						end
+
 						vim.schedule(function()
 							local ok, Snacks = pcall(require, "snacks")
 							if not ok or not Snacks.explorer then
@@ -381,6 +389,12 @@ return {
 			vim.api.nvim_create_autocmd("BufWinEnter", {
 				group = vim.api.nvim_create_augroup("SnacksExplorerQKey", { clear = true }),
 				callback = function(ev)
+					-- 如果是远程文件，忽略
+					local bufname = vim.api.nvim_buf_get_name(ev.buf)
+					if bufname:match("^[a-z]+://") then
+						return
+					end
+
 					-- 只对普通文件生效
 					local buftype = vim.bo[ev.buf].buftype
 					local filetype = vim.bo[ev.buf].filetype
