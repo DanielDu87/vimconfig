@@ -71,6 +71,8 @@ return {
 			opts.picker.sources.explorer.win.list.keys["x"] = { "explorer_cut", mode = { "n", "x" } }
 			-- 设置 Esc 键映射到取消多选 (针对 explorer 源)
 			opts.picker.sources.explorer.win.list.keys["<Esc>"] = { "list_clear_selected", mode = { "n" } }
+			-- 设置 n 键映射到新建操作
+			opts.picker.sources.explorer.win.list.keys["n"] = "explorer_add"
 
 			-- 参考: https://github.com/folke/snacks.nvim/discussions/2139
 			opts.picker.sources.explorer.layout = function()
