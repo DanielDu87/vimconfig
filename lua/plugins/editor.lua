@@ -1357,6 +1357,15 @@ return {
 			-- 快捷搜索：/ 和 ?
 			{ "/", snacks_lines, desc = "当前文件搜索", mode = { "n", "v" } },
 			{ "?", snacks_lines, desc = "当前文件搜索", mode = { "n", "v" } },
+
+			-- 标签页操作
+			{ "<leader><tab>n", "<cmd>tabnext<cr>", desc = "下一个标签页" },
+			{ "<leader><tab>p", "<cmd>tabprevious<cr>", desc = "上一个标签页" },
+			{ "<leader><tab>f", "<cmd>tabfirst<cr>", desc = "第一个标签页" },
+			{ "<leader><tab>l", "<cmd>tablast<cr>", desc = "最后一条标签页" },
+			{ "<leader><tab>d", "<cmd>tabclose<cr>", desc = "关闭标签页" },
+			{ "<leader><tab>o", "<cmd>tabonly<cr>", desc = "关闭其他标签页" },
+			{ "<leader><tab><tab>", "<cmd>tabnew<cr>", desc = "新建标签页" },
 		},
 		opts = function(_, opts)
 			-- 辅助函数：确保返回整数
