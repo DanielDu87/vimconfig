@@ -158,6 +158,7 @@ return {
 			{ "<leader>th", function() vim.g.gemini_toggle_term("horizontal") end, desc = "竖直终端（上下）" },
 			{ "<leader>tv", function() vim.g.gemini_toggle_term("vertical") end, desc = "水平终端（左右）" },
 			{ "<leader>tt", function() vim.g.gemini_toggle_term("tab") end, desc = "标签页终端" },
+			{ "<leader>tn", function() require("util.templates").generate_file() end, desc = "根据模板新建文件" },
 			-- 将 Ctrl-\ 映射放在这里
 			{
 				"<C-\\>",
