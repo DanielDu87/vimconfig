@@ -59,7 +59,7 @@ return {
 			insert_mappings = true, -- 在插入模式下也映射
 			terminal_mappings = true, -- 在终端模式下映射
 			persist_size = true,
-			persist_mode = true,
+			persist_mode = false, -- 不保存模式状态，始终以插入模式打开
 			-- direction = "float", -- 不要设置默认方向，让每个终端独立指定
 			close_on_exit = true, -- 退出时关闭
 			-- 使用登录 shell，自动加载 ~/.zprofile、~/.zshrc、~/.shrc 等配置
@@ -73,6 +73,62 @@ return {
 				},
 			},
 		},
+		config = function(_, opts)
+			require("toggleterm").setup(opts)
+
+			-- 确保终端始终处于插入模式
+			local augroup = vim.api.nvim_create_augroup("ToggleTermInsert", { clear = true })
+
+			-- 终端打开时的初始化
+			vim.api.nvim_create_autocmd("TermOpen", {
+				group = augroup,
+				callback = function()
+					vim.cmd("startinsert")
+					-- 禁用终端的 Neovim 鼠标处理，让终端程序直接处理鼠标
+					vim.opt_local.mouse = ""
+					vim.opt_local.modifiable = false
+				end,
+			})
+
+			-- 进入终端缓冲区时自动进入插入模式
+			vim.api.nvim_create_autocmd("BufEnter", {
+				group = augroup,
+				callback = function()
+					if vim.bo.buftype == "terminal" then
+						vim.cmd("startinsert")
+					end
+				end,
+			})
+
+			-- 切换到终端窗口时自动进入插入模式
+			vim.api.nvim_create_autocmd("WinEnter", {
+				group = augroup,
+				callback = function()
+					if vim.bo.buftype == "terminal" then
+						vim.cmd("startinsert")
+					end
+				end,
+			})
+
+			-- 终端获得焦点时（鼠标点击或其他方式）自动进入插入模式
+			vim.api.nvim_create_autocmd("TermEnter", {
+				group = augroup,
+				callback = function()
+					vim.cmd("startinsert")
+				end,
+			})
+
+			-- 在终端内检测模式变化，强制切回插入模式
+			vim.api.nvim_create_autocmd("ModeChanged", {
+				group = augroup,
+				pattern = "*:n", -- 从任何模式切换到普通模式时
+				callback = function()
+					if vim.bo.buftype == "terminal" then
+						vim.cmd("startinsert")
+					end
+				end,
+			})
+		end,
 		keys = {
 			-- 终端操作快捷键（统一到 <leader>t 菜单）
 			-- 所有终端共享同一个实例，打开新的会关闭旧的
