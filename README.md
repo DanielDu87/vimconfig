@@ -36,6 +36,70 @@
 - **丰富预设**：涵盖 Docker (Dockerfile/Compose)、前端 (HTML5/React/Vue)、后端 (FastAPI/Express/CLI) 等。
 - **智能变量填充**：自动注入文件名、日期、时间、当前用户、项目名称。
 
+### 5. ⚡️ 统一运行中心 (Runner)
+
+- **异步执行**：自定义后台引擎 (`lua/plugins/runner.lua`)，不阻塞编辑器。
+- **日志 Tail**：专用 `runnerlog` 窗口，支持错误高亮、URL 识别和自动滚动。
+- **多语言支持**：
+    - **HTML**: 自动启动 `browser-sync` 并打开浏览器预览。
+    - **Python**: 自动检测 VirtualEnv 并执行，支持无缓存运行。
+    - **JavaScript**: 使用 Node.js 直接执行。
+- **资源管理**：`<leader>rs` 强力终止所有相关后台任务，并自动清理占用端口。
+
+### 6. 🔖 简单书签系统 (Bookmarks)
+
+- **持久化记录**：书签保存至 `~/bookmarks.json`。
+- **视觉反馈**：SignColumn 显示 `🔖` 图标，支持 `[` / `]` + `m` 快速跳转。
+- **快速搜索**：`'`（单引号）一键搜索并预览所有书签。
+
+## 🌐 语言支持矩阵 (Languages & Tools)
+
+本配置为核心开发语言提供了完整的**LSP (智能提示)**、**Linter (代码检查)**、**Formatter (代码格式化)** 和 **DAP (调试)** 支持。
+
+| 语言/文件 | LSP Server | Linter (检查) | Formatter (格式化) | Debugger (调试) | 备注 |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Python** | `pyright` | `ruff` | `isort` + `black` | `debugpy` | 虚拟环境自动检测 |
+| **TypeScript** | `vtsls` | `eslint` | `eslint_d` + `prettier` | `js-debug` | 支持 organize imports |
+| **JavaScript** | `ts_ls` | `eslint` | `eslint_d` + `prettier` | `js-debug` | |
+| **Vue** | `vtsls` | `eslint` | `eslint_d` + `prettier` | `js-debug` | 混合模式支持 |
+| **HTML** | `html` | `htmlhint` | `prettier` | `browser-sync` | 保存时自动刷新 |
+| **Django Tpl**| `djlsp` | `djlint` | `djlint` | - | 强力模板语法检查 |
+| **CSS/SCSS** | `cssls` | `stylelint` | `stylelint` + `prettier` | - | 颜色实时预览 |
+| **JSON/YAML**| `jsonls`... | - | `prettier` | - | |
+| **Markdown** | `marksman` | `markdownlint` | `prettier` | - | |
+| **Docker** | `dockerls` | `hadolint` | `docker_uppercase` | - | 指令强制大写 |
+| **SQL** | - | - | `sql_formatter` | - | 关键字大写 |
+| **Lua** | `lua_ls` | - | `stylua` | - | 配置开发专用 |
+| **Shell** | `bashls` | - | `shfmt` | - | |
+
+> **格式化说明**：所有语言默认强制使用 **Tab 缩进 (宽度 4)**，并在保存时自动触发格式化。
+
+## 🔌 核心功能详细介绍
+
+### 🐞 智能调试 (DAP)
+- **核心组件**：`nvim-dap` + `nvim-dap-ui`。
+- **持久化布局**：调试面板（控制台、堆栈、变量）的尺寸调整后会自动保存，下次启动时瞬间恢复，无视觉跳变。
+- **断点管理**：使用 `persistent-breakpoints.nvim`，断点在关闭编辑器后依然保留。
+- **快捷键**：
+    - `<leader>dt`: 切换调试界面
+    - `<leader>db`: 切换断点
+    - `<leader>dc`: 开始/继续
+    - `<leader>di/o/u`: 步入/步过/步出
+
+### 🛠 代码质量与格式化
+- **实时诊断**：使用 `nvim-lint` 提供毫秒级的代码检查，配合 `tiny-inline-diagnostic` 在行内显示美观的错误提示。
+- **统一格式化**：使用 `conform.nvim` 接管所有格式化请求。
+    - **Python**: 优先使用 `brew` 安装的 `black` 以获得极致速度。
+    - **Docker**: 自定义 Perl 脚本将 `FROM`, `RUN` 等指令强制转为大写。
+    - **SQL**: 强制关键字大写，保持 SQL 风格统一。
+
+### 📂 增强型文件管理 (Explorer)
+- **Snacks Explorer**：采用现代化的侧边栏布局。
+- **智能操作**：
+    - `x` / `y` / `p`: 支持 Windows 风格的剪切/复制/粘贴。
+    - **冲突处理**：粘贴时若文件名冲突，自动重命名（如 `file~1.txt`）。
+    - **宽度记忆**：侧边栏宽度调整后自动保存。
+
 ---
 
 ## ⌨️ 快捷键大全 (Keymaps)
