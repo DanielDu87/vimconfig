@@ -28,22 +28,17 @@ local function pre_process_template(content, vars)
 end
 
 --==============================================================================
--- 专业模板定义
+-- 专业模板定义 (单行紧凑头信息)
 --==============================================================================
 M.templates = {
 	{
-		name = "Python: 基础标准模板",
+		name = "Python: 基础标准模板 (单行头)",
 		filename = "main.py",
 		text = "python python3 main.py",
 		content = [[
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-#
-# @File    : ${FILENAME}
-# @Time    : ${DATE} ${TIME}
-# @Author  : ${USER}
-# @.claude/PROJECT_CONTEXT.md : ${PROJECT}
-
+# @File: ${FILENAME} | @Time: ${DATE} ${TIME} | @Author: ${USER} | @Context: ${PROJECT}
 
 ${0}
 
@@ -52,40 +47,29 @@ if __name__ == "__main__":
 ]],
 	},
 	{
-		name = "JavaScript: 标准基础模板",
+		name = "JavaScript: 标准基础模板 (单行头)",
 		filename = "index.js",
 		text = "javascript js node index.js",
 		content = [[
-/**
- * @File    : ${FILENAME}
- * @Time    : ${DATE} ${TIME}
- * @Author  : ${USER}
- * @.claude/PROJECT_CONTEXT.md : ${PROJECT}
- */
-
+/** @File: ${FILENAME} | @Time: ${DATE} ${TIME} | @Author: ${USER} | @Context: ${PROJECT} */
 'use strict';
 
 ${0}
 ]],
 	},
 	{
-		name = "Python: FastAPI 基础结构",
+		name = "Python: FastAPI 基础结构 (单行头)",
 		filename = "app.py",
 		text = "python fastapi app.py web",
 		content = [[
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-#
-# @File    : ${FILENAME}
-# @Time    : ${DATE} ${TIME}
-# @Author  : ${USER}
-# @.claude/PROJECT_CONTEXT.md : ${PROJECT}
+# @File: ${FILENAME} | @Time: ${DATE} ${TIME} | @Author: ${USER} | @Context: ${PROJECT}
 
 from fastapi import FastAPI
 import uvicorn
 
 app = FastAPI(title="API项目")
-
 
 ${0}
 
@@ -110,20 +94,17 @@ function M.generate_file()
 		title = " 选择文件模板 ",
 		items = M.templates,
 		layout = "default",
-		-- 自定义预览逻辑：将模板字符串渲染到预览窗口
 		preview = function(ctx)
 			local item = ctx.item
 			if not item or not item.content then return end
 			
-			-- 模拟预填充后的内容
 			local vars = get_vars(item.filename)
 			local preview_content = pre_process_template(item.content, vars)
-			preview_content = preview_content:gsub("${0}", "󰚩") -- 在预览中显示光标位置 (使用机器人图标)
+			preview_content = preview_content:gsub("${0}", "󰚩")
 			
 			local lines = vim.split(preview_content, "\n")
 			ctx.preview:set_lines(lines)
 			
-			-- 设置语法高亮
 			local ft = item.filename:match("%.(%w+)$")
 			ctx.preview:highlight({ ft = ft })
 		end,
@@ -148,17 +129,14 @@ function M.generate_file()
 					return
 				end
 
-				-- 1. 获取变量并执行预处理
 				local vars = get_vars(input)
 				local final_content = pre_process_template(item.content, vars)
 
-				-- 2. 创建文件并打开
 				local f = io.open(input, "w")
 				if f then
 					f:close()
 					vim.cmd("edit " .. vim.fn.fnameescape(input))
 					
-					-- 3. 使用 Snippet 展开
 					if ok_ls then
 						vim.cmd("startinsert")
 						vim.schedule(function()
