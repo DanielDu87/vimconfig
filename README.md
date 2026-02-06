@@ -1,3 +1,5 @@
+
+
 # Neovim 深度定制配置 (基于 LazyVim)
 
 本仓库包含一份基于 [LazyVim](https://www.lazyvim.org/) 构建的高级 **Neovim 配置文件**。它专为全栈开发（TypeScript, Vue, Python, Docker）量身定制，核心理念是**高性能**、**视觉透明化**以及**极致的中文本地化体验**。
