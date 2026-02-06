@@ -7,6 +7,14 @@
 -- 3. Snacks.nvim 核心组件配置 (Picker, Explorer, Scratch)
 
 --==============================================================================
+-- 窗口大小保存系统初始化
+--==============================================================================
+-- 延迟初始化，确保 Neovim 完全启动
+vim.defer_fn(function()
+	require("util.window_sizes").setup()
+end, 0)
+
+--==============================================================================
 -- 1. 快捷键深度定制
 --==============================================================================
 -- 我们在 LazyVim 加载完默认键位后，通过 autocmd 进行精准覆盖
@@ -587,6 +595,7 @@ return {
 				{ "<leader>wL", desc = "向右移动窗口", icon = "▶️" },
 				{ "<leader>w=", desc = "均衡窗口大小", icon = "📏" },
 				{ "<leader>wm", desc = "最大化/恢复窗口", icon = "🔍" },
+				{ "<leader>wr", desc = "调整窗口大小", icon = "📐" },
 				{ "<leader>ww", desc = "切换到其他窗口", icon = "🔁", remap = true },
 				{ "[", group = "上一个", icon = "⬆️" },
 				{ "]", group = "下一个", icon = "⬇️" },
@@ -1004,6 +1013,167 @@ return {
 					require("snacks").toggle.zoom()
 				end,
 				desc = "最大化/恢复窗口",
+			},
+			{
+				"<leader>wr",
+				function()
+					-- 智能调整窗口大小：自动检测窗口类型并调整尺寸
+					local win = vim.api.nvim_get_current_win()
+					local win_config = vim.api.nvim_win_get_config(win)
+					local is_float = win_config.relative ~= "" -- 浮窗
+
+					if is_float then
+						vim.notify("浮窗暂不支持通过此方式调整大小", vim.log.levels.WARN)
+						return
+					end
+
+					-- 检测窗口是水平分割还是垂直分割
+					local win_width = vim.api.nvim_win_get_width(win)
+					local win_height = vim.api.nvim_win_get_height(win)
+
+					-- 获取所有窗口信息判断分割类型
+					local windows = vim.api.nvim_list_wins()
+					local has_vertical_neighbor = false -- 是否有左右邻居（垂直分割）
+					local has_horizontal_neighbor = false -- 是否有上下邻居（水平分割）
+
+					local win_row = vim.api.nvim_win_get_position(win)[1]
+					local win_col = vim.api.nvim_win_get_position(win)[2]
+
+					for _, w in ipairs(windows) do
+						if w ~= win then
+							local w_pos = vim.api.nvim_win_get_position(w)
+							local w_row = w_pos[1]
+							local w_col = w_pos[2]
+							local w_height = vim.api.nvim_win_get_height(w)
+							local w_width = vim.api.nvim_win_get_width(w)
+
+							-- 检查是否有重叠的行（左右邻居）
+							if not (win_row + win_height <= w_row or win_row >= w_row + w_height) then
+								has_vertical_neighbor = true
+							end
+							-- 检查是否有重叠的列（上下邻居）
+							if not (win_col + win_width <= w_col or win_col >= w_col + w_width) then
+								has_horizontal_neighbor = true
+							end
+						end
+					end
+
+					-- 根据分割类型预设不同的推荐尺寸
+					local function prompt_size(prompt, default, max_val)
+						local opts = {
+							prompt = prompt,
+							default = tostring(default),
+							completion = "number",
+						}
+						vim.ui.input(opts, function(input)
+							if not input then
+								return
+							end
+							local num = tonumber(input)
+							if num and num > 0 and num <= max_val then
+								return num
+							end
+						end)
+					end
+
+					if has_vertical_neighbor and not has_horizontal_neighbor then
+						-- 纯垂直分割，调整宽度
+						local current = win_width
+						local max_cols = vim.o.columns
+						local default = math.floor(max_cols * 0.5)
+						vim.ui.input({
+							prompt = string.format("设置窗口宽度 (当前 %d，最大 %d): ", current, max_cols),
+							default = tostring(default),
+							completion = "number",
+						}, function(input)
+							if not input then
+								return
+							end
+							local width = tonumber(input)
+							if width and width > 0 and width <= max_cols then
+								vim.api.nvim_win_set_width(win, width)
+								-- 保存窗口大小
+								require("util.window_sizes").save_current_size()
+							end
+						end)
+					elseif has_horizontal_neighbor and not has_vertical_neighbor then
+						-- 纯水平分割，调整高度
+						local current = win_height
+						local max_lines = vim.o.lines
+						local default = math.floor(max_lines * 0.4)
+						vim.ui.input({
+							prompt = string.format("设置窗口高度 (当前 %d，最大 %d): ", current, max_lines),
+							default = tostring(default),
+							completion = "number",
+						}, function(input)
+							if not input then
+								return
+							end
+							local height = tonumber(input)
+							if height and height > 0 and height <= max_lines then
+								vim.api.nvim_win_set_height(win, height)
+								-- 保存窗口大小
+								require("util.window_sizes").save_current_size()
+							end
+						end)
+					else
+						-- 混合分割或只有一个窗口
+						if #windows > 1 then
+							-- 混合分割，让用户选择
+							vim.ui.select({
+								{ text = "宽度", value = "width" },
+								{ text = "高度", value = "height" },
+							}, {
+								prompt = "选择要调整的维度：",
+								format_item = function(item)
+									return item.text
+								end,
+							}, function(choice)
+								if not choice then
+									return
+								end
+								if choice.value == "width" then
+									local current = win_width
+									local max_cols = vim.o.columns
+									vim.ui.input({
+										prompt = string.format("设置窗口宽度 (当前 %d，最大 %d): ", current, max_cols),
+										default = tostring(current),
+										completion = "number",
+									}, function(input)
+										if not input then
+											return
+										end
+										local width = tonumber(input)
+										if width and width > 0 and width <= max_cols then
+											vim.api.nvim_win_set_width(win, width)
+											-- 保存窗口大小
+											require("util.window_sizes").save_current_size()
+										end
+									end)
+								else
+									local current = win_height
+									local max_lines = vim.o.lines
+									vim.ui.input({
+										prompt = string.format("设置窗口高度 (当前 %d，最大 %d): ", current, max_lines),
+										default = tostring(current),
+										completion = "number",
+									}, function(input)
+										if not input then
+											return
+										end
+										local height = tonumber(input)
+										if height and height > 0 and height <= max_lines then
+											vim.api.nvim_win_set_height(win, height)
+											-- 保存窗口大小
+											require("util.window_sizes").save_current_size()
+										end
+									end)
+								end
+							end)
+						end
+					end
+				end,
+				desc = "调整窗口大小",
 			},
 
 			-- Git 增强映射 (中文化覆盖)
