@@ -11,11 +11,11 @@ This directory contains a highly customized **Neovim configuration** built on to
 
 ### 🚀 Key Features
 
-*   **Window & Layout Persistence:** Automatically saves and precisely restores all split window sizes, Snacks Explorer width, and DAP UI manual adjustments across sessions. Use `<leader>wr` to trigger smart resizing and saving.
-*   **AI-Powered Coding:** Full GitHub Copilot integration with Ghost Text support. Use `Tab` to accept suggestions and `<M-CR>` to open the multi-suggestion panel.
-*   **Smart Completion (Blink.cmp):** High-performance completion with support for color/icon previews, snippet expansion (LuaSnip), and mixed source ranking (LSP, Path, Buffer).
-*   **Dynamic Template System:** Scaffold files instantly with `<leader>tn`. Includes professional templates for Docker, React, Vue, FastAPI, and common config files with auto-filling variables.
-*   **Unified Runner Center:** Custom background execution engine for HTML, JS, and Python with real-time tail logging and specialized syntax highlighting.
+*   **Window & Layout Persistence:** Automatically saves and precisely restores split window sizes, Snacks Explorer width, and DAP UI manual adjustments. Use `<leader>wr` to trigger smart resizing and persistent saving.
+*   **AI-Powered Coding (GitHub Copilot):** Full integration with Ghost Text support. Use `Tab` to accept suggestions and `<M-CR>` to open the multi-suggestion interaction panel.
+*   **Custom Completion (Blink.cmp):** High-performance Rust-based completion engine. Includes **CSS color previews**, Tailwind class colors, icons, and mixed-source ranking (LSP, Snippets, Path, Buffer).
+*   **Dynamic Template System:** Scaffold files instantly with `<leader>tn`. Includes professional templates for **Docker**, **React/Vue**, **FastAPI/Express**, and standard configs with auto-injecting variables (Date, User, Project).
+*   **Unified Runner Center:** Custom background execution engine for HTML, JS, and Python with real-time tail logging and specialized `runnerlog` syntax highlighting.
 *   **Simple Bookmark System:** Persistent bookmarks with sign column icons (`🔖`) and searchable lists via `Snacks.picker`.
 *   **Intelligent Explorer:** Enhanced file operations (Cut/Copy/Paste/Delete) with conflict detection and Windows-style behavior.
 
@@ -28,14 +28,14 @@ This directory contains a highly customized **Neovim configuration** built on to
 │   │   ├── autocmds.lua        # Persistence, Runner highlights, Tailwind auto-init
 │   │   ├── keymaps.lua         # General keybindings (Runner, Marks, AI, Windows)
 │   ├── plugins/                # Plugin specifications
-│   │   ├── completion.lua      # Blink.cmp & Snippets
+│   │   ├── completion.lua      # Blink.cmp & Custom Completion items
 │   │   ├── copilot.lua         # AI (Copilot) configuration
 │   │   ├── runner.lua          # Unified Runner Center
 │   │   ├── marks.lua           # Bookmark system
 │   │   ├── dap.lua             # Debugger with layout persistence
 │   └── util/                   # Custom Utility Modules
 │       ├── window_sizes.lua    # Window split persistence logic
-│       ├── templates.lua       # File scaffolding templates
+│       ├── templates.lua       # File scaffolding & variable injection
 │       ├── format.lua          # Sync Tab-based formatting
 ```
 
