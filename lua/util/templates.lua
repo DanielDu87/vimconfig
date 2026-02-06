@@ -246,6 +246,13 @@ function M.generate_file()
 		title = " 选择文件模板 ",
 		items = M.templates,
 		layout = "default",
+		-- 禁用对齐以避免空格变化
+		win = {
+			list = {
+				-- 禁用列对齐
+				align = "left",
+			},
+		},
 		-- 自定义预览逻辑：将模板字符串渲染到预览窗口
 		preview = function(ctx)
 			local item = ctx.item
