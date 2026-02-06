@@ -18,21 +18,21 @@ local function get_vars(filename)
 	}
 end
 
--- 预处理模板：将 ${USER} 等变量转为纯文本，保留 ${0} 供 Snippet 引擎使用
+-- 预处理模板：将 ${USER} 等变量转为纯文本
 local function pre_process_template(content, vars)
 	for k, v in pairs(vars) do
-		-- 这里的 % 用于转义模板中的 $ 符号
-		content = content:gsub("%%${" .. k .. "}", v)
+		-- 修复：使用 % 来转义 $ 符号，确保正确匹配模板中的 ${VAR}
+		content = content:gsub("%${" .. k .. "}", v)
 	end
 	return content
 end
 
 --==============================================================================
--- 专业模板定义 (文件头已固定，Tab 不可修改)
+-- 专业模板定义
 --==============================================================================
 M.templates = {
 	{
-		name = "Python: 基础标准模板 (固定头信息)",
+		name = "Python: 基础标准模板",
 		filename = "main.py",
 		content = [[
 #!/usr/bin/env python3
@@ -46,13 +46,12 @@ M.templates = {
 
 ${0}
 
-
 if __name__ == "__main__":
 	pass
 ]],
 	},
 	{
-		name = "Python: FastAPI 结构 (固定头信息)",
+		name = "Python: FastAPI 基础结构",
 		filename = "app.py",
 		content = [[
 #!/usr/bin/env python3
@@ -71,40 +70,8 @@ app = FastAPI(title="API项目")
 
 ${0}
 
-
 if __name__ == "__main__":
 	uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
-]],
-	},
-	{
-		name = "Vue: 组合式 API 组件",
-		filename = "Component.vue",
-		content = [[
-<script setup lang="ts">
-/**
- * @File    : ${FILENAME}
- * @Time    : ${DATE}
- * @Author  : ${USER}
- */
-interface Props {
-	title?: string
-}
-
-const props = withDefaults(defineProps<Props>(), {
-	title: '默认标题'
-})
-
-
-${0}
-</script>
-
-<template>
-	<div class="component-container">
-	</div>
-</template>
-
-<style scoped>
-</style>
 ]],
 	},
 }
@@ -121,7 +88,7 @@ function M.generate_file()
 	end
 
 	Snacks.picker.pick({
-		title = " 选择文件模板 (静态头信息) ",
+		title = " 选择文件模板 ",
 		items = M.templates,
 		format = function(item)
 			return {
@@ -144,7 +111,7 @@ function M.generate_file()
 					return
 				end
 
-				-- 1. 获取变量并预处理（此时头信息变成纯文本，${0} 依然保留）
+				-- 1. 获取变量并执行预处理 (静态头信息)
 				local vars = get_vars(input)
 				local final_content = pre_process_template(item.content, vars)
 
@@ -154,7 +121,7 @@ function M.generate_file()
 					f:close()
 					vim.cmd("edit " .. vim.fn.fnameescape(input))
 					
-					-- 3. 展开内容，此时光标会落在 ${0} 位置，Tab 不会跳回头部
+					-- 3. 展开内容，此时只有 ${0}，光标会直接跳到 main 上方
 					if ok_ls then
 						vim.cmd("startinsert")
 						vim.schedule(function()
@@ -167,7 +134,7 @@ function M.generate_file()
 						vim.cmd("edit!")
 					end
 					
-					vim.notify("文件已成功生成", vim.log.levels.INFO)
+					vim.notify("文件已生成", vim.log.levels.INFO)
 				else
 					vim.notify("无法创建文件", vim.log.levels.ERROR)
 				end
