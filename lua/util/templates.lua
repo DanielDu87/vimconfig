@@ -118,7 +118,7 @@ function M.generate_file()
 			-- 模拟预填充后的内容
 			local vars = get_vars(item.filename)
 			local preview_content = pre_process_template(item.content, vars)
-			preview_content = preview_content:gsub("${0}", "▎") -- 在预览中显示光标位置 (使用细竖线)
+			preview_content = preview_content:gsub("${0}", "󰚩") -- 在预览中显示光标位置 (使用机器人图标)
 			
 			local lines = vim.split(preview_content, "\n")
 			ctx.preview:set_lines(lines)
