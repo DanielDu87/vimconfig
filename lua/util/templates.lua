@@ -14,27 +14,27 @@ local function get_vars(filename)
 		TIME = time,
 		USER = user,
 		PROJECT = project_name,
-		FILENAME = filename,
+		FILENAME = filename or "new_file",
 	}
 end
 
 -- 预处理模板：将 ${USER} 等变量转为纯文本
 local function pre_process_template(content, vars)
+	local result = content
 	for k, v in pairs(vars) do
-		-- 修复：使用 % 来转义 $ 符号
-		content = content:gsub("%%${" .. k .. "}", v)
+		result = result:gsub("%%${" .. k .. "}", v)
 	end
-	return content
+	return result
 end
 
 --==============================================================================
--- 专业模板定义 (添加 JavaScript 模板)
+-- 专业模板定义
 --==============================================================================
 M.templates = {
 	{
 		name = "Python: 基础标准模板",
 		filename = "main.py",
-		text = "python python3 main.py", -- 用于搜索匹配
+		text = "python python3 main.py",
 		content = [[
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
@@ -106,12 +106,27 @@ function M.generate_file()
 		return vim.notify("未找到 snacks.nvim", vim.log.levels.ERROR)
 	end
 
-	-- 修复 "Item has no file" 报错：显式关闭预览并指定为简单选择列表
 	Snacks.picker.pick({
 		title = " 选择文件模板 ",
 		items = M.templates,
-		preview = false, -- 禁用预览，解决 "Item has no file" 报错
-		layout = "select", -- 使用简单的下拉布局
+		layout = "default",
+		-- 自定义预览逻辑：将模板字符串渲染到预览窗口
+		preview = function(ctx)
+			local item = ctx.item
+			if not item or not item.content then return end
+			
+			-- 模拟预填充后的内容
+			local vars = get_vars(item.filename)
+			local preview_content = pre_process_template(item.content, vars)
+			preview_content = preview_content:gsub("${0}", "I") -- 在预览中显示光标位置
+			
+			local lines = vim.split(preview_content, "\n")
+			ctx.preview:set_lines(lines)
+			
+			-- 设置语法高亮
+			local ft = item.filename:match("%.(%w+)$")
+			ctx.preview:highlight({ ft = ft })
+		end,
 		format = function(item)
 			return {
 				{ item.name, "String" },
