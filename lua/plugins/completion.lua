@@ -3,9 +3,21 @@
 --==============================================================================
 
 return {
+	-- 禁用 LazyVim 默认的 nvim-cmp，防止冲突
+	{ "hrsh7th/nvim-cmp", enabled = false },
+	{ "iguanacucumber/magazine.nvim", enabled = false, name = "nvim-cmp" }, -- 某些 LazyVim 版本可能使用此 fork
+
 	{
 		"saghen/blink.cmp",
 		opts = {
+			-- 显式配置补全源，确保 LSP 被启用
+			sources = {
+				default = { "lsp", "path", "snippets", "buffer" },
+				-- 可选：针对特定文件类型的覆盖
+				-- per_filetype = {
+				-- 	codecompanion = { "codecompanion" },
+				-- },
+			},
 			completion = {
 				-- 文档提示窗口设置
 				documentation = {

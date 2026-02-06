@@ -14,6 +14,16 @@ return {
 
 			local lspconfig = require("lspconfig")
 
+			-- 获取 blink.cmp 的补全能力支持 (非常重要，否则可能没有补全)
+			local capabilities = vim.lsp.protocol.make_client_capabilities()
+			-- 显式启用 Snippet 支持 (HTML/CSS/JSON 服务器必需)
+			capabilities.textDocument.completion.completionItem.snippetSupport = true
+
+			local ok_blink, blink = pcall(require, "blink.cmp")
+			if ok_blink then
+				capabilities = blink.get_lsp_capabilities(capabilities)
+			end
+
 			-- 通用 on_attach 函数，用于启用 inlay hints
 			local on_attach = function(client, bufnr)
 				if client.server_capabilities.inlayHintProvider then
@@ -66,6 +76,12 @@ return {
 				html = {
 					-- 恢复为标准支持，包括 htmldjango
 					filetypes = { "html", "htmldjango" },
+					-- 确保在没有项目根目录的情况下也能启动 (针对孤立的 index.html)
+					-- 优先使用项目根目录，找不到则使用文件所在目录，避免退回到家目录
+					root_dir = function(fname)
+						return lspconfig.util.root_pattern("package.json", ".git")(fname)
+							or vim.fs.dirname(fname)
+					end,
 					settings = {
 						html = {
 							validate = { scripts = true, styles = true },
@@ -88,10 +104,20 @@ return {
 				-- 8. 其他
 				bashls = {},
 				marksman = {},
-				tailwindcss = {},
+				tailwindcss = {
+					-- Tailwind 也需要合理的根目录，否则在非项目目录下可能卡死
+					root_dir = function(fname)
+						return lspconfig.util.root_pattern("tailwind.config.js", "tailwind.config.cjs", "package.json", ".git")(fname)
+							or vim.fs.dirname(fname)
+					end,
+				},
 				emmet_ls = {
 					-- Emmet 应该作为一个辅助，支持尽可能多的 Web 文件
 					filetypes = { "html", "htmldjango", "typescriptreact", "javascriptreact", "css", "sass", "scss", "less", "vue" },
+					root_dir = function(fname)
+						return lspconfig.util.root_pattern("package.json", ".git")(fname)
+							or vim.fs.dirname(fname)
+					end,
 				},
 			}
 
@@ -99,6 +125,9 @@ return {
 			for name, config in pairs(servers) do
 				if lspconfig[name] then
 					config.on_attach = on_attach
+					-- 合并能力集
+					config.capabilities = vim.tbl_deep_extend("force", capabilities, config.capabilities or {})
+					
 					lspconfig[name].setup(config)
 
 					-- 如果是 vtsls，且 nvim-vtsls 插件已加载，则进行额外的 setup

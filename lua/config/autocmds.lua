@@ -74,12 +74,13 @@ end
 -------------------------------------------------------------------------------
 
 -- 将文件名包含 "docker" 或 "dk" 的文件识别为 dockerfile（忽略大小写）
+-- 注意：使用更精确的模式，避免匹配到路径中的目录名（如 /Code/Docker/index.html）
 vim.filetype.add({
 	pattern = {
-		-- 匹配文件名包含 docker（忽略大小写）
-		[".*[Dd][Oo][Cc][Kk][Ee][Rr].*"] = "dockerfile",
-		-- 匹配文件名包含 dk（忽略大小写）
-		[".*[Dd][Kk].*"] = "dockerfile",
+		-- 只匹配文件名部分包含 docker 的文件 (例如 Dockerfile.prod)
+		["[^/]*[Dd][Oo][Cc][Kk][Ee][Rr][^/]*$"] = "dockerfile",
+		-- 只匹配文件名部分包含 dk 的文件
+		["[^/]*[Dd][Kk][^/]*$"] = "dockerfile",
 	},
 })
 
@@ -167,14 +168,24 @@ vim.api.nvim_create_autocmd("FileType", {
 vim.api.nvim_create_autocmd({ "BufReadPost", "BufNewFile" }, {
 	pattern = { "*.html", "*.htm", "*.htmldjango" },
 	callback = function()
-		-- 寻找项目根目录 (优先使用 lspconfig 的 util，若未加载则回退到当前目录)
-		local root = vim.fn.getcwd()
+		-- 获取当前文件所在目录
+		local file_path = vim.api.nvim_buf_get_name(0)
+		if file_path == "" or file_path:match("^[a-z]+://") then return end
+		local file_dir = vim.fn.fnamemodify(file_path, ":p:h")
+		
+		-- 寻找项目根目录 (优先寻找 .git 或 package.json)
+		local root = file_dir
 		local ok, lspconfig_util = pcall(require, "lspconfig.util")
 		if ok then
-			local lsp_root = lspconfig_util.root_pattern(".git", "package.json", "tailwind.config.js")(vim.api.nvim_buf_get_name(0))
+			local lsp_root = lspconfig_util.root_pattern(".git", "package.json", "tailwind.config.js")(file_path)
 			if lsp_root then
 				root = lsp_root
 			end
+		end
+
+		-- 如果根目录是家目录，为了安全起见，回退到文件所在目录
+		if root == vim.fn.expand("~") then
+			root = file_dir
 		end
 
 		local tailwind_config = root .. "/tailwind.config.js"
