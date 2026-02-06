@@ -1,5 +1,5 @@
 --==============================================================================
--- GitHub Copilot 配置（内联虚文本模式）
+-- GitHub Copilot 配置（内联虚文本模式 + 面板自动刷新）
 --==============================================================================
 
 return {
@@ -7,6 +7,9 @@ return {
 		"zbirenbaum/copilot.lua",
 		cmd = "Copilot",
 		event = "InsertEnter",
+		dependencies = {
+			"copilotlsp-nvim/copilot-lsp", -- NES 功能所需
+		},
 		config = function()
 			require("copilot").setup({
 				suggestion = {
@@ -29,8 +32,23 @@ return {
 					},
 				},
 				panel = {
-					-- 禁用面板模式
-					enabled = false,
+					-- 启用面板模式
+					enabled = true,
+					-- 自动刷新建议
+					auto_refresh = true,
+					-- 快捷键设置
+					keymap = {
+						jump_prev = "[[",
+						jump_next = "]]",
+						accept = "<CR>",
+						refresh = "gr",
+						open = "<M-CR>",
+					},
+					-- 窗口布局
+					layout = {
+						position = "bottom", -- 位置: bottom | top | left | right
+						ratio = 0.4,
+					},
 				},
 				filetypes = {
 					yaml = false,

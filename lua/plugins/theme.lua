@@ -68,11 +68,15 @@ return {
 				floats = "transparent",
 			},
 			-- 自定义高亮 - 仅保留编辑器内部特定颜色覆盖
-			on_highlights = function(hl, _) 
+			on_highlights = function(hl, _)
 				hl.PmenuSel = { bg = "#4e5a7e", bold = true } -- 补全菜单选中行（调亮并加粗）
+				hl.BlinkCmpMenuSelection = { bg = "#4e5a7e", bold = true } -- blink.cmp 补全菜单选中项
 				hl.Visual = { bg = "#515c7e" } -- 选中文本背景（更亮的蓝色/灰色）
 				hl.CursorLine = { bg = "#363d59" } -- 编辑器光标行（调亮后的颜色）
 				hl.Comment = { fg = "#7a7a7a", italic = true } -- 注释颜色（纯浅灰色）
+
+				-- Copilot 虚文本补全颜色（更亮的灰色）
+				hl.CopilotSuggestion = { fg = "#a9b1d6" }
 
 				-- 强制清除 blink.cmp 标签的背景色，防止插件干扰
 				hl.BlinkCmpLabel = { bg = "NONE" }
@@ -80,8 +84,8 @@ return {
 				hl.BlinkCmpLabelDescription = { bg = "NONE" }
 
 				-- 分割线颜色（WinSeparator 是 Nvim 0.10+ 的标准，VertSplit 是兼容旧版）
-				hl.WinSeparator = { fg = "#565f89", bold = true } 
-				hl.VertSplit = { fg = "#565f89" } 
+				hl.WinSeparator = { fg = "#565f89", bold = true }
+				hl.VertSplit = { fg = "#565f89" }
 			end,
 		},
 	},
