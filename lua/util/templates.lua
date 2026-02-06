@@ -130,7 +130,6 @@ function M.generate_file()
 		format = function(item)
 			return {
 				{ item.name, "String" },
-				{ " [" .. item.filename .. "]", "Comment" },
 			}
 		end,
 		confirm = function(picker, item)
