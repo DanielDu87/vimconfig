@@ -67,7 +67,7 @@ return {
 	-- { import = "lazyvim.plugins.extras.ai.codeium" },
 
 	-- GitHub Copilot（需要订阅）
-	-- { import = "lazyvim.plugins.extras.ai.copilot" },
+	{ import = "lazyvim.plugins.extras.ai.copilot" },
 
 	-- Git UI（可选）
 	-- { import = "lazyvim.plugins.extras.util.gitui" },

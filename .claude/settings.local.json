@@ -67,7 +67,8 @@
       "Bash(fi:*)",
       "Bash(sn:*)",
       "Bash(ruff:*)",
-      "Bash(stylua:*)"
+      "Bash(stylua:*)",
+      "Bash(node:*)"
     ]
   }
 }
