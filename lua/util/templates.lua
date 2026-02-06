@@ -229,6 +229,240 @@ main().catch(err => {
 }
 ]],
 	},
+	{
+		name = "Docker: Node.js 应用",
+		filename = "Dockerfile",
+		text = "docker nodejs container",
+		content = [[# @File    : ${FILENAME}
+# @Time    : ${DATE} ${TIME}
+# @Author  : ${USER}
+# @.claude/PROJECT_CONTEXT.md : ${PROJECT}
+
+FROM node:20-alpine
+
+WORKDIR /app
+
+# 复制依赖文件
+COPY package*.json ./
+
+# 安装依赖
+RUN npm ci --only=production
+
+# 复制应用代码
+COPY . .
+
+# 暴露端口
+EXPOSE 3000
+
+# 启动命令
+CMD ["npm", "start"]
+]],
+	},
+	{
+		name = "Docker: Python 应用",
+		filename = "Dockerfile",
+		text = "docker python container",
+		content = [[# @File    : ${FILENAME}
+# @Time    : ${DATE} ${TIME}
+# @Author  : ${USER}
+# @.claude/PROJECT_CONTEXT.md : ${PROJECT}
+
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# 安装系统依赖
+RUN apt-get update && apt-get install -y \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# 复制依赖文件
+COPY requirements.txt .
+
+# 安装 Python 依赖
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 复制应用代码
+COPY . .
+
+# 暴露端口
+EXPOSE 8000
+
+# 启动命令
+CMD ["python", "app.py"]
+]],
+	},
+	{
+		name = "React: 函数组件",
+		filename = "Component.tsx",
+		text = "react typescript component",
+		content = [[/**
+ * @File    : ${FILENAME}
+ * @Time    : ${DATE} ${TIME}
+ * @Author  : ${USER}
+ * @.claude/PROJECT_CONTEXT.md : ${PROJECT}
+ */
+
+import React from 'react';
+
+interface Props {
+    title: string;
+}
+
+export const Component: React.FC<Props> = ({ title }) => {
+    return (
+        <div className="component">
+            <h1>{title}</h1>
+            ${0}
+        </div>
+    );
+};
+
+export default Component;
+]],
+	},
+	{
+		name = "Vue 3: 组合式 API",
+		filename = "Component.vue",
+		text = "vue composition component",
+		content = [[<!--
+  @File    : ${FILENAME}
+  @Time    : ${DATE} ${TIME}
+  @Author  : ${USER}
+  @.claude/PROJECT_CONTEXT.md : ${PROJECT}
+-->
+
+<template>
+  <div class="component">
+    <h1>{{ title }}</h1>
+    ${0}
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue';
+
+interface Props {
+  title: string;
+}
+
+const props = defineProps<Props>();
+const count = ref(0);
+</script>
+
+<style scoped>
+.component {
+  padding: 20px;
+}
+</style>
+]],
+	},
+	{
+		name = "Config: .gitignore 通用版",
+		filename = ".gitignore",
+		text = "gitignore config template",
+		content = [[# @File    : ${FILENAME}
+# @Time    : ${DATE} ${TIME}
+# @Author  : ${USER}
+# @.claude/PROJECT_CONTEXT.md : ${PROJECT}
+
+# Dependencies
+node_modules/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Build
+dist/
+build/
+*.egg-info/
+.eggs/
+*.egg
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
+# Misc
+${0}
+]],
+	},
+	{
+		name = "Docker: Compose 配置",
+		filename = "docker-compose.yml",
+		text = "docker compose services",
+		content = [[# @File    : ${FILENAME}
+# @Time    : ${DATE} ${TIME}
+# @Author  : ${USER}
+# @.claude/PROJECT_CONTEXT.md : ${PROJECT}
+
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${PROJECT}
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  ${0}
+
+volumes:
+  db_data:
+  redis_data:
+]],
+	},
 }
 
 --==============================================================================
@@ -245,8 +479,30 @@ function M.generate_file()
 	Snacks.picker.pick({
 		title = " 选择文件模板 ",
 		items = M.templates,
-		layout = "default",
-		-- 禁用对齐以避免空格变化
+		-- 使用自定义布局以确保文本不被截断
+		layout = {
+			preset = "default",
+			layout = {
+				box = "horizontal",
+				width = 0.75,
+				min_width = 80,
+				height = 0.8,
+				{
+					box = "vertical",
+					border = "rounded",
+					title = "{title} {live} {flags}",
+					width = 0.45,
+					{ win = "input", height = 1, border = "bottom" },
+					{ win = "list", border = "none" },
+				},
+				{
+					win = "preview",
+					title = "{preview}",
+					border = "rounded",
+					width = 0.65,
+				},
+			},
+		},
 		win = {
 			list = {
 				-- 禁用列对齐
@@ -272,7 +528,7 @@ function M.generate_file()
 		end,
 		format = function(item)
 			return {
-				{ item.name, "String" },
+				{ item.name, "SnacksPicker" },
 			}
 		end,
 		confirm = function(picker, item)
