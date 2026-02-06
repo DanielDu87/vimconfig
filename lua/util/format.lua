@@ -58,7 +58,6 @@ function M.format(opts)
 			msg = msg:gsub("For more info see https?://%S+", "")
 
 			-- 3. 智能路径缩减：将 /Users/xxx/path/to/file.ext 缩短为 file.ext
-			-- 使用兼容性更好的匹配模式
 			msg = msg:gsub("/[%w%._%-%s/]+/([%w%._%-%s]+)", "%1")
 
 			-- 4. 修复语法错误名称
@@ -95,16 +94,13 @@ function M.format(opts)
 		end
 	end)
 
-	-- 2. 针对 HTML 的特殊智能空行控制
+	-- 2. 针对 HTML 的智能空行收敛 (仅压缩超过两行的连续空行)
 	if ft == "html" then
-		vim.cmd([[silent! %g/^\s*$/d]])
+		vim.cmd([[silent! %s/\n\n\n\+/\r\r/e]])
 		vim.cmd([[silent! %s/\(<body[^>]*>\)\(<\/body>\)/\1\r\r\t\2/e]])
 	end
 
-	-- 3. 统一清理行尾空白（通用操作）
-	vim.cmd([[silent! %s/\s\+$//e]])
-
-	-- 4. 恢复光标位置
+	-- 3. 恢复光标位置
 	vim.fn.setpos(".", pos)
 end
 

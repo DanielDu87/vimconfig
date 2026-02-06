@@ -26,7 +26,7 @@ return {
 			})
 
 			-- 布局文件路径
-			local layout_file = vim.fn.stdpath("config") .. "/.dapui_layout"
+			local layout_file = vim.fn.stdpath("state") .. "/dapui_layout"
 
 			-- 标志位：是否正在恢复布局（防止恢复时触发保存）
 			local is_restoring = false
@@ -83,7 +83,7 @@ return {
 					
 					-- 保护 Explorer 宽度
 					if ft == "snacks_explorer" then
-						local width_file = vim.fn.stdpath("config") .. "/.explorer_width"
+						local width_file = vim.fn.stdpath("state") .. "/explorer_width"
 						local f = io.open(width_file, "r")
 						local target_width = 30
 						if f then
@@ -104,7 +104,7 @@ return {
 					save_timer:stop()
 					save_timer:close()
 				end
-				save_timer = vim.loop.new_timer()
+				save_timer = vim.uv.new_timer()
 				save_timer:start(500, 0, vim.schedule_wrap(function()
 					if is_restoring then return end
 

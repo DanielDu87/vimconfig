@@ -6,7 +6,7 @@ local cut_mode = false
 ---@param Actions table Snacks explorer actions module
 ---@param Snacks table Snacks global object
 function M.setup(Actions, Snacks)
-	local uv = vim.uv or vim.loop
+	local uv = vim.uv
 	local util = require("snacks.picker.util")
 
 	--==============================================================================

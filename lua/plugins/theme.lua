@@ -69,6 +69,11 @@ return {
 			},
 			-- 自定义高亮 - 仅保留编辑器内部特定颜色覆盖
 			on_highlights = function(hl, _)
+				-- 强制应用全局透明补丁
+				pcall(function()
+					require("util.theme").apply_transparency()
+				end)
+
 				hl.PmenuSel = { bg = "#4e5a7e", bold = true } -- 补全菜单选中行（调亮并加粗）
 				hl.BlinkCmpMenuSelection = { bg = "#4e5a7e", bold = true } -- blink.cmp 补全菜单选中项
 				hl.Visual = { bg = "#515c7e" } -- 选中文本背景（更亮的蓝色/灰色）

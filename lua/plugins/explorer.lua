@@ -10,7 +10,7 @@ return {
 			--==============================================================================
 			-- Explorer 宽度持久化配置（必须先定义函数）
 			--==============================================================================
-			local width_file = vim.fn.stdpath("config") .. "/.explorer_width"
+			local width_file = vim.fn.stdpath("state") .. "/explorer_width"
 
 			-- 读取保存的宽度
 			local function load_width()
@@ -100,7 +100,7 @@ return {
 					width_save_timer:close()
 				end
 				-- 创建新的定时器（500ms 后执行）
-				width_save_timer = vim.loop.new_timer()
+				width_save_timer = vim.uv.new_timer()
 				width_save_timer:start(
 					500,
 					0,

@@ -29,6 +29,8 @@ return {
 			-- LazyVim 自动处理 format_on_save
 			-- 按文件类型配置格式化器
 			formatters_by_ft = {
+				-- 通用
+				["_"] = { "trim_whitespace", "trim_newlines" },
 				-- 前端
 				javascript = { "eslint_d", "prettier" },
 				javascriptreact = { "eslint_d", "prettier" },

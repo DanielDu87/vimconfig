@@ -9,7 +9,7 @@ M.window_sizes = {}
 
 -- 配置
 M.config = {
-	save_file = vim.fn.expand("~/window_sizes.json"),
+	save_file = vim.fn.stdpath("state") .. "/window_sizes.json",
 }
 
 -- 标志位：是否正在恢复布局
@@ -101,8 +101,8 @@ function M.save_all_sizes()
 	if changed then
 		M.window_sizes[dir] = data
 		M.save_window_sizes()
-		-- 保留唯一的通知
-		vim.notify("窗口尺寸已保存", vim.log.levels.INFO, { title = "Window Sizes" })
+		-- 将通知级别降为 DEBUG 以减少噪音
+		vim.notify("窗口尺寸已保存", vim.log.levels.DEBUG, { title = "Window Sizes" })
 	end
 end
 
@@ -137,7 +137,7 @@ function M.setup()
 				save_timer:stop()
 				save_timer:close()
 			end
-			save_timer = vim.loop.new_timer()
+			save_timer = vim.uv.new_timer()
 			save_timer:start(200, 0, vim.schedule_wrap(function()
 				M.save_all_sizes()
 			end))

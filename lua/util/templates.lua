@@ -31,204 +31,9 @@ end
 -- 专业模板定义
 --==============================================================================
 M.templates = {
-	{
-		name = "Python: 基础标准模板",
-		filename = "main.py",
-		text = "python python3 main.py",
-		content = [[
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#
-# @File    : ${FILENAME}
-# @Time    : ${DATE} ${TIME}
-# @Author  : ${USER}
-# @.claude/PROJECT_CONTEXT.md : ${PROJECT}
-
-
-${0}
-
-if __name__ == "__main__":
-	pass
-]],
-	},
-	{
-		name = "JavaScript: 标准基础模板",
-		filename = "index.js",
-		text = "javascript js node index.js",
-		content = [[
-/**
- * @File    : ${FILENAME}
- * @Time    : ${DATE} ${TIME}
- * @Author  : ${USER}
- * @.claude/PROJECT_CONTEXT.md : ${PROJECT}
- */
-
-'use strict';
-
-${0}
-]],
-	},
-	{
-		name = "Python: FastAPI 基础结构",
-		filename = "app.py",
-		text = "python fastapi app.py web",
-		content = [[
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-#
-# @File    : ${FILENAME}
-# @Time    : ${DATE} ${TIME}
-# @Author  : ${USER}
-# @.claude/PROJECT_CONTEXT.md : ${PROJECT}
-
-from fastapi import FastAPI
-import uvicorn
-
-app = FastAPI(title="API项目")
-
-
-${0}
-
-if __name__ == "__main__":
-	uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
-]],
-	},
-	{
-		name = "Node.js: Express 服务器",
-		filename = "server.js",
-		text = "nodejs express server web",
-		content = [[/**
- * @File    : ${FILENAME}
- * @Time    : ${DATE} ${TIME}
- * @Author  : ${USER}
- * @.claude/PROJECT_CONTEXT.md : ${PROJECT}
- */
-
-'use strict';
-
-const express = require('express');
-const app = express();
-
-// 中间件
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// 路由
-app.get('/', (req, res) => {
-    res.json({ message: 'Hello World!' });
-});
-
-${0}
-
-// 启动服务器
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-});
-]],
-	},
-	{
-		name = "Node.js: TypeScript Express",
-		filename = "server.ts",
-		text = "nodejs typescript express server web",
-		content = [[/**
- * @File    : ${FILENAME}
- * @Time    : ${DATE} ${TIME}
- * @Author  : ${USER}
- * @.claude/PROJECT_CONTEXT.md : ${PROJECT}
- */
-
-import express, { Request, Response } from 'express';
-
-const app = express();
-const PORT = process.env.PORT || 3000;
-
-// 中间件
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// 路由
-app.get('/', (req: Request, res: Response) => {
-    res.json({ message: 'Hello World!' });
-});
-
-${0}
-
-// 启动服务器
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-});
-]],
-	},
-	{
-		name = "Node.js: CLI 工具模板",
-		filename = "cli.js",
-		text = "nodejs cli command tool",
-		content = [[#!/usr/bin/env node
-/**
- * @File    : ${FILENAME}
- * @Time    : ${DATE} ${TIME}
- * @Author  : ${USER}
- * @.claude/PROJECT_CONTEXT.md : ${PROJECT}
- */
-
-'use strict';
-
-const fs = require('fs');
-const path = require('path');
-
-// 主函数
-async function main() {
-    const args = process.argv.slice(2);
-
-    if (args.length === 0) {
-        console.log('Usage: node cli.js <command>');
-        process.exit(1);
-    }
-
-    const [command, ...options] = args;
-
-    switch (command) {
-        case 'build':
-            console.log('Building...');
-            ${0}
-            break;
-        case 'dev':
-            console.log('Development mode...');
-            break;
-        default:
-            console.error(`Unknown command: ${command}`);
-            process.exit(1);
-    }
-}
-
-main().catch(err => {
-    console.error('Error:', err);
-    process.exit(1);
-});
-]],
-	},
-	{
-		name = "Node.js: package.json",
-		filename = "package.json",
-		text = "nodejs npm package config",
-		content = [[{
-  "name": "${PROJECT}",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "type": "module",
-  "scripts": {
-    "start": "node index.js",
-    "dev": "node --watch index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "${USER}",
-  "license": "MIT"
-}
-]],
-	},
+	--==========================================================================
+	-- 容器化 (Containerization) - Docker 相关放最前
+	--==========================================================================
 	{
 		name = "Docker: Node.js 应用",
 		filename = "Dockerfile",
@@ -293,6 +98,77 @@ CMD ["python", "app.py"]
 ]],
 	},
 	{
+		name = "Docker: Compose 配置",
+		filename = "docker-compose.yml",
+		text = "docker compose services",
+		content = [[# @File    : ${FILENAME}
+# @Time    : ${DATE} ${TIME}
+# @Author  : ${USER}
+# @.claude/PROJECT_CONTEXT.md : ${PROJECT}
+
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${PROJECT}
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  ${0}
+
+volumes:
+  db_data:
+  redis_data:
+]],
+	},
+
+	--==========================================================================
+	-- Web 前端类 (Web Frontend) - HTML 放最前面
+	--==========================================================================
+	{
+		name = "Web: HTML5 基础页面",
+		filename = "index.html",
+		text = "html web base",
+		content = [[<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+		<title>Document</title>
+	</head>
+	<body>
+		${0}
+	</body>
+</html>]],
+	},
+	{
 		name = "React: 函数组件",
 		filename = "Component.tsx",
 		text = "react typescript component",
@@ -306,16 +182,16 @@ CMD ["python", "app.py"]
 import React from 'react';
 
 interface Props {
-    title: string;
+	title: string;
 }
 
 export const Component: React.FC<Props> = ({ title }) => {
-    return (
-        <div className="component">
-            <h1>{title}</h1>
-            ${0}
-        </div>
-    );
+	return (
+		<div className="component">
+			<h1>{title}</h1>
+			${0}
+		</div>
+	);
 };
 
 export default Component;
@@ -326,24 +202,24 @@ export default Component;
 		filename = "Component.vue",
 		text = "vue composition component",
 		content = [[<!--
-  @File    : ${FILENAME}
-  @Time    : ${DATE} ${TIME}
-  @Author  : ${USER}
-  @.claude/PROJECT_CONTEXT.md : ${PROJECT}
+	@File    : ${FILENAME}
+	@Time    : ${DATE} ${TIME}
+	@Author  : ${USER}
+	@.claude/PROJECT_CONTEXT.md : ${PROJECT}
 -->
 
 <template>
-  <div class="component">
-    <h1>{{ title }}</h1>
-    ${0}
-  </div>
+	<div class="component">
+		<h1>{{ title }}</h1>
+		${0}
+	</div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
 
 interface Props {
-  title: string;
+	title: string;
 }
 
 const props = defineProps<Props>();
@@ -352,11 +228,196 @@ const count = ref(0);
 
 <style scoped>
 .component {
-  padding: 20px;
+	padding: 20px;
 }
 </style>
 ]],
 	},
+	{
+		name = "JavaScript: 标准基础模板",
+		filename = "index.js",
+		text = "javascript js node index.js",
+		content = [[
+/**
+ * @File    : ${FILENAME}
+ * @Time    : ${DATE} ${TIME}
+ * @Author  : ${USER}
+ * @.claude/PROJECT_CONTEXT.md : ${PROJECT}
+ */
+
+'use strict';
+
+${0}
+]],
+	},
+
+	--==========================================================================
+	-- 后端服务类 (Backend Services) - Python 相关放最前
+	--==========================================================================
+	{
+		name = "Python: 基础标准模板",
+		filename = "main.py",
+		text = "python python3 main.py",
+		content = [[
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# @File    : ${FILENAME}
+# @Time    : ${DATE} ${TIME}
+# @Author  : ${USER}
+# @.claude/PROJECT_CONTEXT.md : ${PROJECT}
+
+
+${0}
+
+if __name__ == "__main__":
+	pass
+]],
+	},
+	{
+		name = "Python: FastAPI 基础结构",
+		filename = "app.py",
+		text = "python fastapi app.py web",
+		content = [[
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# @File    : ${FILENAME}
+# @Time    : ${DATE} ${TIME}
+# @Author  : ${USER}
+# @.claude/PROJECT_CONTEXT.md : ${PROJECT}
+
+from fastapi import FastAPI
+import uvicorn
+
+app = FastAPI(title="API项目")
+
+
+${0}
+
+if __name__ == "__main__":
+	uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
+]],
+	},
+	{
+		name = "Node.js: Express 服务器",
+		filename = "server.js",
+		text = "nodejs express server web",
+		content = [[/**
+ * @File    : ${FILENAME}
+ * @Time    : ${DATE} ${TIME}
+ * @Author  : ${USER}
+ * @.claude/PROJECT_CONTEXT.md : ${PROJECT}
+ */
+
+'use strict';
+
+const express = require('express');
+const app = express();
+
+// 中间件
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// 路由
+app.get('/', (req, res) => {
+	res.json({ message: 'Hello World!' });
+});
+
+${0}
+
+// 启动服务器
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+	console.log(`Server is running on http://localhost:${PORT}`);
+});
+]],
+	},
+	{
+		name = "Node.js: TypeScript Express",
+		filename = "server.ts",
+		text = "nodejs typescript express server web",
+		content = [[/**
+ * @File    : ${FILENAME}
+ * @Time    : ${DATE} ${TIME}
+ * @Author  : ${USER}
+ * @.claude/PROJECT_CONTEXT.md : ${PROJECT}
+ */
+
+import express, { Request, Response } from 'express';
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// 中间件
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// 路由
+app.get('/', (req: Request, res: Response) => {
+	res.json({ message: 'Hello World!' });
+});
+
+${0}
+
+// 启动服务器
+app.listen(PORT, () => {
+	console.log(`Server is running on http://localhost:${PORT}`);
+});
+]],
+	},
+	{
+		name = "Node.js: CLI 工具模板",
+		filename = "cli.js",
+		text = "nodejs cli command tool",
+		content = [[#!/usr/bin/env node
+/**
+ * @File    : ${FILENAME}
+ * @Time    : ${DATE} ${TIME}
+ * @Author  : ${USER}
+ * @.claude/PROJECT_CONTEXT.md : ${PROJECT}
+ */
+
+'use strict';
+
+const fs = require('fs');
+const path = require('path');
+
+// 主函数
+async function main() {
+	const args = process.argv.slice(2);
+
+	if (args.length === 0) {
+		console.log('Usage: node cli.js <command>');
+		process.exit(1);
+	}
+
+	const [command, ...options] = args;
+
+	switch (command) {
+		case 'build':
+			console.log('Building...');
+			${0}
+			break;
+		case 'dev':
+			console.log('Development mode...');
+			break;
+		default:
+			console.error(`Unknown command: ${command}`);
+			process.exit(1);
+	}
+}
+
+main().catch(err => {
+	console.error('Error:', err);
+	process.exit(1);
+});
+]],
+	},
+
+	--==========================================================================
+	-- 基础配置类 (Config)
+	--==========================================================================
 	{
 		name = "Config: .gitignore 通用版",
 		filename = ".gitignore",
@@ -414,53 +475,24 @@ ${0}
 ]],
 	},
 	{
-		name = "Docker: Compose 配置",
-		filename = "docker-compose.yml",
-		text = "docker compose services",
-		content = [[# @File    : ${FILENAME}
-# @Time    : ${DATE} ${TIME}
-# @Author  : ${USER}
-# @.claude/PROJECT_CONTEXT.md : ${PROJECT}
-
-version: '3.8'
-
-services:
-  app:
-    build: .
-    ports:
-      - "3000:3000"
-    environment:
-      - NODE_ENV=production
-    volumes:
-      - .:/app
-      - /app/node_modules
-    depends_on:
-      - db
-    restart: unless-stopped
-
-  db:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_DB: ${PROJECT}
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-    volumes:
-      - db_data:/var/lib/postgresql/data
-    restart: unless-stopped
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    restart: unless-stopped
-
-  ${0}
-
-volumes:
-  db_data:
-  redis_data:
+		name = "Node.js: package.json",
+		filename = "package.json",
+		text = "nodejs npm package config",
+		content = [[{
+	"name": "${PROJECT}",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"type": "module",
+	"scripts": {
+		"start": "node index.js",
+		"dev": "node --watch index.js",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"keywords": [],
+	"author": "${USER}",
+	"license": "MIT"
+}
 ]],
 	},
 }
@@ -484,14 +516,14 @@ function M.generate_file()
 			preset = "default",
 			layout = {
 				box = "horizontal",
-				width = 0.75,
-				min_width = 80,
+				width = 0.85, -- 增加总宽度
+				min_width = 100,
 				height = 0.8,
 				{
 					box = "vertical",
 					border = "rounded",
 					title = "{title} {live} {flags}",
-					width = 0.45,
+					width = 0.35, -- 减小列表窗口比例
 					{ win = "input", height = 1, border = "bottom" },
 					{ win = "list", border = "none" },
 				},
@@ -499,13 +531,13 @@ function M.generate_file()
 					win = "preview",
 					title = "{preview}",
 					border = "rounded",
-					width = 0.65,
+					width = 0.65, -- 增加预览窗口比例
 				},
 			},
 		},
 		win = {
 			list = {
-				-- 禁用列对齐
+				-- 禁用列对齐，确保名称能占据整行
 				align = "left",
 			},
 		},
@@ -520,15 +552,27 @@ function M.generate_file()
 			preview_content = preview_content:gsub("${0}", "󰚩 󰚩 󰚩 󰚩 󰚩 󰚩 󰚩 󰚩 󰚩 󰚩 󰚩 󰚩 󰚩 󰚩 ") -- 在预览中显示更多机器人图标
 			
 			local lines = vim.split(preview_content, "\n")
+			
 			ctx.preview:set_lines(lines)
 			
-			-- 设置语法高亮
-			local ft = item.filename:match("%.(%w+)$")
-			ctx.preview:highlight({ ft = ft })
+			-- 确定文件类型并高亮
+			local ft = vim.filetype.match({ filename = item.filename, content = preview_content })
+			
+			-- 显式处理 docker-compose.yml / docker-compose.yaml，确保文件类型为 yaml
+			if item.filename:lower():match("^docker%-compose%.ya?ml$") then
+				ft = "yaml"
+			end
+
+			if not ft then
+				ft = item.filename:match("%.(%w+)$")
+			end
+			local final_ft = ft or "text"
+			ctx.preview:highlight({ ft = final_ft })
 		end,
-		format = function(item)
+		-- 格式化函数优化：确保返回的文本不会被错误截断
+		format = function(item, picker) -- 传入 picker 参数，以获取更多上下文
 			return {
-				{ item.name, "SnacksPicker" },
+				{ item.name, "SnacksPicker", width = 0 }, -- 设置 width = 0，告诉 Snacks.nvim 不要在这里截断
 			}
 		end,
 		confirm = function(picker, item)
@@ -556,7 +600,7 @@ function M.generate_file()
 					f:close()
 					vim.cmd("edit " .. vim.fn.fnameescape(input))
 					
-					-- 3. 使用 Snippet 展开
+					-- 3. 使用 Snippet 展开或直接写入
 					if ok_ls then
 						vim.cmd("startinsert")
 						vim.schedule(function()

@@ -24,7 +24,7 @@ local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 -- 自动安装 lazy.nvim
 --==============================================================================
 -- 检查 lazy.nvim 是否已安装，如果未安装则自动克隆
-if not (vim.uv or vim.loop).fs_stat(lazypath) then
+if not vim.uv.fs_stat(lazypath) then
 	-- lazy.nvim 的 GitHub 仓库地址
 	local lazyrepo = "https://github.com/folke/lazy.nvim.git"
 	-- 使用 git 克隆仓库（使用 --filter=blob:none 减少下载大小）

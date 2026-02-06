@@ -90,7 +90,7 @@ return {
 					pcall(function() focus_timers[bufnr]:stop(); focus_timers[bufnr]:close() end)
 					focus_timers[bufnr] = nil
 				end
-				local timer = vim.loop.new_timer()
+				local timer = vim.uv.new_timer()
 				local attempts = 0
 				timer:start(0, 50, vim.schedule_wrap(function()
 					attempts = attempts + 1

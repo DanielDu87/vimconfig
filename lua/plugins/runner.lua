@@ -209,7 +209,7 @@ function M.open_runner_log_window(initial_message)
 				end
 
 				-- 开启智能滚动
-				local timer = vim.loop.new_timer()
+				local timer = vim.uv.new_timer()
 				timer:start(
 					500,
 					500,
@@ -721,7 +721,7 @@ return {
 							M.write_separator()
 
 							-- 开启智能滚动
-							local timer = vim.loop.new_timer()
+							local timer = vim.uv.new_timer()
 							timer:start(
 										500,
 										500,
