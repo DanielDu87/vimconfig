@@ -93,6 +93,142 @@ if __name__ == "__main__":
 	uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
 ]],
 	},
+	{
+		name = "Node.js: Express 服务器",
+		filename = "server.js",
+		text = "nodejs express server web",
+		content = [[/**
+ * @File    : ${FILENAME}
+ * @Time    : ${DATE} ${TIME}
+ * @Author  : ${USER}
+ * @.claude/PROJECT_CONTEXT.md : ${PROJECT}
+ */
+
+'use strict';
+
+const express = require('express');
+const app = express();
+
+// 中间件
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// 路由
+app.get('/', (req, res) => {
+    res.json({ message: 'Hello World!' });
+});
+
+${0}
+
+// 启动服务器
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+});
+]],
+	},
+	{
+		name = "Node.js: TypeScript Express",
+		filename = "server.ts",
+		text = "nodejs typescript express server web",
+		content = [[/**
+ * @File    : ${FILENAME}
+ * @Time    : ${DATE} ${TIME}
+ * @Author  : ${USER}
+ * @.claude/PROJECT_CONTEXT.md : ${PROJECT}
+ */
+
+import express, { Request, Response } from 'express';
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// 中间件
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// 路由
+app.get('/', (req: Request, res: Response) => {
+    res.json({ message: 'Hello World!' });
+});
+
+${0}
+
+// 启动服务器
+app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+});
+]],
+	},
+	{
+		name = "Node.js: CLI 工具模板",
+		filename = "cli.js",
+		text = "nodejs cli command tool",
+		content = [[#!/usr/bin/env node
+/**
+ * @File    : ${FILENAME}
+ * @Time    : ${DATE} ${TIME}
+ * @Author  : ${USER}
+ * @.claude/PROJECT_CONTEXT.md : ${PROJECT}
+ */
+
+'use strict';
+
+const fs = require('fs');
+const path = require('path');
+
+// 主函数
+async function main() {
+    const args = process.argv.slice(2);
+
+    if (args.length === 0) {
+        console.log('Usage: node cli.js <command>');
+        process.exit(1);
+    }
+
+    const [command, ...options] = args;
+
+    switch (command) {
+        case 'build':
+            console.log('Building...');
+            ${0}
+            break;
+        case 'dev':
+            console.log('Development mode...');
+            break;
+        default:
+            console.error(`Unknown command: ${command}`);
+            process.exit(1);
+    }
+}
+
+main().catch(err => {
+    console.error('Error:', err);
+    process.exit(1);
+});
+]],
+	},
+	{
+		name = "Node.js: package.json",
+		filename = "package.json",
+		text = "nodejs npm package config",
+		content = [[{
+  "name": "${PROJECT}",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "${USER}",
+  "license": "MIT"
+}
+]],
+	},
 }
 
 --==============================================================================
