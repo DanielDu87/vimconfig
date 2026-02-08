@@ -68,7 +68,8 @@
       "Bash(sn:*)",
       "Bash(ruff:*)",
       "Bash(stylua:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(~/.zshrc)"
     ]
   }
 }

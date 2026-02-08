@@ -119,7 +119,7 @@ function M.write_separator()
 	if remaining_chars > 0 then
 		separator = separator .. string.rep("=", remaining_chars)
 	end
-	
+
 	M.write_log(separator, true)
 end
 
@@ -474,7 +474,7 @@ local function get_python_path()
 	if #clients == 0 then
 		clients = vim.lsp.get_clients({ bufnr = 0, name = "basedpyright" })
 	end
-	
+
 	if #clients > 0 then
 		local client = clients[1]
 		if client.config and client.config.settings and client.config.settings.python and client.config.settings.python.pythonPath then
@@ -670,7 +670,7 @@ function M.run_current_file()
 					M.active_jobs["c"] = nil
 					return
 				end
-				M.write_log(">>> 编译成功，开始运行...\n")
+				M.write_log(">>> 编译成功，开始运行...")
 				-- 编译成功后运行
 				local run_job = vim.fn.jobstart(run_cmd, {
 					stdout_buffered = false,
