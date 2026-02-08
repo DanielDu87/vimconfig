@@ -37,24 +37,14 @@ return {
 
 			-- 补全菜单设置
 			opts.completion = {
-				documentation = {
-					auto_show = true,
-					auto_show_delay_ms = 200,
-					window = {
-						min_width = 15,
-						max_width = 80,
-						max_height = 20,
-						border = "rounded",
-						winblend = 0,
-						scrollbar = false,
-					},
-				},
 				menu = {
-					min_width = 30,
+					min_width = 50,
 					max_height = 10,
 					border = "rounded",
 					winblend = 0,
 					scrollbar = false,
+					-- 重点：补全菜单优先显示在下方，避免与上方的参数提示重叠
+					direction_priority = { "s", "n" },
 					-- 确保绘制顺序：文字在左，图标（颜色）和类型在右
 					draw = {
 						columns = { { "label", "label_description", gap = 1 }, { "kind_icon", "kind", gap = 1 } },
@@ -95,19 +85,28 @@ return {
 						},
 					},
 				},
+				documentation = {
+					auto_show = true,
+					auto_show_delay_ms = 200,
+					window = {
+						min_width = 50,
+						max_width = 50,
+						max_height = 20,
+						border = "rounded",
+						winblend = 0,
+						scrollbar = false,
+						-- 文档窗口优先尝试在侧边，避免遮挡
+						direction_priority = {
+							menu_north = { "e", "w", "n", "s" },
+							menu_south = { "e", "w", "s", "n" },
+						},
+					},
+				},
 			}
 
 			-- 函数参数签名提示 (Signature Help)
-			opts.signature = {
-				enabled = true,
-				window = {
-					min_width = 30,
-					max_width = 80,
-					border = "rounded",
-					winblend = 0,
-					scrollbar = false,
-				},
-			}
+			-- 禁用 blink 内置签名提示，交由 noice 统一管理位置，避免重叠
+			opts.signature = { enabled = false }
 
 			return opts
 		end,

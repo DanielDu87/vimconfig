@@ -52,8 +52,18 @@ return {
 				-- },
 				-- 2. TypeScript/Vue (vtsls)
 				vtsls = {
-					filetypes = { "typescript", "typescriptreact", "vue" },
+					filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact", "vue" },
 					settings = {
+						javascript = {
+							inlayHints = {
+								parameterNames = { enabled = "all", suppressWhenArgumentMatchesName = false },
+								parameterTypes = { enabled = true },
+								variableTypes = { enabled = true },
+								propertyDeclarationTypes = { enabled = true },
+								functionLikeReturnTypes = { enabled = true },
+								enumMemberValues = { enabled = true },
+							},
+						},
 						typescript = {
 							inlayHints = {
 								parameterNames = { enabled = "all", suppressWhenArgumentMatchesName = false },
