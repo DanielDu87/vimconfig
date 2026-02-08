@@ -219,6 +219,74 @@ return {
 			end
 
 			--==============================================================================
+			-- 处理不存在的目录：提示是否创建
+			--==============================================================================
+			vim.api.nvim_create_autocmd("BufNewFile", {
+				group = vim.api.nvim_create_augroup("SnacksExplorerCreateDir", { clear = true }),
+				callback = function(ev)
+					local bufname = ev.file
+					-- 排除远程文件
+					if bufname:match("^[a-z]+://") then
+						return
+					end
+
+					-- 检查父目录是否存在
+					local parent = vim.fn.fnamemodify(bufname, ":h")
+
+					-- 如果父目录不存在，提示创建父目录
+					if parent ~= "." and vim.fn.isdirectory(parent) == 0 then
+						-- 立即删除当前缓冲区
+						pcall(vim.api.nvim_buf_delete, ev.buf, { force = true })
+
+						-- 延迟弹出对话框，确保缓冲区已完全删除
+						vim.defer_fn(function()
+							-- 弹出确认对话框
+							vim.ui.select(
+								{ "是", "否" },
+								{
+									prompt = "目录不存在：" .. parent .. "\n是否创建？",
+									format_item = function(item)
+										return item
+									end,
+								},
+								function(choice)
+									if choice == "是" then
+										-- 用户选择"是"，尝试创建目录
+										local ok, err = pcall(vim.fn.mkdir, parent, "p")
+										if ok then
+											vim.notify("已创建目录：" .. parent, vim.log.levels.INFO)
+											-- 打开 explorer 到该目录
+											vim.schedule(function()
+												require("snacks").explorer.open({ cwd = parent })
+											end)
+										else
+											-- 创建失败，可能是权限问题
+											vim.defer_fn(function()
+												vim.ui.select(
+													{ "复制命令", "取消" },
+													{
+														prompt = "创建失败（权限不足）。已复制命令，请在终端执行：sudo mkdir -p " .. parent,
+													},
+													function(choice2)
+														if choice2 == "复制命令" then
+															-- 复制命令到剪贴板
+															vim.fn.setreg("+", "sudo mkdir -p " .. parent)
+															vim.notify("已复制到剪贴板，请在终端粘贴执行", vim.log.levels.INFO)
+														end
+													end
+												)
+											end, 100)
+										end
+									end
+								end
+							)
+						end, 100)
+						return true
+					end
+				end,
+			})
+
+			--==============================================================================
 			-- 修改 Git 文件颜色
 			--==============================================================================
 			vim.api.nvim_create_autocmd("ColorScheme", {

@@ -171,6 +171,19 @@ end
 
 -- 列表显示 (优化后的 Snacks Picker)
 function M.list()
+	-- 清理不存在文件的书签
+	local cleaned = false
+	for file, marks in pairs(M.bookmarks) do
+		if vim.fn.filereadable(file) == 0 then
+			-- 文件不存在，删除该书签
+			M.bookmarks[file] = nil
+			cleaned = true
+		end
+	end
+	if cleaned then
+		M.save_bookmarks()
+	end
+
 	local has_any = false
 	for _, marks in pairs(M.bookmarks) do
 		if not vim.tbl_isempty(marks) then has_any = true; break end
