@@ -647,8 +647,58 @@ function M.run_current_file()
 		return
 	end
 
+	-- C 文件
+	if ft == "c" then
+		M.stop_all_jobs()
+		-- 获取输出文件名（去掉 .c 扩展名）
+		local output_file = vim.fn.expand("%:r")
+		local compile_cmd = string.format("gcc %s -o %s", file, output_file)
+		local run_cmd = string.format("%s/%s", vim.fn.expand("%:p:h"), output_file)
+
+		M.open_runner_log_window(">>> 编译命令: " .. compile_cmd .. "\n>>> 运行命令: " .. run_cmd)
+
+		-- 先编译
+		local compile_job = vim.fn.jobstart(compile_cmd, {
+			stdout_buffered = false,
+			stderr_buffered = false,
+			pty = true,
+			on_stdout = on_output,
+			on_stderr = on_output,
+			on_exit = function(_, code)
+				if code ~= 0 then
+					M.write_log(">>> 编译失败（状态码: " .. code .. "）\n")
+					M.active_jobs["c"] = nil
+					return
+				end
+				M.write_log(">>> 编译成功，开始运行...\n")
+				-- 编译成功后运行
+				local run_job = vim.fn.jobstart(run_cmd, {
+					stdout_buffered = false,
+					stderr_buffered = false,
+					pty = true,
+					on_stdout = on_output,
+					on_stderr = on_output,
+					on_exit = function(_, run_code)
+						if run_code == 0 or run_code >= 128 then
+							M.write_log(">>> 运行结束（状态码: " .. run_code .. "）\n")
+						else
+							M.write_log(">>> 进程异常退出，状态码: " .. run_code .. "\n")
+						end
+						M.active_jobs["c"] = nil
+						vim.defer_fn(function()
+							M.scroll_to_bottom()
+						end, 100)
+					end,
+				})
+				M.active_jobs["c"] = { id = run_job, scroll_mode = get_scroll_mode("default") }
+			end,
+		})
+		M.active_jobs["c"] = { id = compile_job, scroll_mode = get_scroll_mode("default") }
+		return
+	end
+
 	-- 不支持的文件类型
-	vim.notify("不支持的文件类型: " .. ft .. "\n支持的类型: html, javascript, python\n或按 <leader>rc 配置自定义运行命令", 3)
+	vim.notify("不支持的文件类型: " .. ft .. "\n支持的类型: c, html, javascript, python\n或按 <leader>rc 配置自定义运行命令", 3)
 end
 
 -- 启动时清空日志
