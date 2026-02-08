@@ -233,3 +233,41 @@ vim.keymap.set("t", "<Esc>", "<C-\\><C-n>", { desc = "终端返回普通模式" 
 --==============================================================================
 -- 全选 (在 which-key 中隐藏)
 vim.keymap.set("n", "<leader>a", "ggVG", { desc = "which_key_ignore" })
+
+-- leader+fa: 另存为 (保留原路径)
+vim.keymap.set("n", "<leader>fa", function()
+	local buf_name = vim.api.nvim_buf_get_name(0)
+
+	-- 获取当前文件的目录和文件名
+	local dir, filename
+	if buf_name == "" then
+		-- 如果是 [No Name] buffer，使用当前目录
+		dir = vim.fn.getcwd() .. "/"
+		filename = ""
+	else
+		dir = vim.fn.fnamemodify(buf_name, ":p:h") .. "/"
+		filename = vim.fn.fnamemodify(buf_name, ":t")
+	end
+
+	-- 弹出输入框，保留原路径和文件名
+	vim.ui.input({
+		prompt = "另存为: ",
+		default = dir .. filename,
+		completion = "file",
+	}, function(input)
+		if not input or input == "" or input == dir then
+			vim.notify("已取消保存", vim.log.levels.WARN)
+			return
+		end
+
+		-- 确保目录存在
+		local new_dir = vim.fn.fnamemodify(input, ":p:h")
+		if vim.fn.isdirectory(new_dir) == 0 then
+			vim.fn.mkdir(new_dir, "p")
+		end
+
+		-- 保存到新文件
+		vim.cmd("write " .. vim.fn.fnameescape(input))
+		vim.notify("已保存到: " .. input, vim.log.levels.INFO)
+	end)
+end, { desc = "另存为" })
