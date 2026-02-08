@@ -12,14 +12,10 @@ return {
 	-- 原仓库: https://github.com/folke/snacks.nvim
 	--
 	-- 完整的 fork 指南请查看: ~/.config/nvim/FORK_SNACKS.md
-	--
-	-- TODO: 完成 fork 后，取消下面的注释并填写你的信息
-	--
-	-- {
-	-- 	"folke/snacks.nvim",
-	-- 	priority = 1000,
-	-- 	url = "https://github.com/DanielDu87/snacks.nvim.git",
-	-- 	branch = "custom",
-	-- }
-	--
+	{
+		"folke/snacks.nvim",
+		priority = 1000,
+		url = "https://github.com/DanielDu87/snacks.nvim.git",
+		branch = "custom",
+	}
 }
