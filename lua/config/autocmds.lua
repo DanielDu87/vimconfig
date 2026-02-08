@@ -187,3 +187,48 @@ vim.api.nvim_create_autocmd({ "BufReadPost", "BufNewFile" }, {
 	end,
 })
 
+-------------------------------------------------------------------------------
+-- 智能保存：针对无名缓冲区 (No Name) 的保存逻辑（VimScript 方案）
+-------------------------------------------------------------------------------
+
+-- 使用 VimScript 定义函数，兼容性最高
+vim.cmd([[
+	function! SmartWrite()
+		" 检查当前 buffer 是否有文件名
+		if expand('%') == ''
+			" 无文件名，弹出输入框
+			let l:filename = input('保存为: ', getcwd() . '/', 'file')
+			if l:filename != '' && l:filename != getcwd() . '/'
+				" 确保目录存在
+				let l:dir = fnamemodify(l:filename, ':h')
+				if !isdirectory(l:dir)
+					call mkdir(l:dir, 'p')
+				endif
+
+				" 1. 先将内容写入文件
+				execute 'write ' . fnameescape(l:filename)
+
+				" 2. 关键：用 edit 重新加载，让当前 buffer 关联到新文件
+				" 这样 [No Name] 就变成了你保存的文件名，不会留下多余 buffer
+				execute 'edit ' . fnameescape(l:filename)
+
+				echo "已保存: " . l:filename
+			endif
+		else
+			" 有文件名，正常保存
+			write
+		endif
+	endfunction
+
+	" 映射快捷键 Ctrl+S
+	nnoremap <silent> <C-s> :call SmartWrite()<CR>
+	inoremap <silent> <C-s> <C-o>:call SmartWrite()<CR>
+
+	" 映射 <leader>w 作为备用
+	nnoremap <silent> <leader>w :call SmartWrite()<CR>
+
+	" 重定向命令行模式下的 :w (使用 expr 缩写)
+	cnoreabbrev <expr> w (getcmdtype() == ':' && getcmdline() ==# 'w') ? 'call SmartWrite()' : 'w'
+	cnoreabbrev <expr> write (getcmdtype() == ':' && getcmdline() ==# 'write') ? 'call SmartWrite()' : 'write'
+]])
+
