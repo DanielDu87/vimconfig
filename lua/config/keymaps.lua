@@ -234,8 +234,8 @@ vim.keymap.set("t", "<Esc>", "<C-\\><C-n>", { desc = "终端返回普通模式" 
 -- 全选 (在 which-key 中隐藏)
 vim.keymap.set("n", "<leader>a", "ggVG", { desc = "which_key_ignore" })
 
--- leader+fa: 另存为 (保留原路径)
-vim.keymap.set("n", "<leader>fa", function()
+-- leader+fs: 另存为 (保留原路径)
+vim.keymap.set("n", "<leader>fs", function()
 	local buf_name = vim.api.nvim_buf_get_name(0)
 
 	-- 获取当前文件的目录和文件名

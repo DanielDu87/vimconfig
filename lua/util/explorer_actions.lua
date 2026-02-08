@@ -409,6 +409,8 @@ function M.setup(Actions, Snacks)
 				local Tree = require("snacks.explorer.tree")
 				Tree:refresh(picker:dir())
 				Actions.update(picker)
+				-- 清除多选状态
+				picker.list:set_selected()
 				notify_files("已删除", deleted_files, deleted_dirs)
 			end
 		end)
@@ -527,6 +529,8 @@ function M.setup(Actions, Snacks)
 					Tree:refresh(vim.fs.dirname(old))
 					Tree:refresh(vim.fs.dirname(new))
 					Actions.update(picker, { target = new })
+					-- 清除多选状态
+					picker.list:set_selected()
 					Snacks.notify.info("已重命名为：" .. new_name)
 				end,
 			})
@@ -567,6 +571,8 @@ function M.setup(Actions, Snacks)
 					local Tree = require("snacks.explorer.tree")
 					Tree:refresh(dir)
 					Actions.update(picker, { target = final_to })
+					-- 清除多选状态
+					picker.list:set_selected()
 					Snacks.notify.info("已创建副本：" .. vim.fn.fnamemodify(final_to, ":t"))
 				end
 			end)
@@ -587,6 +593,8 @@ function M.setup(Actions, Snacks)
 		local Tree = require("snacks.explorer.tree")
 		Tree:refresh(dir)
 		Actions.update(picker, { target = dir })
+		-- 清除多选状态
+		picker.list:set_selected()
 		notify_files("已创建副本", processed, {}, nil)
 	end
 
@@ -621,6 +629,8 @@ function M.setup(Actions, Snacks)
 						Tree:refresh(vim.fs.dirname(old))
 						Tree:refresh(vim.fs.dirname(new))
 						Actions.update(picker, { target = new })
+						-- 清除多选状态
+						picker.list:set_selected()
 						Snacks.notify.info("已移动到：" .. to)
 					end,
 				})
@@ -644,6 +654,8 @@ function M.setup(Actions, Snacks)
 			-- 刷新目标目录并在 UI 上更新
 			Tree:refresh(target_dir)
 			Actions.update(picker, { target = target_dir })
+			-- 清除多选状态
+			picker.list:set_selected()
 			notify_files("已移动", moved, {}, nil)
 		end)
 	end
