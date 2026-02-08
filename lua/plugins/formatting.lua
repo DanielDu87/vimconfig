@@ -31,12 +31,12 @@ return {
 			formatters_by_ft = {
 				-- 通用
 				["_"] = { "trim_whitespace", "trim_newlines" },
-				-- 前端
-				javascript = { "eslint_d", "prettier" },
-				javascriptreact = { "eslint_d", "prettier" },
-				typescript = { "eslint_d", "prettier" },
-				typescriptreact = { "eslint_d", "prettier" },
-				vue = { "eslint_d", "prettier" },
+				-- 前端（使用 prettier 格式化，eslint 仅用于 Lint）
+				javascript = { "prettier" },
+				javascriptreact = { "prettier" },
+				typescript = { "prettier" },
+				typescriptreact = { "prettier" },
+				vue = { "prettier" },
 				css = { "stylelint", "prettier" },
 				scss = { "stylelint", "prettier" },
 				less = { "stylelint", "prettier" },

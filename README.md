@@ -60,9 +60,9 @@
 | 语言/文件 | LSP Server | Linter (检查) | Formatter (格式化) | Debugger (调试) | 备注 |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Python** | `pyright` | `ruff` | `isort` + `black` | `debugpy` | 虚拟环境自动检测 |
-| **TypeScript** | `vtsls` | `eslint` | `eslint_d` + `prettier` | `js-debug` | 支持 organize imports |
-| **JavaScript** | `ts_ls` | `eslint` | `eslint_d` + `prettier` | `js-debug` | |
-| **Vue** | `vtsls` | `eslint` | `eslint_d` + `prettier` | `js-debug` | 混合模式支持 |
+| **TypeScript** | `vtsls` | `eslint` | `prettier` | `js-debug` | 支持 organize imports |
+| **JavaScript** | `ts_ls` | `eslint` | `prettier` | `js-debug` | |
+| **Vue** | `vtsls` | `eslint` | `prettier` | `js-debug` | 混合模式支持 |
 | **HTML** | `html` | `htmlhint` | `prettier` | `browser-sync` | 保存时自动刷新 |
 | **Django Tpl**| `djlsp` | `djlint` | `djlint` | - | 强力模板语法检查 |
 | **CSS/SCSS** | `cssls` | `stylelint` | `stylelint` + `prettier` | - | 颜色实时预览 |
@@ -93,6 +93,10 @@
     - **Python**: 优先使用 `brew` 安装的 `black` 以获得极致速度。
     - **Docker**: 自定义 Perl 脚本将 `FROM`, `RUN` 等指令强制转为大写。
     - **SQL**: 强制关键字大写，保持 SQL 风格统一。
+- **自动创建配置文件**：打开文件时自动创建缺失的项目配置文件。
+    - **HTML**: 自动创建 `tailwind.config.js` 和 `.prettierrc`
+    - **JS/TS/Vue**: 自动创建 `eslint.config.js`（旧版 `.eslintrc.js` 会自动转换）
+    - 使用 `brew` 安装的 `eslint`，无需 `node_modules` 依赖
 
 ### 📂 增强型文件管理 (Explorer)
 - **Snacks Explorer**：采用现代化的侧边栏布局。
