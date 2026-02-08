@@ -27,10 +27,10 @@ return {
 
 			-- 合并补全源配置，确保优先级并保留现有源（如 Copilot）
 			opts.sources = vim.tbl_deep_extend("force", opts.sources or {}, {
-				default = { "snippets", "lsp", "path", "buffer" },
+				default = { "lsp", "path", "snippets", "buffer" },
 				providers = {
 					snippets = {
-						score_offset = 100,
+						score_offset = -20, -- 降低优先级，确保 LSP 建议排在最前
 					},
 				},
 			})
@@ -67,9 +67,12 @@ return {
 										doc = doc.value
 									end
 									-- 尝试从文档或标签中提取颜色
-									local color_item = require("nvim-highlight-colors").format(doc or item.label, { kind = "Color" })
-									if color_item and color_item.abbr and color_item.abbr ~= "" and color_item.abbr ~= "Color" then
-										return color_item.abbr .. " "
+									local ok, hl = pcall(require, "nvim-highlight-colors")
+									if ok then
+										local color_item = hl.format(doc or item.label, { kind = "Color" })
+										if color_item and color_item.abbr and color_item.abbr ~= "" and color_item.abbr ~= "Color" then
+											return color_item.abbr .. " "
+										end
 									end
 									return ctx.kind_icon
 								end,
@@ -79,9 +82,12 @@ return {
 									if type(doc) == "table" then
 										doc = doc.value
 									end
-									local color_item = require("nvim-highlight-colors").format(doc or item.label, { kind = "Color" })
-									if color_item and color_item.abbr_hl_group then
-										return color_item.abbr_hl_group
+									local ok, hl = pcall(require, "nvim-highlight-colors")
+									if ok then
+										local color_item = hl.format(doc or item.label, { kind = "Color" })
+										if color_item and color_item.abbr_hl_group then
+											return color_item.abbr_hl_group
+										end
 									end
 									return ctx.kind_icon_hl
 								end,

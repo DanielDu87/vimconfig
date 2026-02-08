@@ -591,7 +591,7 @@ function M.run_current_file()
 		-- local file = vim.api.nvim_buf_get_name(0) -- 已经移到顶部
 		local node_path = "node"
 
-		local run_cmd = string.format("%s %s", node_path, file)
+		local run_cmd = string.format("%s %s", node_path, vim.fn.shellescape(file))
 		M.open_runner_log_window(">>> 运行指令: " .. run_cmd) -- 传递初始消息
 
 		local job_id = vim.fn.jobstart(run_cmd, {
@@ -620,7 +620,7 @@ function M.run_current_file()
 		-- local file = vim.api.nvim_buf_get_name(0) -- 已经移到顶部
 		local python_path = get_python_path()
 
-		local run_cmd = string.format("%s -u %s", python_path, file)
+		local run_cmd = string.format("%s -u %s", python_path, vim.fn.shellescape(file))
 		M.open_runner_log_window(">>> 运行指令: " .. run_cmd) -- 传递初始消息
 
 		local job_id = vim.fn.jobstart(run_cmd, {
@@ -650,10 +650,10 @@ function M.run_current_file()
 	-- C 文件
 	if ft == "c" then
 		M.stop_all_jobs()
-		-- 获取输出文件名（去掉 .c 扩展名）
-		local output_file = vim.fn.expand("%:r")
-		local compile_cmd = string.format("gcc %s -o %s", file, output_file)
-		local run_cmd = string.format("%s/%s", vim.fn.expand("%:p:h"), output_file)
+		-- 获取绝对路径输出文件名（去掉扩展名）
+		local output_file = vim.fn.expand("%:p:r")
+		local compile_cmd = string.format("gcc %s -o %s", vim.fn.shellescape(file), vim.fn.shellescape(output_file))
+		local run_cmd = vim.fn.shellescape(output_file)
 
 		M.open_runner_log_window(">>> 编译命令: " .. compile_cmd .. "\n>>> 运行命令: " .. run_cmd)
 

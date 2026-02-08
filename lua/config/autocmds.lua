@@ -46,10 +46,10 @@ vim.filetype.add({
 	pattern = {
 		-- 匹配文件名中包含 docker（忽略大小写）的文件
 		-- 例如：dockerfile-copy, django-dockerfile, Dockerfile.prod, Dockerfile.dev
-		[".*[Dd][Oo][Cc][Kk][Ee][Rr].*"] = "dockerfile",
+		[".*/[^/]*[Dd][Oo][Cc][Kk][Ee][Rr][^/]*$"] = "dockerfile",
 		-- 匹配文件名中包含 dk（忽略大小写）的文件
 		-- 例如：Dockerfile.dk, app.dk
-		[".*[Dd][Kk].*"] = "dockerfile",
+		[".*/[^/]*[Dd][Kk][^/]*$"] = "dockerfile",
 	},
 })
 

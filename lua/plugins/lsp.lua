@@ -33,23 +33,23 @@ return {
 
 			-- 定义服务器列表
 			local servers = {
-				-- 1. JavaScript (ts_ls)
-				ts_ls = {
-					filetypes = { "javascript", "javascriptreact" },
-					settings = {
-						javascript = {
-							inlayHints = {
-								includeInlayParameterNameHints = "all",
-								includeInlayParameterNameHintsWhenArgumentMatchesName = false,
-								includeInlayFunctionParameterTypeHints = true,
-								includeInlayVariableTypeHints = true,
-								includeInlayPropertyDeclarationTypeHints = true,
-								includeInlayFunctionLikeReturnTypeHints = true,
-								includeInlayEnumMemberValueHints = true,
-							},
-						},
-					},
-				},
+				-- 1. JavaScript (ts_ls) - 已禁用，使用 vtsls 替代
+				-- ts_ls = {
+				-- 	filetypes = { "javascript", "javascriptreact" },
+				-- 	settings = {
+				-- 		javascript = {
+				-- 			inlayHints = {
+				-- 				includeInlayParameterNameHints = "all",
+				-- 				includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+				-- 				includeInlayFunctionParameterTypeHints = true,
+				-- 				includeInlayVariableTypeHints = true,
+				-- 				includeInlayPropertyDeclarationTypeHints = true,
+				-- 				includeInlayFunctionLikeReturnTypeHints = true,
+				-- 				includeInlayEnumMemberValueHints = true,
+				-- 			},
+				-- 		},
+				-- 	},
+				-- },
 				-- 2. TypeScript/Vue (vtsls)
 				vtsls = {
 					filetypes = { "typescript", "typescriptreact", "vue" },

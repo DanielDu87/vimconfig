@@ -100,8 +100,8 @@ return {
 				-- Black 配置（Python 社区强制使用空格，无法配置 tab）
 				black = {
 					prepend_args = { "--fast" },
-					-- 优先使用 brew 安装的 black（比 Mason 的更快）
-					command = vim.fn.exepath("black") or "/opt/homebrew/bin/black" or "black",
+					-- 优先使用系统 PATH 中的 black
+					command = vim.fn.exepath("black") ~= "" and vim.fn.exepath("black") or "black",
 				},
 				-- Isort 配置（Python 导入排序）
 			isort = {
@@ -127,7 +127,7 @@ return {
 			},
 				-- Stylelint 配置：优先使用系统全局版本，并开启自动修复
 			stylelint = {
-				command = vim.fn.exepath("stylelint") or "/opt/homebrew/bin/stylelint" or "stylelint",
+				command = vim.fn.exepath("stylelint") ~= "" and vim.fn.exepath("stylelint") or "stylelint",
 				args = { "--fix", "--stdin-filename", "$FILENAME" },
 			},
 			},
