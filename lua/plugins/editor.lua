@@ -369,14 +369,14 @@ return {
 	{
 		"folke/which-key.nvim",
 		opts = {
-			layout = { spacing = 3, align = "center" },
+			layout = { columns = 3, spacing = 3, align = "center" },
 			-- 只在 <leader> 前缀时弹出菜单，隐藏操作符模式（c/d/y 等）的菜单
 			triggers = { "<leader>" },
 			icons = {
 				rules = false, -- 禁用默认图标规则
 			},
 			win = {
-				width = 0.95,
+				width = 0.8,
 				height = { min = 4, max = math.huge },
 				col = 0.5,
 				row = 0.9,

@@ -40,16 +40,21 @@ end
 -- 文件类型检测
 -------------------------------------------------------------------------------
 
--- 将文件名包含 "docker" 或 "dk" 的文件识别为 dockerfile（忽略大小写）
--- 注意：使用更精确的模式，避免匹配到路径中的目录名（如 /Code/Docker/index.html）
+-- 将文件名包含 "docker" 或 "dk" 的文件识别为 dockerfile（忽略大小写，包含即可）
 vim.filetype.add({
 	pattern = {
-		-- 匹配文件名中包含 docker（忽略大小写）的文件
-		-- 例如：dockerfile-copy, django-dockerfile, Dockerfile.prod, Dockerfile.dev
-		[".*/[^/]*[Dd][Oo][Cc][Kk][Ee][Rr][^/]*$"] = "dockerfile",
-		-- 匹配文件名中包含 dk（忽略大小写）的文件
-		-- 例如：Dockerfile.dk, app.dk
-		[".*/[^/]*[Dd][Kk][^/]*$"] = "dockerfile",
+		[".*"] = {
+			priority = -1,
+			function(path)
+				-- 确保不是目录，且只匹配文件名部分（避免匹配到路径中的目录名）
+				if vim.fn.isdirectory(path) ~= 1 then
+					local name = vim.fn.fnamemodify(path, ":t"):lower()
+					if name:find("docker") or name:find("dk") then
+						return "dockerfile"
+					end
+				end
+			end,
+		},
 	},
 })
 
