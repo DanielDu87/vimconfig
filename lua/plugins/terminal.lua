@@ -96,6 +96,9 @@ local function toggle_term_with_direction(direction_override)
 						pcall(vim.api.nvim_win_set_height, win, target_size)
 					elseif direction == "vertical" then
 						pcall(vim.api.nvim_win_set_width, win, target_size)
+					elseif direction == "float" then
+						-- 为浮窗终端添加左边距 1 列
+						vim.api.nvim_set_option_value("foldcolumn", "1", { win = win })
 					end
 				end
 				window_sizes.is_restoring = false
@@ -126,20 +129,34 @@ return {
 			start_in_insert = true,
 			insert_mappings = true,
 			terminal_mappings = true,
-			persist_size = false, 
+			persist_size = false,
 			close_on_exit = true,
 			shell = vim.o.shell .. " -l",
-			float_opts = { border = "rounded", winblend = 0, height = math.floor(vim.o.lines * 0.55), width = math.floor(vim.o.columns * 0.8) },
+			-- 浮窗配置：保持原尺寸，通过 on_open 中的 foldcolumn 实现内边距
+			float_opts = {
+				border = "rounded",
+				winblend = 0,
+				height = math.floor(vim.o.lines * 0.55),
+				width = math.floor(vim.o.columns * 0.8),
+				col = math.floor((vim.o.columns - math.floor(vim.o.columns * 0.8)) / 2), -- 水平居中
+			},
 		},
 		config = function(_, opts)
 			require("toggleterm").setup(opts)
 			local augroup = vim.api.nvim_create_augroup("ToggleTermInsert", { clear = true })
-			
+
 			vim.api.nvim_create_autocmd("TermOpen", {
 				group = augroup,
 				callback = function()
 					vim.cmd("startinsert")
 					vim.opt_local.mouse = ""
+					-- 为浮窗终端添加左边距
+					local win = vim.api.nvim_get_current_win()
+					local win_config = vim.api.nvim_win_get_config(win)
+					-- 只对浮窗生效
+					if win_config.relative and win_config.relative ~= "" then
+						vim.wo[win].foldcolumn = "1"
+					end
 				end,
 			})
 			
