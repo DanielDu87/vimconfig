@@ -266,8 +266,23 @@ vim.keymap.set("n", "<leader>fa", function()
 			vim.fn.mkdir(new_dir, "p")
 		end
 
-		-- 保存到新文件
+		-- 1. 先将内容写入新文件
 		vim.cmd("write " .. vim.fn.fnameescape(input))
-		vim.notify("已保存到: " .. input, vim.log.levels.INFO)
+
+		-- 2. 记录当前 buffer 编号
+		local old_buf = vim.api.nvim_get_current_buf()
+
+		-- 3. 打开新文件（会创建新 buffer 或切换到已存在的 buffer）
+		vim.cmd("edit " .. vim.fn.fnameescape(input))
+
+		-- 4. 如果新文件的 buffer 和旧 buffer 不同，删除旧的
+		local new_buf = vim.api.nvim_get_current_buf()
+		if old_buf ~= new_buf then
+			vim.schedule(function()
+				pcall(require("snacks").bufdelete, old_buf)
+			end)
+		end
+
+		vim.notify("已另存为: " .. input, vim.log.levels.INFO)
 	end)
 end, { desc = "另存为" })
