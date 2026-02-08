@@ -129,7 +129,7 @@ return {
 			persist_size = false, 
 			close_on_exit = true,
 			shell = vim.o.shell .. " -l",
-			float_opts = { border = "rounded", winblend = 0 },
+			float_opts = { border = "rounded", winblend = 0, height = math.floor(vim.o.lines * 0.55), width = math.floor(vim.o.columns * 0.8) },
 		},
 		config = function(_, opts)
 			require("toggleterm").setup(opts)
