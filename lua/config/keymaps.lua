@@ -249,40 +249,38 @@ vim.keymap.set("n", "<leader>fa", function()
 		filename = vim.fn.fnamemodify(buf_name, ":t")
 	end
 
-	-- 弹出输入框，保留原路径和文件名
-	vim.ui.input({
-		prompt = "另存为: ",
-		default = dir .. filename,
-		completion = "file",
-	}, function(input)
-		if not input or input == "" or input == dir then
-			vim.notify("已取消保存", vim.log.levels.WARN)
-			return
-		end
+	-- 使用 vim.fn.input（命令行输入框），与无名 buffer 保存保持一致
+	vim.fn.inputsave()
+	local input = vim.fn.input("另存为: ", dir .. filename, "file")
+	vim.fn.inputrestore()
 
-		-- 确保目录存在
-		local new_dir = vim.fn.fnamemodify(input, ":p:h")
-		if vim.fn.isdirectory(new_dir) == 0 then
-			vim.fn.mkdir(new_dir, "p")
-		end
+	if input == "" or input == dir then
+		vim.notify("已取消保存", vim.log.levels.WARN)
+		return
+	end
 
-		-- 1. 先将内容写入新文件
-		vim.cmd("write " .. vim.fn.fnameescape(input))
+	-- 确保目录存在
+	local new_dir = vim.fn.fnamemodify(input, ":p:h")
+	if vim.fn.isdirectory(new_dir) == 0 then
+		vim.fn.mkdir(new_dir, "p")
+	end
 
-		-- 2. 记录当前 buffer 编号
-		local old_buf = vim.api.nvim_get_current_buf()
+	-- 1. 先将内容写入新文件
+	vim.cmd("write " .. vim.fn.fnameescape(input))
 
-		-- 3. 打开新文件（会创建新 buffer 或切换到已存在的 buffer）
-		vim.cmd("edit " .. vim.fn.fnameescape(input))
+	-- 2. 记录当前 buffer 编号
+	local old_buf = vim.api.nvim_get_current_buf()
 
-		-- 4. 如果新文件的 buffer 和旧 buffer 不同，删除旧的
-		local new_buf = vim.api.nvim_get_current_buf()
-		if old_buf ~= new_buf then
-			vim.schedule(function()
-				pcall(require("snacks").bufdelete, old_buf)
-			end)
-		end
+	-- 3. 打开新文件（会创建新 buffer 或切换到已存在的 buffer）
+	vim.cmd("edit " .. vim.fn.fnameescape(input))
 
-		vim.notify("已另存为: " .. input, vim.log.levels.INFO)
-	end)
+	-- 4. 如果新文件的 buffer 和旧 buffer 不同，删除旧的
+	local new_buf = vim.api.nvim_get_current_buf()
+	if old_buf ~= new_buf then
+		vim.schedule(function()
+			pcall(require("snacks").bufdelete, old_buf)
+		end)
+	end
+
+	vim.notify("已另存为: " .. input, vim.log.levels.INFO)
 end, { desc = "另存为" })
