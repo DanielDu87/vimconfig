@@ -41,21 +41,17 @@ end
 -------------------------------------------------------------------------------
 
 -- 将文件名包含 "docker" 或 "dk" 的文件识别为 dockerfile（忽略大小写，包含即可）
-vim.filetype.add({
-	pattern = {
-		[".*"] = {
-			priority = -1,
-			function(path)
-				-- 确保不是目录，且只匹配文件名部分（避免匹配到路径中的目录名）
-				if vim.fn.isdirectory(path) ~= 1 then
-					local name = vim.fn.fnamemodify(path, ":t"):lower()
-					if name:find("docker") or name:find("dk") then
-						return "dockerfile"
-					end
-				end
-			end,
-		},
-	},
+vim.api.nvim_create_autocmd({ "BufRead", "BufNewFile" }, {
+	callback = function()
+		local path = vim.api.nvim_buf_get_name(0)
+		-- 确保不是目录，且只匹配文件名部分（避免匹配到路径中的目录名）
+		if vim.fn.isdirectory(path) ~= 1 then
+			local name = vim.fn.fnamemodify(path, ":t"):lower()
+			if name:find("docker") or name:find("dk") then
+				vim.bo.filetype = "dockerfile"
+			end
+		end
+	end,
 })
 
 -------------------------------------------------------------------------------

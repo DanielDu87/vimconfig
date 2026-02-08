@@ -19,5 +19,23 @@ return {
 				},
 			}
 		end,
+		config = function(_, opts)
+			local MiniIcons = require("mini.icons")
+			MiniIcons.setup(opts)
+
+			-- 拦截 get 函数以支持动态文件名图标匹配（包含 docker 或 dk）
+			local old_get = MiniIcons.get
+			MiniIcons.get = function(category, name)
+				if category == "file" and name then
+					-- 只提取文件名部分，避免匹配到路径中的目录名
+					local filename = vim.fn.fnamemodify(name, ":t"):lower()
+					if filename:find("docker") or filename:find("dk") then
+						-- 返回默认的 dockerfile 图标定义
+						return old_get("filetype", "dockerfile")
+					end
+				end
+				return old_get(category, name)
+			end
+		end,
 	},
 }
