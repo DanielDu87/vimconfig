@@ -442,6 +442,7 @@ return {
 				{ "<leader>c", group = "代码", icon = "🛠️" },
 				{ "<leader>c/", desc = "切换行注释", icon = "💬" },
 				{ "<leader>ca", desc = "代码操作", icon = "💡" },
+				{ "<leader>cg", desc = "切换Ghost诊断", icon = "👻" },
 				{ "<leader>cA", desc = "项目操作", icon = "⚛️" },
 				{ "<leader>cc", desc = "运行代码透镜", icon = "💎" },
 				{ "<leader>cC", desc = "刷新并显示代码透镜", icon = "🔄" },
