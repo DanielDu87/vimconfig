@@ -94,11 +94,18 @@ local function toggle_term_with_direction(direction_override)
 				if win and vim.api.nvim_win_is_valid(win) then
 					if direction == "horizontal" then
 						pcall(vim.api.nvim_win_set_height, win, target_size)
+						-- 确保垂直/水平终端没有 padding
+						vim.api.nvim_set_option_value("foldcolumn", "0", { win = win })
 					elseif direction == "vertical" then
 						pcall(vim.api.nvim_win_set_width, win, target_size)
+						-- 确保垂直/水平终端没有 padding
+						vim.api.nvim_set_option_value("foldcolumn", "0", { win = win })
 					elseif direction == "float" then
-						-- 为浮窗终端添加左边距 1 列
-						vim.api.nvim_set_option_value("foldcolumn", "1", { win = win })
+						-- 为浮窗终端添加左边距 2 列
+						vim.api.nvim_set_option_value("foldcolumn", "2", { win = win })
+					elseif direction == "tab" then
+						-- 标签页终端也没有 padding
+						vim.api.nvim_set_option_value("foldcolumn", "0", { win = win })
 					end
 				end
 				window_sizes.is_restoring = false
@@ -122,7 +129,7 @@ return {
 	{
 		"akinsho/toggleterm.nvim",
 		opts = {
-			direction = "float", -- <--- 添加此行：设置全局默认终端方向
+			direction = "horizontal", -- 首次打开默认下方的终端
 			open_mapping = nil, -- 移除 toggleterm 自身的 open_mapping
 			hide_numbers = true,
 			shade_terminals = true,
@@ -155,7 +162,7 @@ return {
 					local win_config = vim.api.nvim_win_get_config(win)
 					-- 只对浮窗生效
 					if win_config.relative and win_config.relative ~= "" then
-						vim.wo[win].foldcolumn = "1"
+						vim.wo[win].foldcolumn = "2"
 					end
 				end,
 			})
@@ -180,7 +187,9 @@ return {
 			{
 				"<C-\\>",
 				function()
-					require("toggleterm").toggle() -- 切换上次使用的终端
+					-- 直接使用 gemini_toggle_term，它已经处理了 Explorer 窗口的问题
+					-- 参考: https://github.com/akinsho/toggleterm.nvim/issues/660
+					vim.g.gemini_toggle_term("horizontal")
 				end,
 				mode = { "n", "t" }, -- 在普通模式和终端模式都生效
 				desc = "切换上次终端",
