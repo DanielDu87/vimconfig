@@ -131,6 +131,33 @@ vim.api.nvim_create_autocmd("FileType", {
 })
 
 -------------------------------------------------------------------------------
+-- 强制全局状态栏位置
+-------------------------------------------------------------------------------
+
+-- 确保状态栏始终在最底部（防止被插件或缩放操作修改）
+vim.api.nvim_create_autocmd({ "VimResized", "WinEnter", "BufWinEnter", "VimEnter", "UIEnter" }, {
+	callback = function()
+		local function fix_layout()
+			if vim.opt.laststatus:get() ~= 3 then
+				vim.opt.laststatus = 3
+			end
+			-- 强制隐藏命令行，让状态栏贴底
+			if vim.opt.cmdheight:get() ~= 0 then
+				vim.opt.cmdheight = 0
+			end
+			-- 强制全屏重绘
+			vim.cmd("redraw!")
+		end
+		
+		fix_layout()
+		
+		-- 针对启动时的延迟加载，再执行一次
+		vim.defer_fn(fix_layout, 100)
+		vim.defer_fn(fix_layout, 500)
+	end,
+})
+
+-------------------------------------------------------------------------------
 -- Tailwind CSS 自动激活逻辑
 -------------------------------------------------------------------------------
 
