@@ -718,6 +718,7 @@ return {
 			{
 				"<leader>rr",
 				function()
+					vim.cmd("update") -- 自动保存当前文件（仅当有修改时）
 					M.run_current_file()
 				end,
 				desc = "运行当前文件",
