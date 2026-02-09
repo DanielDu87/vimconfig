@@ -434,6 +434,7 @@ return {
 				{ "<leader>bd", desc = "关闭当前Buffer", icon = "❌" },
 				{ "<leader>bh", desc = "上一个Buffer", icon = "⬅️" },
 				{ "<leader>bl", desc = "下一个Buffer", icon = "➡️" },
+				{ "<leader>bn", desc = "打开全局临时Buffer", icon = "📝" },
 				{ "<leader>bo", desc = "关闭其他Buffer", icon = "🗑️" },
 				{ "<leader>bp", desc = "切换固定", icon = "📌" },
 				{ "<leader>bH", desc = "关闭左侧所有Buffer", icon = "🗑️" },
@@ -558,17 +559,13 @@ return {
 				{ "<leader>sM", desc = "手册页", icon = "📚" },
 				{ "<leader>ss", desc = "文档符号", icon = "💎" },
 				{ "<leader>sS", desc = "项目符号", icon = "⚛️" },
-							{ "<leader>S", group = "临时Buffer", icon = "📝" },
-							{ "<leader>t", group = "终端与模板", icon = "💻" },
-							{ "<leader>tf", desc = "浮窗终端", icon = "💎" },
-							{ "<leader>th", desc = "竖直终端（上下）", icon = "↕️" },
-							{ "<leader>tv", desc = "水平终端（左右）", icon = "↔️" },
-							{ "<leader>tt", desc = "标签页终端", icon = "📑" },
-							{ "<leader>tn", desc = "新建文件 (模板)", icon = "📄" },
-							{ "<leader>Ss", desc = "打开默认临时Buffer", icon = "📝" },				{ "<leader>Sn", desc = "新建命名临时Buffer", icon = "🆕" },
-				{ "<leader>S.", desc = "打开默认临时Buffer", icon = "📝" },
-				{ "<leader>SS", desc = "选择/管理临时Buffer", icon = "🗂️" },
-				{ "<leader>u", group = "界面", icon = "🎨" },
+											{ "<leader>S", desc = "打开全局临时Buffer", icon = "📝" },
+											{ "<leader>t", group = "终端与模板", icon = "💻" },
+											{ "<leader>tf", desc = "浮窗终端", icon = "💎" },
+											{ "<leader>th", desc = "竖直终端（上下）", icon = "↕️" },
+											{ "<leader>tv", desc = "水平终端（左右）", icon = "↔️" },
+											{ "<leader>tt", desc = "标签页终端", icon = "📑" },
+											{ "<leader>tn", desc = "新建文件 (模板)", icon = "📄" },				{ "<leader>u", group = "界面", icon = "🎨" },
 				{ "<leader>ua", desc = "which_key_ignore" },
 				{ "<leader>ub", desc = "切换背景模式", icon = "🌓" },
 				{ "<leader>ud", desc = "切换诊断显示", icon = "🔍" },
@@ -944,38 +941,32 @@ return {
 				desc = "查找配置文件",
 			},
 
-			-- 临时Buffer操作
+			-- 临时Buffer操作（全局持久化）
 			{
-				"<leader>Ss",
+				"<leader>S",
 				function()
-					require("snacks").scratch({ ft = "" })
+					require("snacks").scratch({
+						name = "全局临时Buffer",
+						ft = "text",
+						file = vim.fn.expand("~/global-scratch.md"),
+					})
 				end,
-				desc = "打开默认临时Buffer",
-			},
-			{
-				"<leader>Sn",
-				function()
-					require("snacks").scratch({ name = vim.fn.input("名称: "), ft = "" })
-				end,
-				desc = "新建命名临时Buffer",
-			},
-			{
-				"<leader>S.",
-				function()
-					require("snacks").scratch()
-				end,
-				desc = "切换临时Buffer",
-			},
-			{
-				"<leader>SS",
-				function()
-					require("snacks").picker.scratch()
-				end,
-				desc = "选择/管理临时Buffer",
+				desc = "打开全局临时Buffer",
 			},
 
 			-- Buffer与窗口操作
 			{ "<leader>bb", "<cmd>e #<cr>", desc = "切换到其他Buffer" },
+			{
+				"<leader>bn",
+				function()
+					require("snacks").scratch({
+						name = "全局临时Buffer",
+						ft = "text",
+						file = vim.fn.expand("~/global-scratch.md"),
+					})
+				end,
+				desc = "打开全局临时Buffer",
+			},
 
 			-- 诊断相关 (从 <leader>s 迁移)
 			{
