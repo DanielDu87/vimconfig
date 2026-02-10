@@ -87,6 +87,9 @@ vim.lsp.inlay_hint.enable(true)
 -- 始终开启自动换行
 vim.opt.wrap = true
 
+-- 自动读取外部修改
+vim.opt.autoread = true
+
 -- 启用全局状态栏（状态栏始终在窗口最底部）
 vim.opt.laststatus = 3
 

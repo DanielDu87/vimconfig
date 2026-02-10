@@ -215,6 +215,39 @@ vim.api.nvim_create_autocmd({ "BufReadPost", "BufNewFile" }, {
 })
 
 -------------------------------------------------------------------------------
+-- 自动重载外部修改的文件 (实时增强)
+-------------------------------------------------------------------------------
+
+-- 1. 基础事件触发：当焦点返回、进入 Buffer、离开终端等时刻检查
+vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold", "CursorHoldI", "TermLeave", "TermClose" }, {
+	callback = function()
+		if vim.api.nvim_get_mode().mode ~= "c" then
+			vim.cmd("checktime")
+		end
+	end,
+})
+
+-- 2. 实时增强：使用定时器每 2 秒自动执行一次 checktime
+-- 这样即使你停留在终端窗口里，旁边的文件也能自动更新
+local autoread_timer = vim.uv.new_timer()
+autoread_timer:start(2000, 2000, vim.schedule_wrap(function()
+	-- 只在非命令行模式下执行，避免干扰输入
+	if vim.api.nvim_get_mode().mode ~= "c" then
+		vim.cmd("checktime")
+	end
+end))
+
+-- 3. 当文件被重载时，静默处理（不弹出烦人的通知，保持实时同步感）
+-- 如果你确实需要通知，可以取消下面代码的注释
+--[[
+vim.api.nvim_create_autocmd("FileChangedShellPost", {
+	callback = function()
+		vim.notify("文件已同步", vim.log.levels.INFO, { timeout = 500 })
+	end,
+})
+]]
+
+-------------------------------------------------------------------------------
 -- 智能保存：针对无名缓冲区 (No Name) 的保存逻辑（VimScript 方案）
 -------------------------------------------------------------------------------
 
