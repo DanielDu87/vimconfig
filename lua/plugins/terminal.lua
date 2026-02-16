@@ -264,6 +264,11 @@ end
 
 -- 智能切换终端：切换上次使用的终端
 local function smart_toggle()
+	-- 确保 last_used_direction 始终有效
+	local valid_directions = { horizontal = true, vertical = true, float = true, tab = true }
+	if not last_used_direction or not valid_directions[last_used_direction] then
+		last_used_direction = "horizontal"  -- 回退到默认值
+	end
 	toggle_term_with_direction(last_used_direction)
 end
 
