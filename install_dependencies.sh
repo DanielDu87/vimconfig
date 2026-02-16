@@ -2,7 +2,7 @@
 #==============================================================================
 # Neovim 配置依赖自动安装脚本
 #==============================================================================
-# 此脚本自动安装 LazyVim 配置所需的所有依赖
+# 此脚本只安装基础工具（非 LSP），所有语言服务器由 Mason 管理
 # 使用方法: ./install_dependencies.sh
 
 set -e  # 遇到错误立即退出
@@ -35,124 +35,86 @@ if [[ "$PKG_MANAGER" == "brew" ]] && ! command -v brew &> /dev/null; then
 fi
 
 #------------------------------------------------------------------------------
-# 安装 Node.js 和 npm
+# 安装基础工具（非 LSP）
 #------------------------------------------------------------------------------
 echo ""
 echo "----------------------------------------"
-echo "安装 Node.js 依赖..."
-echo "----------------------------------------"
-
-if ! command -v node &> /dev/null; then
-    echo "安装 Node.js..."
-    if [[ "$PKG_MANAGER" == "brew" ]]; then
-        brew install node
-    else
-        sudo apt-get install -y nodejs npm
-    fi
-else
-    echo "Node.js 已安装: $(node --version)"
-fi
-
-# 安装 npm 全局包
-echo "安装 npm 全局语言服务器..."
-npm install -g \
-    typescript \
-    typescript-language-server \
-    vscode-langservers-extracted \
-    @tailwindcss/language-server \
-    @fsouza/prettierd \
-    eslint_d \
-    eslint \
-    prettier \
-    prettier-plugin-tailwindcss \
-    typescript-eslint \
-    dockerfile-language-server-nodejs
-
-echo "✓ npm 依赖安装完成"
-
-#------------------------------------------------------------------------------
-# 安装 Python 工具
-#------------------------------------------------------------------------------
-echo ""
-echo "----------------------------------------"
-echo "安装 Python 工具..."
-echo "----------------------------------------"
-
-# macOS 使用 Homebrew 安装
-if [[ "$PKG_MANAGER" == "brew" ]]; then
-    brew install pyright ruff black || true
-    echo "✓ Python 工具安装完成"
-else
-    # Linux 使用 pip
-    if command -v pip3 &> /dev/null; then
-        pip3 install --user -U pyright ruff black || true
-        echo "✓ Python 工具安装完成"
-    else
-        echo "警告: 未找到 pip3，跳过 Python 工具安装"
-    fi
-fi
-
-#------------------------------------------------------------------------------
-# 安装其他工具
-#------------------------------------------------------------------------------
-echo ""
-echo "----------------------------------------"
-echo "安装其他工具..."
+echo "安装基础工具..."
 echo "----------------------------------------"
 
 if [[ "$PKG_MANAGER" == "brew" ]]; then
     # macOS
     brew install \
-        hadolint \
-        shfmt \
         fd \
         ripgrep \
         fzf \
-        tree-sitter \
-        lazygit || true
+        lazygit \
+        tree-sitter || true
 else
     # Linux
+    sudo apt-get update
     sudo apt-get install -y \
-        hadolint \
-        shellcheck \
-        shfmt \
         fd-find \
         ripgrep \
         fzf \
-        tree-sitter \
-        lazygit || true
+        lazygit \
+        tree-sitter || true
 fi
 
-echo "✓ 其他工具安装完成"
+echo "✓ 基础工具安装完成"
 
 #------------------------------------------------------------------------------
-# 安装 Neovim 插件
+# 安装 Neovim（如未安装）
+#------------------------------------------------------------------------------
+echo ""
+echo "----------------------------------------"
+echo "检查 Neovim..."
+echo "----------------------------------------"
+
+if ! command -v nvim &> /dev/null; then
+    echo "安装 Neovim..."
+    if [[ "$PKG_MANAGER" == "brew" ]]; then
+        brew install neovim
+    else
+        sudo apt-get install -y neovim
+    fi
+else
+    echo "Neovim 已安装: $(nvim --version | head -1)"
+fi
+
+#------------------------------------------------------------------------------
+# 安装 Neovim 插件和 Mason 工具
 #------------------------------------------------------------------------------
 echo ""
 echo "----------------------------------------"
 echo "安装 Neovim 插件..."
 echo "----------------------------------------"
 
-if ! command -v nvim &> /dev/null; then
-    echo "错误: 未找到 Neovim，请先安装 Neovim"
-    exit 1
-fi
-
-# 同步插件并安装 Mason 工具
+echo "同步 Lazy.nvim 插件..."
 nvim --headless "+Lazy! sync" +qa
 
 echo "✓ Neovim 插件安装完成"
 
 #------------------------------------------------------------------------------
-# 完成
+# 说明
 #------------------------------------------------------------------------------
 echo ""
 echo "========================================"
-echo "所有依赖安装完成！"
+echo "基础依赖安装完成！"
 echo "========================================"
 echo ""
+echo "语言服务器由 Mason 管理，会自动安装"
+echo ""
+echo "已安装的基础工具:"
+echo "  - fd: 快速文件查找"
+echo "  - ripgrep: 内容搜索"
+echo "  - fzf: 模糊查找"
+echo "  - lazygit: Git UI"
+echo "  - tree-sitter: 语法解析"
+echo ""
 echo "接下来:"
-echo "1. 重启 Neovim"
-echo "2. 打开任意文件，LSP 服务器会自动启动"
-echo "3. 如需手动安装其他工具，运行 :Mason"
+echo "1. 启动 Neovim: nvim"
+echo "2. Mason 会自动安装所有语言服务器"
+echo "3. 打开任意文件即可开始使用"
+echo "4. 查看已安装工具: :Mason"
 echo ""

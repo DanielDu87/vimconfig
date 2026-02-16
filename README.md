@@ -55,23 +55,24 @@
 
 ## 🚀 快速开始
 
-### 1. 一键安装所有依赖
+### 1. 一键安装基础依赖
 
 ```bash
-# 运行自动安装脚本
+# 运行自动安装脚本（只安装基础工具，LSP 由 Mason 管理）
 cd ~/.config/nvim
 ./install_dependencies.sh
 ```
 
-该脚本会自动安装：
-- **Node.js** 依赖：TypeScript, ESLint, Prettier, Tailwind 等
-- **Python** 工具：pyright, ruff, black, debugpy
-- **其他工具**：fd, ripgrep, fzf, lazygit, hadolint
-- **Neovim 插件**：通过 Lazy.nvim 自动同步
+该脚本会自动安装基础工具（**不含语言服务器**）：
+- **fd** - 快速文件查找
+- **ripgrep** - 内容搜索
+- **fzf** - 模糊查找
+- **lazygit** - Git UI
+- **tree-sitter** - 语法解析
 
-### 2. Mason 自动安装
+### 2. Mason 自动安装语言服务器
 
-首次启动 Neovim 时，Mason 会自动安装所有启用的语言服务器：
+首次启动 Neovim 时，Mason 会自动安装所有语言服务器和开发工具：
 
 ```vim
 :Mason        -- 查看已安装的工具
@@ -79,14 +80,30 @@ cd ~/.config/nvim
 ```
 
 自动安装的工具包括：
-- **前端**：`typescript-language-server`, `eslint_d`, `prettierd`, `@tailwindcss/language-server`, `vue-language-server`
-- **Docker**：`dockerfile-language-server`, `hadolint`
-- **Python**：`pyright`, `ruff`, `black`, `debugpy`
-- **通用**：`yaml-language-server`, `json-lsp`, `marksman`
+
+**LSP 服务器**（智能提示）：
+- **前端**：`ts_ls`, `tailwindcss`, `volar`, `html`, `cssls`, `eslint`
+- **Docker**：`dockerls`, `docker_compose_language_service`
+- **Python**：`pyright`
+- **通用**：`jsonls`, `yamlls`, `marksman`, `lua_ls`, `bashls`
+
+**格式化工具**：
+- `prettierd`, `eslint_d`, `black`, `ruff`, `shfmt`, `stylua`, `yamlfmt`
+
+**Lint 工具**：
+- `hadolint`, `shellcheck`, `typos`, `actionlint`
+
+**调试器**：
+- `debugpy` (Python)
 
 ### 3. 验证安装
 
 打开任意支持的文件（如 `Dockerfile`, `.py`, `.ts`），LSP 服务器会自动启动。
+
+**优势**：
+- ✅ 无需手动安装 npm/pip 全局包
+- ✅ 所有工具统一由 Mason 管理
+- ✅ 迁移更简单，只需运行安装脚本
 
 ---
 
