@@ -53,6 +53,43 @@
 - **视觉反馈**：SignColumn 显示 `🔖` 图标，支持 `[` / `]` + `m` 快速跳转。
 - **快速搜索**：`'`（单引号）一键搜索并预览所有书签。
 
+## 🚀 快速开始
+
+### 1. 一键安装所有依赖
+
+```bash
+# 运行自动安装脚本
+cd ~/.config/nvim
+./install_dependencies.sh
+```
+
+该脚本会自动安装：
+- **Node.js** 依赖：TypeScript, ESLint, Prettier, Tailwind 等
+- **Python** 工具：pyright, ruff, black, debugpy
+- **其他工具**：fd, ripgrep, fzf, lazygit, hadolint
+- **Neovim 插件**：通过 Lazy.nvim 自动同步
+
+### 2. Mason 自动安装
+
+首次启动 Neovim 时，Mason 会自动安装所有启用的语言服务器：
+
+```vim
+:Mason        -- 查看已安装的工具
+:MasonUpdate  -- 更新所有工具
+```
+
+自动安装的工具包括：
+- **前端**：`typescript-language-server`, `eslint_d`, `prettierd`, `@tailwindcss/language-server`, `vue-language-server`
+- **Docker**：`dockerfile-language-server`, `hadolint`
+- **Python**：`pyright`, `ruff`, `black`, `debugpy`
+- **通用**：`yaml-language-server`, `json-lsp`, `marksman`
+
+### 3. 验证安装
+
+打开任意支持的文件（如 `Dockerfile`, `.py`, `.ts`），LSP 服务器会自动启动。
+
+---
+
 ## 🌐 语言支持矩阵 (Languages & Tools)
 
 本配置为核心开发语言提供了完整的**LSP (智能提示)**、**Linter (代码检查)**、**Formatter (代码格式化)** 和 **DAP (调试)** 支持。
@@ -316,4 +353,4 @@
 | `<leader>k` / `<leader>K` | **DevDocs 文档查询** (词/输入) | 普通模式 |
 
 ---
-**配置维护者**: Dyx | **基于**: LazyVim | **更新日期**: 2026-02-10
+**配置维护者**: Dyx | **基于**: LazyVim | **更新日期**: 2026-02-16
