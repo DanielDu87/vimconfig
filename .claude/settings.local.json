@@ -69,7 +69,12 @@
       "Bash(ruff:*)",
       "Bash(stylua:*)",
       "Bash(node:*)",
-      "Bash(~/.zshrc)"
+      "Bash(~/.zshrc)",
+      "Bash(npm config get:*)",
+      "Bash(command -v:*)",
+      "Bash(pip3 list:*)",
+      "Bash(pip3 show:*)",
+      "Bash(pip3 install:*)"
     ]
   }
 }

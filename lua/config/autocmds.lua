@@ -158,6 +158,39 @@ vim.api.nvim_create_autocmd({ "VimResized", "WinEnter", "BufWinEnter", "VimEnter
 })
 
 -------------------------------------------------------------------------------
+-- 终端界面强制优化：移除左边距和多余装饰
+-------------------------------------------------------------------------------
+
+vim.api.nvim_create_autocmd({ "TermOpen", "BufEnter", "WinEnter" }, {
+	callback = function()
+		if vim.bo.buftype == "terminal" then
+			local win = vim.api.nvim_get_current_win()
+			if win and vim.api.nvim_win_is_valid(win) then
+				local function apply_terminal_style()
+					if not vim.api.nvim_win_is_valid(win) then return end
+					-- 1. 强制关闭所有边栏列（包括 statuscolumn）
+					vim.wo[win].signcolumn = "no"
+					vim.wo[win].foldcolumn = "0"
+					vim.wo[win].number = false
+					vim.wo[win].relativenumber = false
+					vim.wo[win].statuscolumn = "" -- 关键：移除 LazyVim 默认的 statuscolumn
+					-- 2. 移除行尾填充字符
+					vim.wo[win].fillchars = "eob: "
+					-- 3. 锁定窗口
+					pcall(function() vim.wo[win].winfixbuf = true end)
+				end
+				
+				-- 立即应用一次
+				apply_terminal_style()
+				-- 10ms 后再强制应用一次，防止被 LazyVim 的渲染逻辑覆盖
+				vim.defer_fn(apply_terminal_style, 10)
+				vim.defer_fn(apply_terminal_style, 100)
+			end
+		end
+	end,
+})
+
+-------------------------------------------------------------------------------
 -- Tailwind CSS 自动激活逻辑
 -------------------------------------------------------------------------------
 

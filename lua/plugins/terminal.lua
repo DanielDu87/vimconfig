@@ -158,11 +158,18 @@ local function toggle_term_with_direction(direction_override)
 				on_open = function(t)
 					local win = t.window
 					if win and vim.api.nvim_win_is_valid(win) then
-						-- 完全禁用符号列、折叠列、行号，移除左边距
-						vim.api.nvim_set_option_value("signcolumn", "no", { win = win })
-						vim.api.nvim_set_option_value("foldcolumn", "0", { win = win })
-						vim.api.nvim_set_option_value("number", false, { win = win })
-						vim.api.nvim_set_option_value("relativenumber", false, { win = win })
+						local function apply()
+							if not vim.api.nvim_win_is_valid(win) then return end
+							-- 完全禁用符号列、折叠列、行号，以及 statuscolumn
+							vim.api.nvim_set_option_value("signcolumn", "no", { win = win })
+							vim.api.nvim_set_option_value("foldcolumn", "0", { win = win })
+							vim.api.nvim_set_option_value("number", false, { win = win })
+							vim.api.nvim_set_option_value("relativenumber", false, { win = win })
+							vim.api.nvim_set_option_value("statuscolumn", "", { win = win })
+						end
+						apply()
+						vim.defer_fn(apply, 10)
+						vim.defer_fn(apply, 100)
 					end
 					vim.schedule(function()
 						local win = t.window
@@ -199,11 +206,18 @@ local function toggle_term_with_direction(direction_override)
 					on_open = function(t)
 					local win = t.window
 					if win and vim.api.nvim_win_is_valid(win) then
-						-- 完全禁用符号列、折叠列、行号，移除左边距
-						vim.api.nvim_set_option_value("signcolumn", "no", { win = win })
-						vim.api.nvim_set_option_value("foldcolumn", "0", { win = win })
-						vim.api.nvim_set_option_value("number", false, { win = win })
-						vim.api.nvim_set_option_value("relativenumber", false, { win = win })
+						local function apply()
+							if not vim.api.nvim_win_is_valid(win) then return end
+							-- 完全禁用符号列、折叠列、行号，以及 statuscolumn
+							vim.api.nvim_set_option_value("signcolumn", "no", { win = win })
+							vim.api.nvim_set_option_value("foldcolumn", "0", { win = win })
+							vim.api.nvim_set_option_value("number", false, { win = win })
+							vim.api.nvim_set_option_value("relativenumber", false, { win = win })
+							vim.api.nvim_set_option_value("statuscolumn", "", { win = win })
+						end
+						apply()
+						vim.defer_fn(apply, 10)
+						vim.defer_fn(apply, 100)
 					end
 					vim.schedule(function()
 						if ok_sizes and window_sizes then
@@ -287,11 +301,22 @@ return {
 			-- 设置终端窗口样式的辅助函数
 			local function set_term_options(win)
 				if win and vim.api.nvim_win_is_valid(win) then
-					-- 完全禁用符号列、折叠列、行号，移除左边距
-					vim.api.nvim_set_option_value("signcolumn", "no", { win = win })
-					vim.api.nvim_set_option_value("foldcolumn", "0", { win = win })
-					vim.api.nvim_set_option_value("number", false, { win = win })
-					vim.api.nvim_set_option_value("relativenumber", false, { win = win })
+					local function apply()
+						if not vim.api.nvim_win_is_valid(win) then return end
+						-- 完全禁用符号列、折叠列、行号，以及最重要的 statuscolumn
+						vim.api.nvim_set_option_value("signcolumn", "no", { win = win })
+						vim.api.nvim_set_option_value("foldcolumn", "0", { win = win })
+						vim.api.nvim_set_option_value("number", false, { win = win })
+						vim.api.nvim_set_option_value("relativenumber", false, { win = win })
+						vim.api.nvim_set_option_value("statuscolumn", "", { win = win })
+						-- 额外优化：移除终端侧边可能的空白字符填充
+						vim.api.nvim_set_option_value("fillchars", "eob: ", { win = win })
+						-- 锁定 buffer，防止其他文件被误打开到终端窗口
+						pcall(vim.api.nvim_set_option_value, "winfixbuf", true, { win = win })
+					end
+					apply()
+					vim.defer_fn(apply, 10)
+					vim.defer_fn(apply, 100)
 				end
 			end
 

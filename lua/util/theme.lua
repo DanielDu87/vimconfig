@@ -6,6 +6,8 @@ local M = {}
 -- 透明设置函数
 function M.apply_transparency()
 	local highlights = {
+		-- 核心背景（最关键）
+		"Normal", "NormalNC",
 		-- 浮动窗口
 		"NormalFloat", "FloatBorder",
 		-- 文件浏览器
@@ -18,11 +20,15 @@ function M.apply_transparency()
 		-- Snacks Picker
 		"SnacksPicker", "SnacksPickerBorder", "SnacksPickerTitle",
 		-- 其他常见 UI 元素
-		"Pmenu", "PmenuSel", "PmenuSbar", "PmenuThumb",
+		"Pmenu", "PmenuSbar", "PmenuThumb",
 		"TelescopeNormal", "TelescopeBorder", "TelescopeTitle",
 		"LazyNormal", "LazyButton",
 		"MasonNormal", "MasonHeader",
 		"NoiceCmdlinePopup", "NoiceCmdlinePopupBorder", "NoicePopup", "NoicePopupBorder",
+		-- 终端
+		"Terminal", "TermNormal",
+		-- 其他可能影响透明度的元素
+		"Folded", "SignColumn", "WinSeparator",
 	}
 	for _, name in ipairs(highlights) do
 		vim.api.nvim_set_hl(0, name, { bg = "NONE", force = true })
