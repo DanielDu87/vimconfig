@@ -8,7 +8,7 @@
 vim.g.transparent_enabled = true
 
 -- 主题保存路径
-local theme_file = vim.fn.expand("~/Documents/colorscheme")
+local theme_file = vim.fn.expand("~/Documents/neovim_files/colorscheme")
 
 -- 读取保存的主题
 local function load_saved_theme()

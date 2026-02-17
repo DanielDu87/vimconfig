@@ -9,7 +9,7 @@ M.window_sizes = {}
 
 -- 配置
 M.config = {
-	save_file = vim.fn.expand("~/Documents/window_sizes.json"),
+	save_file = vim.fn.expand("~/Documents/neovim_files/window_sizes.json"),
 }
 
 -- 标志位：是否正在恢复布局

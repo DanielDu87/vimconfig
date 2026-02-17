@@ -1,7 +1,7 @@
 local M = {}
 
 -- 配置文件路径，存储在 Neovim 的数据目录下
-local config_file_path = vim.fn.expand("~/Documents/runner_file_configs.json")
+local config_file_path = vim.fn.expand("~/Documents/neovim_files/runner_file_configs.json")
 local configs = {}
 
 -- 项目配置的命名空间

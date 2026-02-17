@@ -949,7 +949,7 @@ return {
 					require("snacks").scratch({
 						name = "全局临时Buffer",
 						ft = "text",
-						file = vim.fn.expand("~/Documents/global-scratch.md"),
+						file = vim.fn.expand("~/Documents/neovim_files/global-scratch.md"),
 					})
 				end,
 				desc = "打开全局临时Buffer",
@@ -963,7 +963,7 @@ return {
 					require("snacks").scratch({
 						name = "全局临时Buffer",
 						ft = "text",
-						file = vim.fn.expand("~/Documents/global-scratch.md"),
+						file = vim.fn.expand("~/Documents/neovim_files/global-scratch.md"),
 					})
 				end,
 				desc = "打开全局临时Buffer",
