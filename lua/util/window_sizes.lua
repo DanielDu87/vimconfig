@@ -9,7 +9,7 @@ M.window_sizes = {}
 
 -- 配置
 M.config = {
-	save_file = vim.fn.stdpath("state") .. "/window_sizes.json",
+	save_file = "/Users/dyx/Documents/window_sizes.json",
 }
 
 -- 标志位：是否正在恢复布局

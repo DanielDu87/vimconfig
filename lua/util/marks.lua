@@ -11,7 +11,7 @@ M.bookmarks = {}
 M.config = {
     sign_name = "SimpleBookmark",
     sign_text = "🔖",
-    save_file = vim.fn.expand("~/bookmarks.json"),
+    save_file = "/Users/dyx/Documents/bookmarks.json",
 }
 
 -- 初始化符号定义 (强制高亮颜色以确保可见性)

@@ -2,7 +2,7 @@
 -- Ghost 诊断全局状态管理（按文件类型）
 --==============================================================================
 -- 状态文件路径
-local state_file = vim.fn.stdpath("state") .. "/ghost_diagnostic.json"
+local state_file = "/Users/dyx/Documents/ghost_diagnostic.json"
 
 -- 存储每个文件类型是否启用 ghost 诊断
 local ghost_state = {

@@ -33,6 +33,9 @@ function M.apply_transparency()
 	for _, name in ipairs(highlights) do
 		vim.api.nvim_set_hl(0, name, { bg = "NONE", force = true })
 	end
+	-- 单独设置分割线前景色（防止被重置为白色）
+	vim.api.nvim_set_hl(0, "WinSeparator", { fg = "#565f89", bg = "NONE", bold = true, force = true })
+	vim.api.nvim_set_hl(0, "VertSplit", { fg = "#565f89", bg = "NONE", force = true })
 end
 
 -- 延迟应用透明（多次尝试确保覆盖主题设置）

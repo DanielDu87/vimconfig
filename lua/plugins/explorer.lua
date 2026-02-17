@@ -10,7 +10,7 @@ return {
 			--==============================================================================
 			-- Explorer 宽度持久化配置（必须先定义函数）
 			--==============================================================================
-			local width_file = vim.fn.stdpath("state") .. "/explorer_width"
+			local width_file = "/Users/dyx/Documents/explorer_width"
 
 			-- 读取保存的宽度
 			local function load_width()
