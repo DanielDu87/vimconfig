@@ -8,7 +8,7 @@
 vim.g.transparent_enabled = true
 
 -- 主题保存路径
-local theme_file = "/Users/dyx/Documents/colorscheme"
+local theme_file = vim.fn.expand("~/Documents/colorscheme")
 
 -- 读取保存的主题
 local function load_saved_theme()
@@ -23,7 +23,7 @@ end
 
 -- 保存当前主题
 local function save_theme(theme)
-	-- /Users/dyx/Documents 目录已存在，无需创建
+	-- ~/Documents 目录已存在，无需创建
 	local f = io.open(theme_file, "w")
 	if f then
 		f:write(theme)

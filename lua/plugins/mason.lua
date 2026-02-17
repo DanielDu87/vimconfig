@@ -50,6 +50,7 @@ return {
 				"shellcheck",
 				"typos",
 				"actionlint",
+				"markdownlint",
 
 				-- 其他工具
 				"tree-sitter-cli",

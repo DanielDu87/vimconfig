@@ -36,6 +36,13 @@ function M.apply_transparency()
 	-- 单独设置分割线前景色（防止被重置为白色）
 	vim.api.nvim_set_hl(0, "WinSeparator", { fg = "#565f89", bg = "NONE", bold = true, force = true })
 	vim.api.nvim_set_hl(0, "VertSplit", { fg = "#565f89", bg = "NONE", force = true })
+	-- 单独设置 WhichKey 前景色（防止被重置为白色）
+	vim.api.nvim_set_hl(0, "WhichKeyBorder", { fg = "#2b85b7", bg = "NONE", force = true })
+	vim.api.nvim_set_hl(0, "WhichKeyIcon", { fg = "#9aa5ce", bg = "NONE", force = true })
+	vim.api.nvim_set_hl(0, "WhichKeyGroup", { fg = "#9aa5ce", bg = "NONE", force = true })
+	vim.api.nvim_set_hl(0, "WhichKeySeparator", { fg = "#565f89", bg = "NONE", force = true })
+	vim.api.nvim_set_hl(0, "WhichKeyValue", { fg = "#7dcfff", bg = "NONE", force = true })
+	vim.api.nvim_set_hl(0, "WhichKeyDesc", { fg = "#c0caf5", bg = "NONE", force = true })
 end
 
 -- 延迟应用透明（多次尝试确保覆盖主题设置）

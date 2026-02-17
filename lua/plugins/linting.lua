@@ -41,10 +41,39 @@ return {
 				end,
 			}
 
+			-- 配置 markdownlint-cli2 可执行文件路径和解析器
+			lint.linters.markdownlint_cli2 = {
+				cmd = vim.fn.stdpath("data") .. "/mason/bin/markdownlint-cli2",
+				args = {},
+				stdin = true,
+				stream = "stdout",
+				ignore_exitcode = true,
+				parser = function(output, bufnr)
+					local diagnostics = {}
+					-- markdownlint-cli2 输出格式: filename:line:col: rule message [rule-id]
+					for line in output:gmatch("[^\r\n]+") do
+						local file, row, col, message, rule = line:match("^(.+):(%d+):(%d+): (.+) %[(.+)%]$")
+						if row and message then
+							table.insert(diagnostics, {
+								lnum = tonumber(row) - 1,
+								col = tonumber(col) - 1,
+								end_lnum = tonumber(row) - 1,
+								end_col = tonumber(col),
+								severity = vim.diagnostic.severity.WARN,
+								message = message,
+								source = "markdownlint",
+								code = rule,
+							})
+						end
+					end
+					return diagnostics
+				end,
+			}
+
 			-- 配置 linters
 			lint.linters_by_ft = {
 				python = { "ruff" },
-				markdown = { "markdownlint" },
+				markdown = { "markdownlint_cli2" },
 				dockerfile = { "hadolint" },
 				htmldjango = { "djlint" },
 				html = { "htmlhint" },

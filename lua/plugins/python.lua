@@ -15,7 +15,7 @@ return {
 			opts.search = {
 				-- 1. 您的自定义全局仓库
 				my_envs = {
-					command = "fd 'bin/python$' /Users/dyx/Code/0.python-venv --full-path --color never",
+					command = "fd 'bin/python$' " .. vim.fn.expand("~/Code/0.python-venv") .. " --full-path --color never",
 				},
 			}
 			-- 禁用项目本地搜索

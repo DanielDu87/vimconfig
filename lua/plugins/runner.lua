@@ -28,7 +28,7 @@ local CONFIG = {
 
 M.active_jobs = {}
 M.active_log_win = nil -- 记录日志窗口引用
-local common_log_file = vim.fn.stdpath("cache") .. "/runner_common.log"
+local common_log_file = vim.fn.expand("~/Documents/runner_common.log")
 local runner_config = require("util.runner_config")
 
 ---
