@@ -10,16 +10,9 @@ return {
 	-------------------------------------------------------------------------
 	{
 		"nvim-treesitter/nvim-treesitter",
-		build = ":TSUpdate",
-		opts = {
-			-- 启用所有核心功能
-			highlight = {
-				enable = true, -- 启用语法高亮
-				additional_vim_regex_highlighting = false,
-			},
-
-			-- 增量选择
-			incremental_selection = {
+		opts = function(_, opts)
+			-- 合入增量选择配置
+			opts.incremental_selection = {
 				enable = true,
 				keymaps = {
 					init_selection = "<CR>",
@@ -27,42 +20,17 @@ return {
 					scope_incremental = "<TAB>",
 					node_decremental = "<S-TAB>",
 				},
-			},
+			}
 
-			-- 缩进
-			indent = {
-				enable = true,
-			},
-
-			-- 确保安装前端和 Python 相关的 parser
-			ensure_installed = {
-				-- 前端
-				"html",
+			-- 追加额外的 parser（LazyVim 已有 html, javascript, typescript 等）
+			vim.list_extend(opts.ensure_installed, {
 				"css",
-				"javascript",
-				"typescript",
 				"tsx",
-				"json",
-				"jsonc",
-				"yaml",
-
-				-- Python
-				"python",
-
-				-- 基础
-				"lua",
-				"vim",
-				"vimdoc",
-				"query",
-				"regex",
-
-				-- 常用
-				"bash",
-				"markdown",
-				"markdown_inline",
 				"dockerfile",
-			},
-		},
+			})
+
+			return opts
+		end,
 	},
 
 	-------------------------------------------------------------------------

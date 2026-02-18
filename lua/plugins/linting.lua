@@ -76,7 +76,7 @@ return {
 				markdown = { "markdownlint_cli2" },
 				dockerfile = { "hadolint" },
 				htmldjango = { "djlint" },
-				html = { "htmlhint" },
+				-- html = { "htmlhint" }, -- 使用 LSP 提供的检查，无需额外 linter
 			}
 
 			-- 实时触发 lint 的逻辑 (增强版)
