@@ -7,3 +7,4 @@ foo.*
 *.log
 data
 .explorer_width
+node_modules/
