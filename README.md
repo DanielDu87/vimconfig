@@ -374,6 +374,9 @@ cd ~/.config/nvim
 ## 📝 更新日志
 
 ### 2026-02-18
+- 🔧 **修复 Prettier 插件配置**：将 `.prettierrc` 转换为 `prettier.config.js`，使用绝对路径配置全局安装的 `prettier-plugin-tailwindcss`
+- ✨ **启用 TailwindCSS 类名自动排序**：在 HTML/CSS/JS/TS/Vue 文件中自动排序 Tailwind 类名，提升代码可读性
+- 🔧 **限制 TailwindCSS LSP 文件类型**：仅在 HTML/CSS/JS/Vue 文件中启动，避免干扰 Markdown 等其他文件
 - 🎨 **优化文件搜索预览**：使用真实 buffer 获得完整的 Treesitter 语法高亮，添加 Tab 键在输入框/列表/预览间切换
 - 🔧 **禁用预览窗口的 AI 补全**：预览窗口中禁用 Copilot ghost text、blink.cmp 和 tiny ghost 诊断提示
 - 🎨 **修复诊断颜色不一致**：完全自定义 tiny-inline-diagnostic 高亮组，确保边缘符号和文字颜色统一
