@@ -85,6 +85,7 @@ return {
 				},
 				-- Prettier 配置：使用 tab
 				prettier = {
+					command = vim.fn.exepath("prettier") ~= "" and vim.fn.exepath("prettier") or "prettierd",
 					prepend_args = {
 						"--use-tabs",
 						"--tab-width",
