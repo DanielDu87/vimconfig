@@ -84,6 +84,7 @@ return {
 				},
 				},
 				-- Prettier 配置：使用 tab
+				-- 注意：TailwindCSS 插件在 .prettierrc 中配置，不需要在这里传递 --plugin 参数
 				prettier = {
 					command = vim.fn.exepath("prettier") ~= "" and vim.fn.exepath("prettier") or "prettierd",
 					prepend_args = {
@@ -94,8 +95,6 @@ return {
 						"120",
 						"--bracket-same-line",
 						"true",
-						"--plugin",
-						"prettier-plugin-tailwindcss",
 					},
 				},
 				-- Black 配置（Python 社区强制使用空格，无法配置 tab）

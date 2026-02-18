@@ -115,6 +115,18 @@ return {
 				bashls = {},
 				marksman = {},
 				tailwindcss = {
+					-- 只在以下文件类型中启用 TailwindCSS LSP（排除 Markdown）
+					filetypes = {
+						"html",
+						"htmldjango",
+						"css",
+						"scss",
+						"javascript",
+						"javascriptreact",
+						"typescript",
+						"typescriptreact",
+						"vue",
+					},
 					-- Tailwind 也需要合理的根目录，否则在非项目目录下可能卡死
 					root_dir = function(fname)
 						return lspconfig.util.root_pattern("tailwind.config.js", "tailwind.config.cjs", "package.json", ".git")(fname)
