@@ -91,6 +91,31 @@ return {
 				-- 分割线颜色（WinSeparator 是 Nvim 0.10+ 的标准，VertSplit 是兼容旧版）
 				hl.WinSeparator = { fg = "#565f89", bold = true }
 				hl.VertSplit = { fg = "#565f89" }
+
+				-- 诊断颜色 - 确保边缘符号和文字颜色一致（tiny-inline-diagnostic）
+				-- 定义完整的诊断高亮组（包括 fg 和 sp）
+				hl.DiagnosticError = { fg = "#f7768e", sp = "#f7768e" }
+				hl.DiagnosticWarn = { fg = "#e0af68", sp = "#e0af68" }
+				hl.DiagnosticInfo = { fg = "#7dcfff", sp = "#7dcfff" }
+				hl.DiagnosticHint = { fg = "#9aa5ce", sp = "#9aa5ce" }
+
+				-- Underline 风格（用于诊断下划线）
+				hl.DiagnosticUnderlineError = { sp = "#f7768e", undercurl = true }
+				hl.DiagnosticUnderlineWarn = { sp = "#e0af68", undercurl = true }
+				hl.DiagnosticUnderlineInfo = { sp = "#7dcfff", undercurl = true }
+				hl.DiagnosticUnderlineHint = { sp = "#9aa5ce", undercurl = true }
+
+				-- Virtual text 风格（用于内联诊断）
+				hl.DiagnosticVirtualTextError = { fg = "#f7768e", bg = "NONE" }
+				hl.DiagnosticVirtualTextWarn = { fg = "#e0af68", bg = "NONE" }
+				hl.DiagnosticVirtualTextInfo = { fg = "#7dcfff", bg = "NONE" }
+				hl.DiagnosticVirtualTextHint = { fg = "#9aa5ce", bg = "NONE" }
+
+				-- Sign 风格（用于符号列）
+				hl.DiagnosticSignError = { fg = "#f7768e", bg = "NONE" }
+				hl.DiagnosticSignWarn = { fg = "#e0af68", bg = "NONE" }
+				hl.DiagnosticSignInfo = { fg = "#7dcfff", bg = "NONE" }
+				hl.DiagnosticSignHint = { fg = "#9aa5ce", bg = "NONE" }
 			end,
 		},
 	},

@@ -1570,6 +1570,31 @@ return {
 			opts.picker = opts.picker or {}
 			opts.picker.prompt = "" -- 严格还原原始设置
 
+			-- 修复 Snacks.nvim explorer diagnostics 的 bug (buffer id 无效问题)
+			vim.schedule(function()
+				local ok, explorer_diags = pcall(require, "snacks.explorer.diagnostics")
+				if ok and explorer_diags.update then
+					local original_update = explorer_diags.update
+					explorer_diags.update = function(cwd)
+						-- 先过滤掉无效的 buffer
+						local valid_diags = {}
+						for _, diag in ipairs(vim.diagnostic.get()) do
+							if diag.bufnr and vim.api.nvim_buf_is_valid(diag.bufnr) then
+								table.insert(valid_diags, diag)
+							end
+						end
+						-- 临时替换 vim.diagnostic.get
+						local old_get = vim.diagnostic.get
+						vim.diagnostic.get = function()
+							return valid_diags
+						end
+						local ret = original_update(cwd)
+						vim.diagnostic.get = old_get
+						return ret
+					end
+				end
+			end)
+
 			-- 添加清除选择的动作
 			opts.picker.actions = opts.picker.actions or {}
 			opts.picker.actions.list_clear_selected = function(picker)
@@ -1688,26 +1713,105 @@ return {
 			-- 源特定增强
 			opts.picker.sources = opts.picker.sources or {}
 
-            -- 修正 git_status (<leader>gs) 的 Tab 键行为
-            opts.picker.sources.git_status = {
-              win = {
-                input = {
-                  keys = {
-                    ["<Tab>"] = { "focus_preview", mode = { "i", "n" } },
-                  },
-                },
-                list = {
-                  keys = {
-                    ["<Tab>"] = { "focus_preview", mode = { "n" } },
-                  },
-                },
-                preview = {
-                  keys = {
-                    ["<Tab>"] = { "focus_input", mode = { "n" } },
-                  },
-                },
-              },
-            }
+			-- 自定义文件预览函数：使用真实 buffer 以获得完整的语法高亮
+			local function real_buffer_preview(ctx)
+				local Snacks = require("snacks")
+				local path = ctx.item.file
+				if not path then
+					return Snacks.picker.preview.file(ctx)
+				end
+
+				-- 检查是否是目录
+				if vim.fn.isdirectory(path) == 1 then
+					return Snacks.picker.preview.directory(ctx)
+				end
+
+				-- 检查文件大小
+				local stat = vim.uv.fs_stat(path)
+				if not stat then
+					ctx.preview:notify("文件不存在", "warn")
+					return
+				end
+				local max_size = ctx.picker.opts.previewers.file.max_size or (10 * 1024 * 1024)
+				if stat.size > max_size then
+					ctx.preview:notify("文件过大 > 10MB", "warn")
+					return
+				end
+
+				-- 设置标题
+				local title = ctx.item.title or vim.fn.fnamemodify(path, ":t")
+				ctx.preview:set_title(title)
+
+				-- 总是创建新的预览 buffer（不复用编辑器中的 buffer，避免冲突）
+				local preview_buf = vim.fn.bufadd(path)
+				if not vim.api.nvim_buf_is_valid(preview_buf) then
+					return Snacks.picker.preview.file(ctx)
+				end
+
+				-- 标记为预览 buffer
+				vim.b[preview_buf].snacks_picker_loaded = true
+				vim.b[preview_buf].snacks_preview = true -- 标记为预览 buffer，用于禁用 ghost text
+				vim.bo[preview_buf].buflisted = false
+
+				-- 加载 buffer 内容（如果还没加载）
+				if not vim.api.nvim_buf_is_loaded(preview_buf) then
+					vim.fn.bufload(preview_buf)
+				end
+
+				-- 再次检查 buffer 有效性
+				if not vim.api.nvim_buf_is_valid(preview_buf) then
+					return Snacks.picker.preview.file(ctx)
+				end
+
+				-- 设置预览窗口的 buffer
+				ctx.preview:set_buf(preview_buf)
+
+				-- 标记此窗口为预览窗口（其他插件可据此禁用功能）
+				local preview_win_id = ctx.preview.win.win
+				if preview_win_id and vim.api.nvim_win_is_valid(preview_win_id) then
+					vim.w[preview_win_id].is_snacks_preview = true
+				end
+
+				-- 在预览窗口设置 Tab 键映射（切换回输入框）
+				-- 只设置一次，避免重复
+				if not vim.b[preview_buf].tab_keymap_set then
+					if preview_win_id and vim.api.nvim_win_is_valid(preview_win_id) then
+						vim.api.nvim_buf_set_keymap(preview_buf, "n", "<Tab>", "", {
+							callback = function()
+								-- 切换回输入框（使用 win.win 获取实际的窗口 ID）
+								local input_win_id = ctx.picker.input.win.win
+								if input_win_id and vim.api.nvim_win_is_valid(input_win_id) then
+									vim.api.nvim_set_current_win(input_win_id)
+								end
+							end,
+							nowait = true,
+							silent = true,
+						})
+						vim.b[preview_buf].tab_keymap_set = true
+					end
+				end
+
+				-- 设置位置
+				ctx.preview:loc()
+			end
+
+			-- 为常用源添加 Tab 键支持
+			for _, source in ipairs({ "files", "recent", "buffers", "git_status", "git_log" }) do
+				opts.picker.sources[source] = opts.picker.sources[source] or {}
+				opts.picker.sources[source].layout = opts.picker.sources[source].layout or "default"
+
+				-- 只为 files 和 recent 使用自定义预览（获得完整语法高亮）
+				if source == "files" or source == "recent" then
+					opts.picker.sources[source].preview = real_buffer_preview
+				end
+
+				-- 为所有源添加 Tab 键支持（预览窗口支持 insert 和 normal 模式）
+				opts.picker.sources[source].win = vim.tbl_deep_extend("force", opts.picker.sources[source].win or {}, {
+					input = { keys = { ["<Tab>"] = { "focus_preview", mode = { "i", "n" } } } },
+					list = { keys = { ["<Tab>"] = { "focus_preview", mode = { "n" } } } },
+					preview = { keys = { ["<Tab>"] = { "focus_input", mode = { "i", "n" } } } },
+				})
+			end
 
 			-- 图标插件布局：增加边框并限制大小
 			opts.picker.sources.icons = {

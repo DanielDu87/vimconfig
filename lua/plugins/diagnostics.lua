@@ -107,24 +107,100 @@ return {
 			-- 默认配置（启动时使用）
 			require("tiny-inline-diagnostic").setup({
 				preset = "ghost",
+				hi = {
+					-- 直接自定义高亮颜色，确保边缘符号和文字一致
+					error = "DiagnosticError",
+					warn = "DiagnosticWarn",
+					info = "DiagnosticInfo",
+					hint = "DiagnosticHint",
+				},
+				blend = {
+					factor = 0, -- 完全禁用颜色混合
+				},
 				options = {
 					show_source = false,
 					throttle = 0,
 					softwrap = 60,
 					multilines = { enabled = true },
 					overflow = { mode = "wrap" },
-					-- 增加更多的监听事件，确保万无一失
 					overwrite_events = { "LspAttach", "DiagnosticChanged", "BufEnter", "BufWritePost" },
 					enable_on_insert = true,
 				},
 			})
 
+			-- 覆盖 tiny-inline-diagnostic 的高亮组函数
+			local function fix_diagnostic_colors()
+				-- 定义颜色
+				local colors = {
+					error = "#f7768e",
+					warn = "#e0af68",
+					info = "#7dcfff",
+					hint = "#9aa5ce",
+				}
+
+				-- 计算背景色（基于当前背景的半透明混合）
+				local bg_color = vim.o.background == "light" and "#ffffff" or "#1a1b26"
+
+				for severity, color in pairs(colors) do
+					local severity_cap = severity:sub(1, 1):upper() .. severity:sub(2)
+
+					-- 计算半透明背景（20% 不透明度）
+					-- 使用 vim.fn.tomix 无法直接做，这里使用预计算的值
+					local ghost_bg = {
+						error = "#3d2428",  -- 红色的半透明背景
+						warn = "#3d3324",   -- 黄色的半透明背景
+						info = "#1e2d3d",   -- 青色的半透明背景
+						hint = "#24283d",   -- 蓝色的半透明背景
+					}
+
+					-- 设置文字高亮组
+					vim.api.nvim_set_hl(0, "TinyInlineDiagnosticVirtualText" .. severity_cap, {
+						fg = color,
+						bg = ghost_bg[severity] or bg_color,
+					})
+
+					-- 设置边缘符号高亮组（使用相同的 fg 和 bg）
+					vim.api.nvim_set_hl(0, "TinyInlineInvDiagnosticVirtualText" .. severity_cap, {
+						fg = color,
+						bg = ghost_bg[severity] or bg_color,
+					})
+
+					-- NoBg 变体
+					vim.api.nvim_set_hl(0, "TinyInlineInvDiagnosticVirtualText" .. severity_cap .. "NoBg", {
+						fg = color,
+						bg = "NONE",
+					})
+				end
+			end
+
+			-- ColorScheme 时覆盖
+			vim.api.nvim_create_autocmd("ColorScheme", {
+				callback = function()
+					vim.schedule(fix_diagnostic_colors)
+				end,
+			})
+
+			-- 插件加载后立即覆盖
+			vim.schedule(function()
+				fix_diagnostic_colors()
+			end)
+
 			-- 立即应用当前状态
 			apply_ghost_state_for_buffer()
 
 			-- 当进入 buffer 时自动应用保存的 ghost 状态
+			-- 但排除预览窗口
 			vim.api.nvim_create_autocmd("BufEnter", {
 				callback = function()
+					-- 检查是否在预览窗口中
+					local current_win = vim.api.nvim_get_current_win()
+					if vim.w[current_win].is_snacks_preview then
+						return
+					end
+					local current_buf = vim.api.nvim_get_current_buf()
+					if vim.b[current_buf].snacks_preview then
+						return
+					end
 					apply_ghost_state_for_buffer()
 				end,
 			})

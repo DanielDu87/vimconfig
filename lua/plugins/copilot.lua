@@ -19,6 +19,20 @@ return {
 					auto_trigger = true,
 					-- 在补全菜单显示时隐藏虚文本
 					hide_during_completion = false,
+					-- 禁用条件：预览窗口中不显示 ghost text
+					is_disabled = function()
+						-- 检查当前窗口是否是预览窗口
+						local current_win = vim.api.nvim_get_current_win()
+						if vim.w[current_win].is_snacks_preview then
+							return true
+						end
+						-- 检查当前 buffer 是否是预览 buffer
+						local current_buf = vim.api.nvim_get_current_buf()
+						if vim.b[current_buf].snacks_preview then
+							return true
+						end
+						return false
+					end,
 					-- 快捷键设置
 					keymap = {
 						-- 接受建议（Tab 键）

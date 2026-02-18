@@ -16,6 +16,24 @@ return {
 			-- 显式指定使用 LuaSnip 作为片段引擎
 			opts.snippets = { preset = "luasnip" }
 
+			-- 在预览窗口中禁用补全（避免 ghost text 和补全菜单干扰）
+			local function is_preview_window()
+				local current_win = vim.api.nvim_get_current_win()
+				if vim.w[current_win].is_snacks_preview then
+					return true
+				end
+				local current_buf = vim.api.nvim_get_current_buf()
+				if vim.b[current_buf].snacks_preview then
+					return true
+				end
+				return false
+			end
+
+			-- 禁用条件函数
+			opts.enabled = function()
+				return not is_preview_window()
+			end
+
 			-- 键盘映射配置
 			opts.keymap = {
 				preset = "enter",

@@ -374,6 +374,9 @@ cd ~/.config/nvim
 ## 📝 更新日志
 
 ### 2026-02-18
+- 🎨 **优化文件搜索预览**：使用真实 buffer 获得完整的 Treesitter 语法高亮，添加 Tab 键在输入框/列表/预览间切换
+- 🔧 **禁用预览窗口的 AI 补全**：预览窗口中禁用 Copilot ghost text、blink.cmp 和 tiny ghost 诊断提示
+- 🎨 **修复诊断颜色不一致**：完全自定义 tiny-inline-diagnostic 高亮组，确保边缘符号和文字颜色统一
 - 🔧 **修复 nvim-treesitter 兼容性问题**：锁定到重构前版本（310f0925），解决与 LazyVim 的 API 不兼容问题
 - ✨ **创建独立的 Treesitter 配置文件**：`lua/plugins/treesitter.lua`，使用固定分支 `pinned-310f0925`
 - 🔧 **移除 htmlhint 配置**：HTML 文件使用 LSP 提供的语法检查，避免额外 linter 冲突
