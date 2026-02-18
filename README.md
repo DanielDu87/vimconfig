@@ -370,4 +370,14 @@ cd ~/.config/nvim
 | `<leader>k` / `<leader>K` | **DevDocs 文档查询** (词/输入) | 普通模式 |
 
 ---
-**配置维护者**: Dyx | **基于**: LazyVim | **更新日期**: 2026-02-17
+
+## 📝 更新日志
+
+### 2026-02-18
+- 🔧 **修复 nvim-treesitter 兼容性问题**：锁定到重构前版本（310f0925），解决与 LazyVim 的 API 不兼容问题
+- ✨ **创建独立的 Treesitter 配置文件**：`lua/plugins/treesitter.lua`，使用固定分支 `pinned-310f0925`
+- 🔧 **移除 htmlhint 配置**：HTML 文件使用 LSP 提供的语法检查，避免额外 linter 冲突
+- ⚠️ **重要提示**：不要运行 `:Lazy update nvim-treesitter`，会破坏兼容性
+
+---
+**配置维护者**: Dyx | **基于**: LazyVim | **更新日期**: 2026-02-18
