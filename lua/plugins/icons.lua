@@ -9,6 +9,11 @@ return {
 		"nvim-mini/mini.icons",
 		opts = function()
 			return {
+				-- 为特定扩展名覆盖图标
+				extension = {
+					-- toml: 使用与 json 相同的图标（花括号）
+					toml = { glyph = "󰘦", hl = "MiniIconsYellow" },
+				},
 				-- 为特定文件名覆盖图标
 				file = {
 					-- init.lua: 使用 Lua 图标（与 .lua 扩展名一致）
