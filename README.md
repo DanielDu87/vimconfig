@@ -147,9 +147,10 @@ cd ~/.config/nvim
     - **Python**: 优先使用 `brew` 安装的 `black` 以获得极致速度。
     - **Docker**: 自定义 Perl 脚本将 `FROM`, `RUN` 等指令强制转为大写。
     - **SQL**: 强制关键字大写，保持 SQL 风格统一。
-- **自动创建配置文件**：打开文件时自动创建缺失的项目配置文件。
-    - **HTML**: 自动创建 `tailwind.config.js` 和 `.prettierrc`
-    - **JS/TS/Vue**: 自动创建 `eslint.config.js`（旧版 `.eslintrc.js` 会自动转换）
+- **自动创建配置文件**：打开文件时自动创建缺失的项目配置文件，统一使用非隐藏 `.js` 格式，旧格式自动清理，已有文件会检测内容并补充缺失配置。
+    - **HTML/Django**: 自动创建 `tailwind.config.js` 和 `prettier.config.js`
+    - **JS/TS/Vue/JSX/TSX**: 自动创建 `eslint.config.js`、`tailwind.config.js` 和 `prettier.config.js`
+    - **CSS/SCSS/LESS**: 自动创建 `stylelint.config.js`（预设 `stylelint-config-standard` + `stylelint-config-recess-order`）和 `prettier.config.js`
     - 使用 `brew` 安装的 `eslint`，无需 `node_modules` 依赖
 
 ### 📂 增强型文件管理 (Explorer)
@@ -373,6 +374,13 @@ cd ~/.config/nvim
 
 ## 📝 更新日志
 
+### 2026-02-24
+- ✨ **Stylelint 自动激活**：打开 CSS/SCSS/LESS 文件时自动生成 `stylelint.config.js`（预设 `stylelint-config-standard` + `stylelint-config-recess-order`）
+- 🔧 **统一配置文件格式**：ESLint、Prettier、Stylelint、Tailwind 全部统一使用非隐藏 `.js` 格式，旧版隐藏文件自动清理
+- ✨ **智能配置补充**：已有配置文件会检测内容，自动补充缺失的默认配置项
+- 🔧 **Tailwind 兼容扩展**：HTML/Django/React/Vue 等所有类 HTML 文件均触发 Tailwind 配置自动创建
+- 🔧 **配置逻辑统一**：将 Tailwind 自动创建从 autocmds.lua 迁移至 eslint-auto.lua 统一管理
+
 ### 2026-02-18
 - 🔧 **修复 Prettier 插件配置**：将 `.prettierrc` 转换为 `prettier.config.js`，使用绝对路径配置全局安装的 `prettier-plugin-tailwindcss`
 - ✨ **启用 TailwindCSS 类名自动排序**：在 HTML/CSS/JS/TS/Vue 文件中自动排序 Tailwind 类名，提升代码可读性
@@ -386,4 +394,4 @@ cd ~/.config/nvim
 - ⚠️ **重要提示**：不要运行 `:Lazy update nvim-treesitter`，会破坏兼容性
 
 ---
-**配置维护者**: Dyx | **基于**: LazyVim | **更新日期**: 2026-02-18
+**配置维护者**: Dyx | **基于**: LazyVim | **更新日期**: 2026-02-24
