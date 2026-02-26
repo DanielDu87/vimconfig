@@ -12,7 +12,7 @@ return {
 			--==============================================================================
 			local width_file = vim.fn.expand("~/Documents/neovim_files/explorer_width")
 
-			-- 读取保存的宽度（如果超过30，立即修正文件为30）
+			-- 读取保存的宽度，启动时限制最大为30
 			local function load_width()
 				local f = io.open(width_file, "r")
 				local width = 30
@@ -21,32 +21,31 @@ return {
 					f:close()
 					width = tonumber(content) or 30
 				end
-				-- 如果超过30，立即修正文件为30
+				-- 启动时限制最大为30
 				if width > 30 then
-					local f = io.open(width_file, "w")
-					if f then
-						f:write("30")
-						f:close()
-					end
 					return 30
 				end
 				return width
 			end
 
 			--==============================================================================
-			-- 一劳永逸锁定 Snacks 侧边栏宽度
+			-- 启动时限制初始宽度不超过30
 			--==============================================================================
-			vim.api.nvim_create_autocmd({ "FileType", "BufEnter" }, {
-				pattern = { "snacks_picker*", "snacks_explorer*" },
+			vim.api.nvim_create_autocmd("VimEnter", {
 				callback = function()
-					vim.wo.winfixwidth = true
-					-- 强制设置宽度为30
-					pcall(function()
-						local current_width = vim.api.nvim_win_get_width(0)
-						if current_width > 30 then
-							vim.api.nvim_win_set_width(0, 30)
+					-- 延迟执行，确保 explorer 窗口完全就绪
+					vim.defer_fn(function()
+						for _, win in ipairs(vim.api.nvim_list_wins()) do
+							local ok, ft = pcall(vim.api.nvim_get_option_value, "filetype", { buf = vim.api.nvim_win_get_buf(win) })
+							if ok and ft and ft:match("^snacks_") then
+								local w = vim.api.nvim_win_get_width(win)
+								if w > 30 then
+									vim.api.nvim_win_set_width(win, 30)
+								end
+								break
+							end
 						end
-					end)
+					end, 100)
 				end,
 			})
 
@@ -91,8 +90,6 @@ return {
 					preview = false,
 					layout = {
 						width = load_width(),
-						-- 锁定宽度，防止窗口重排时被拉伸
-						win_options = { winfixwidth = true },
 					},
 				}
 			end
@@ -104,10 +101,6 @@ return {
 			--==============================================================================
 			local width_save_timer = nil
 			local function save_width_debounced(width)
-				-- 限制最大宽度为30
-				if width > 30 then
-					width = 30
-				end
 				-- 取消之前的定时器
 				if width_save_timer then
 					width_save_timer:stop()

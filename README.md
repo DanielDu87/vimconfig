@@ -374,6 +374,9 @@ cd ~/.config/nvim
 
 ## 📝 更新日志
 
+### 2026-02-26
+- 🔧 **优化 Explorer 宽度策略**：启动时若宽度超过30则自动修正，运行时允许手动拖动和 vsh 自由调整，移除 winfixwidth 锁定
+
 ### 2026-02-24
 - ✨ **Stylelint 自动激活**：打开 CSS/SCSS/LESS 文件时自动生成 `stylelint.config.js`（预设 `stylelint-config-standard` + `stylelint-config-recess-order`）
 - 🔧 **统一配置文件格式**：ESLint、Prettier、Stylelint、Tailwind 全部统一使用非隐藏 `.js` 格式，旧版隐藏文件自动清理
@@ -394,4 +397,4 @@ cd ~/.config/nvim
 - ⚠️ **重要提示**：不要运行 `:Lazy update nvim-treesitter`，会破坏兼容性
 
 ---
-**配置维护者**: Dyx | **基于**: LazyVim | **更新日期**: 2026-02-24
+**配置维护者**: Dyx | **基于**: LazyVim | **更新日期**: 2026-02-26
