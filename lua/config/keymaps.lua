@@ -184,27 +184,60 @@ end, { desc = "打开书签菜单" })
 -- 跳转到指定行
 --==============================================================================
 vim.keymap.set("n", "<leader>cn", function()
-	vim.ui.input({ prompt = "跳转到第n行：" }, function(input)
-		if not input or #input == 0 then
-			return
-		end
+	-- 仅在普通文件缓冲区启用
+	local bt = vim.bo.buftype
+	if bt ~= "" then
+		return
+	end
+
+	local line_count = vim.api.nvim_buf_line_count(0)
+	local cur_line = vim.api.nvim_win_get_cursor(0)[1]
+
+	-- 创建浮动输入窗口
+	local buf = vim.api.nvim_create_buf(false, true)
+	vim.bo[buf].buftype = "nofile"
+	vim.bo[buf].bufhidden = "wipe"
+
+	local width = 28
+	local win = vim.api.nvim_open_win(buf, true, {
+		relative = "editor",
+		row = math.floor((vim.o.lines - 3) / 2) - 1,
+		col = math.floor((vim.o.columns - width) / 2),
+		width = width,
+		height = 1,
+		style = "minimal",
+		border = "rounded",
+		title = string.format(" 跳转到行 (1-%d) ", line_count),
+		title_pos = "center",
+		footer = string.format(" 当前：%d ", cur_line),
+		footer_pos = "center",
+	})
+
+	-- 设置窗口高亮
+	vim.api.nvim_set_option_value("winhl", "Normal:Normal,FloatBorder:FloatBorder", { win = win })
+	vim.cmd("startinsert")
+
+	-- 确认跳转
+	vim.keymap.set("i", "<CR>", function()
+		local input = vim.trim(vim.api.nvim_get_current_line())
+		vim.cmd("stopinsert")
+		vim.api.nvim_win_close(win, true)
 		local line_num = tonumber(input)
 		if line_num then
-			-- 验证行号是否在有效范围内
-			local line_count = vim.api.nvim_buf_line_count(0)
-			if line_num < 1 then
-				line_num = 1
-			elseif line_num > line_count then
-				line_num = line_count
-			end
-			-- 跳转并居中
+			line_num = math.max(1, math.min(line_num, line_count))
 			vim.api.nvim_win_set_cursor(0, { line_num, 0 })
 			vim.cmd("normal! zz")
 			vim.notify(string.format("已跳转到第 %d 行", line_num), vim.log.levels.INFO, { title = "跳转" })
-		else
+		elseif input ~= "" then
 			vim.notify("无效的行号", vim.log.levels.ERROR, { title = "跳转" })
 		end
-	end)
+	end, { buffer = buf })
+
+	-- Esc 取消
+	vim.keymap.set({ "i", "n" }, "<Esc>", function()
+		vim.cmd("stopinsert")
+		vim.api.nvim_win_close(win, true)
+	end, { buffer = buf })
 end, { desc = "跳转到指定行" })
 
 --==============================================================================
