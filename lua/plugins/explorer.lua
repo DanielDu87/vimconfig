@@ -12,15 +12,25 @@ return {
 			--==============================================================================
 			local width_file = vim.fn.expand("~/Documents/neovim_files/explorer_width")
 
-			-- 读取保存的宽度
+			-- 读取保存的宽度（如果超过30，立即修正文件为30）
 			local function load_width()
 				local f = io.open(width_file, "r")
+				local width = 30
 				if f then
 					local content = f:read("*a")
 					f:close()
-					return tonumber(content) or 30
+					width = tonumber(content) or 30
 				end
-				return 30
+				-- 如果超过30，立即修正文件为30
+				if width > 30 then
+					local f = io.open(width_file, "w")
+					if f then
+						f:write("30")
+						f:close()
+					end
+					return 30
+				end
+				return width
 			end
 
 			--==============================================================================
@@ -30,11 +40,11 @@ return {
 				pattern = { "snacks_picker*", "snacks_explorer*" },
 				callback = function()
 					vim.wo.winfixwidth = true
-					-- 如果是已经存在的窗口，尝试强制同步宽度
+					-- 强制设置宽度为30
 					pcall(function()
-						local current_width = load_width()
-						if vim.api.nvim_win_get_width(0) ~= current_width then
-							vim.api.nvim_win_set_width(0, current_width)
+						local current_width = vim.api.nvim_win_get_width(0)
+						if current_width > 30 then
+							vim.api.nvim_win_set_width(0, 30)
 						end
 					end)
 				end,
@@ -94,6 +104,10 @@ return {
 			--==============================================================================
 			local width_save_timer = nil
 			local function save_width_debounced(width)
+				-- 限制最大宽度为30
+				if width > 30 then
+					width = 30
+				end
 				-- 取消之前的定时器
 				if width_save_timer then
 					width_save_timer:stop()
