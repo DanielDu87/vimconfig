@@ -62,6 +62,10 @@ return {
 			-- Rust
 			rust = { "rustfmt" },
 
+			-- C/C++
+			c = { "clang-format" },
+			cpp = { "clang-format" },
+
 			-- Shell
 			sh = { "shfmt" },
 			bash = { "shfmt" },
@@ -117,6 +121,12 @@ return {
 				-- Shfmt 配置：使用 tab
 			shfmt = {
 				prepend_args = { "-i", "0", "-ci" },
+			},
+				-- Clang-format 配置：使用 tab
+			["clang-format"] = {
+				prepend_args = {
+					"--style={UseTab: Always, IndentWidth: 4, TabWidth: 4, ColumnLimit: 120}",
+				},
 			},
 				-- SQL 格式化配置：使用 4 空格, 关键字大写
 			sql_formatter = {
