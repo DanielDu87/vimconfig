@@ -124,9 +124,15 @@ return {
 			end
 
 			-- 使用 autocmd 在窗口调整大小时保存宽度（带防抖）
+			-- 同时运行时强制限制宽度不超过30
+			local _width_adjusting = false
 			vim.api.nvim_create_autocmd("WinResized", {
 				group = vim.api.nvim_create_augroup("SnacksExplorerWidth", { clear = true }),
 				callback = function(ev)
+					-- 防止递归触发
+					if _width_adjusting then
+						return
+					end
 					-- 检查是否有 explorer picker 在运行
 					local ok, pickers = pcall(function()
 						return require("snacks.picker").get({ source = "explorer" })
@@ -139,11 +145,27 @@ return {
 					if picker.closed then
 						return
 					end
-					-- 延迟保存当前宽度
+					-- 获取当前宽度
 					local ok2, size = pcall(function()
 						return picker.layout.root:size()
 					end)
-					if ok2 and size and size.width then
+					if not ok2 or not size or not size.width then
+						return
+					end
+					-- 运行时强制限制宽度不超过30
+					if size.width > 30 then
+						_width_adjusting = true
+						local ok3, win = pcall(function()
+							return picker.layout.root.win
+						end)
+						if ok3 and win and vim.api.nvim_win_is_valid(win) then
+							vim.api.nvim_win_set_width(win, 30)
+						end
+						vim.schedule(function()
+							_width_adjusting = false
+						end)
+						save_width_debounced(30)
+					else
 						save_width_debounced(size.width)
 					end
 				end,
