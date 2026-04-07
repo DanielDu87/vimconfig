@@ -29,23 +29,25 @@ return {
 			end
 
 			--==============================================================================
-			-- 启动时限制初始宽度不超过30
+			-- 启动时限制初始宽度不超过30（多次延迟重试，确保覆盖各种时序）
 			--==============================================================================
 			vim.api.nvim_create_autocmd("VimEnter", {
 				callback = function()
-					-- 延迟执行，确保 explorer 窗口完全就绪
-					vim.defer_fn(function()
-						for _, win in ipairs(vim.api.nvim_list_wins()) do
-							local ok, ft = pcall(vim.api.nvim_get_option_value, "filetype", { buf = vim.api.nvim_win_get_buf(win) })
-							if ok and ft and ft:match("^snacks_") then
-								local w = vim.api.nvim_win_get_width(win)
-								if w > 30 then
-									vim.api.nvim_win_set_width(win, 30)
+					for _, delay in ipairs({ 50, 150, 300, 500 }) do
+						vim.defer_fn(function()
+							for _, win in ipairs(vim.api.nvim_list_wins()) do
+								local buf = vim.api.nvim_win_get_buf(win)
+								local ok, ft = pcall(vim.api.nvim_get_option_value, "filetype", { buf = buf })
+								if ok and ft and ft:match("^snacks_") then
+									local w = vim.api.nvim_win_get_width(win)
+									if w > 30 then
+										vim.api.nvim_win_set_width(win, 30)
+									end
+									break
 								end
-								break
 							end
-						end
-					end, 100)
+						end, delay)
+					end
 				end,
 			})
 
@@ -167,6 +169,32 @@ return {
 						save_width_debounced(30)
 					else
 						save_width_debounced(size.width)
+					end
+				end,
+			})
+
+			-- 切换窗口时也强制检查 explorer 宽度（补充 WinResized 遗漏的场景）
+			vim.api.nvim_create_autocmd("WinEnter", {
+				group = vim.api.nvim_create_augroup("SnacksExplorerWidthOnEnter", { clear = true }),
+				callback = function()
+					if _width_adjusting then
+						return
+					end
+					for _, win in ipairs(vim.api.nvim_list_wins()) do
+						local buf = vim.api.nvim_win_get_buf(win)
+						local ok, ft = pcall(vim.api.nvim_get_option_value, "filetype", { buf = buf })
+						if ok and ft and ft:match("^snacks_") then
+							local w = vim.api.nvim_win_get_width(win)
+							if w > 30 then
+								_width_adjusting = true
+								vim.api.nvim_win_set_width(win, 30)
+								vim.schedule(function()
+									_width_adjusting = false
+								end)
+								save_width_debounced(30)
+							end
+							break
+						end
 					end
 				end,
 			})
@@ -399,6 +427,23 @@ return {
 									or (_G.LazyVim and _G.LazyVim.root and _G.LazyVim.root.get and _G.LazyVim.root.get())
 									or vim.fn.getcwd()
 								Snacks.explorer.open({ cwd = root })
+
+								-- 打开后多次延迟检查并修正宽度
+								for _, delay in ipairs({ 50, 150, 300 }) do
+									vim.defer_fn(function()
+										for _, win in ipairs(vim.api.nvim_list_wins()) do
+											local buf = vim.api.nvim_win_get_buf(win)
+											local ok, ft = pcall(vim.api.nvim_get_option_value, "filetype", { buf = buf })
+											if ok and ft and ft:match("^snacks_") then
+												local w = vim.api.nvim_win_get_width(win)
+												if w > 30 then
+													vim.api.nvim_win_set_width(win, 30)
+												end
+												break
+											end
+										end
+									end, delay)
+								end
 
 								-- 只有在带文件参数启动时才切换到编辑器窗口
 								if has_file_arg then
