@@ -107,6 +107,111 @@ cd ~/.config/nvim
 
 ---
 
+## 🖥️ 服务器部署 (Linux / Ubuntu)
+
+将本配置部署到远程服务器（如 Ubuntu 24.04），以下是完整流程：
+
+### 1. 同步配置文件
+
+```bash
+# 首次同步（排除 .git、node_modules 等非必要文件）
+rsync -avz --delete \
+  --exclude='.git' \
+  --exclude='node_modules' \
+  --exclude='.claude' \
+  --exclude='CLAUDE.md' \
+  --exclude='GEMINI.md' \
+  --exclude='FORK_SNACKS.md' \
+  --exclude='README.md' \
+  ~/.config/nvim/ 服务器别名:~/.config/nvim/
+
+# 后续增量同步（同上命令即可）
+```
+
+### 2. 安装 Neovim
+
+Ubuntu apt 源的 Neovim 版本过旧（v0.9.x），LazyVim 需要 v0.10+，推荐使用官方 AppImage：
+
+```bash
+curl -Lo /tmp/nvim.appimage https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.appimage
+chmod +x /tmp/nvim.appimage
+sudo mv /tmp/nvim.appimage /usr/local/bin/nvim
+```
+
+### 3. 安装基础工具
+
+```bash
+# apt 源中有的工具
+sudo apt-get install -y fd-find ripgrep fzf
+
+# apt 源中没有的工具（从 GitHub Release 安装）
+# lazygit
+LAZYGIT_VERSION=$(curl -s https://api.github.com/repos/jesseduffield/lazygit/releases/latest | grep tag_name | head -1 | sed 's/.*: "//;s/",//')
+curl -Lo /tmp/lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION#v}_Linux_x86_64.tar.gz"
+sudo tar xzf /tmp/lazygit.tar.gz -C /usr/local/bin lazygit
+rm /tmp/lazygit.tar.gz
+
+# tree-sitter
+curl -Lo /tmp/tree-sitter.gz https://github.com/tree-sitter/tree-sitter/releases/latest/download/tree-sitter-linux-x64.gz
+gunzip /tmp/tree-sitter.gz
+chmod +x /tmp/tree-sitter
+sudo mv /tmp/tree-sitter /usr/local/bin/tree-sitter
+```
+
+### 4. 设置 vi alias
+
+Ubuntu 自带 `/usr/bin/vi`（vim 9.1），需要设置 alias 让 `vi` 指向 neovim：
+
+```bash
+echo "" >> ~/.bashrc
+echo "# Neovim" >> ~/.bashrc
+echo 'alias vi="nvim"' >> ~/.bashrc
+echo 'alias vim="nvim"' >> ~/.bashrc
+```
+
+> **注意**：alias 在交互式 shell 下才生效。SSH 登录后直接输入 `vi` 即可启动 Neovim。
+
+### 5. fd 命令名兼容
+
+Ubuntu 的 `fd-find` 包安装后命令名为 `fdfind`，而 LazyVim 默认调用 `fd`，需要创建软链接：
+
+```bash
+sudo ln -sf $(which fdfind) /usr/local/bin/fd
+```
+
+### 6. 同步插件
+
+首次启动 Neovim 时 lazy.nvim 会自动下载所有插件（约 70 个），Mason 会自动安装 LSP 服务器：
+
+```bash
+# SSH 登录服务器后首次启动（需要几分钟下载插件）
+vi
+```
+
+也可以通过 headless 模式预下载插件：
+
+```bash
+vi --headless "+Lazy! sync" +qa
+```
+
+> **注意**：headless 模式下 Mason 的 LSP 安装会被中断，这是正常的。LSP 服务器会在首次交互式打开对应文件时自动安装。
+
+### 前置依赖
+
+服务器上需预先具备以下环境：
+
+| 依赖 | 用途 | 检查命令 |
+|:---|:---|:---|
+| **Node.js** | LSP 服务器运行时 | `node --version` |
+| **npm** | LSP 包管理 | `npm --version` |
+| **Python3** | 部分 LSP/工具依赖 | `python3 --version` |
+| **pip3** | Python 包安装 | `pip3 --version` |
+| **Git** | 插件下载 | `git --version` |
+| **GCC + Make** | tree-sitter 编译 | `gcc --version` |
+| **curl** | 下载工具 | `curl --version` |
+
+---
+
 ## 🌐 语言支持矩阵 (Languages & Tools)
 
 本配置为核心开发语言提供了完整的**LSP (智能提示)**、**Linter (代码检查)**、**Formatter (代码格式化)** 和 **DAP (调试)** 支持。
@@ -374,6 +479,11 @@ cd ~/.config/nvim
 
 ## 📝 更新日志
 
+### 2026-04-10
+- 🖥️ **新增服务器部署文档**：完整的 Linux/Ubuntu 部署流程，包括配置同步、Neovim AppImage 安装、基础工具安装、vi alias 设置、fd 兼容处理
+- 🔧 **修复 nvim-treesitter 跨机器部署**：将版本锁定方式从 `branch = "pinned-xxx"`（本地分支，无法跨机器 clone）改为 `commit = "xxx"`（commit hash，任何机器均可 checkout）
+- ✅ **部署验证**：配置已成功部署到 sss 服务器（Ubuntu 24.04），70 个插件全部正常加载
+
 ### 2026-02-26
 - 🎨 **美化跳转行输入窗口**：`<leader>cn` 改用 Neovim 原生浮动窗口，居中圆角边框，显示总行数和当前行号，仅在文件编辑器中生效
 - 🔧 **优化 Explorer 宽度策略**：启动时若宽度超过30则自动修正，运行时允许手动拖动和 vsh 自由调整，移除 winfixwidth 锁定
@@ -392,10 +502,11 @@ cd ~/.config/nvim
 - 🎨 **优化文件搜索预览**：使用真实 buffer 获得完整的 Treesitter 语法高亮，添加 Tab 键在输入框/列表/预览间切换
 - 🔧 **禁用预览窗口的 AI 补全**：预览窗口中禁用 Copilot ghost text、blink.cmp 和 tiny ghost 诊断提示
 - 🎨 **修复诊断颜色不一致**：完全自定义 tiny-inline-diagnostic 高亮组，确保边缘符号和文字颜色统一
-- 🔧 **修复 nvim-treesitter 兼容性问题**：锁定到重构前版本（310f0925），解决与 LazyVim 的 API 不兼容问题
-- ✨ **创建独立的 Treesitter 配置文件**：`lua/plugins/treesitter.lua`，使用固定分支 `pinned-310f0925`
+- 🔧 **修复 nvim-treesitter 兼容性问题**：锁定到重构前版本（commit 310f0925），解决与 LazyVim 的 API 不兼容问题
+- ✨ **创建独立的 Treesitter 配置文件**：`lua/plugins/treesitter.lua`，使用 commit 锁定版本
 - 🔧 **移除 htmlhint 配置**：HTML 文件使用 LSP 提供的语法检查，避免额外 linter 冲突
 - ⚠️ **重要提示**：不要运行 `:Lazy update nvim-treesitter`，会破坏兼容性
+- 🔧 **修复 treesitter 版本锁定方式**：从 `branch = "pinned-xxx"` 改为 `commit = "xxx"`，解决跨机器部署时远程分支找不到的问题
 
 ---
-**配置维护者**: Dyx | **基于**: LazyVim | **更新日期**: 2026-02-26
+**配置维护者**: Dyx | **基于**: LazyVim | **更新日期**: 2026-04-10

@@ -11,7 +11,7 @@ return {
 	{
 		"nvim-treesitter/nvim-treesitter",
 		-- 完全覆盖 LazyVim 的配置
-		branch = "pinned-310f0925", -- 使用固定分支而非 main
+		commit = "310f0925ec64c7e54f3ee952679d285b13e5a735", -- 用 commit 锁定版本（替代本地 branch）
 		pin = true, -- 禁止自动更新
 		version = false, -- 不使用版本标签
 		build = ":TSUpdate", -- 简化的 build 命令
