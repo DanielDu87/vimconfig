@@ -8,41 +8,35 @@ return {
 		"snacks.nvim",
 		opts = function(_, opts)
 			--==============================================================================
-			-- Explorer 宽度持久化配置（必须先定义函数）
+			-- Explorer 宽度固定配置（严格固定为30）
 			--==============================================================================
-			local width_file = vim.fn.expand("~/Documents/neovim_files/explorer_width")
+			local FIXED_WIDTH = 30
 
-			-- 读取保存的宽度，启动时限制最大为30
-			local function load_width()
-				local f = io.open(width_file, "r")
-				local width = 30
-				if f then
-					local content = f:read("*a")
-					f:close()
-					width = tonumber(content) or 30
+			-- 强制调整窗口宽度为固定值
+			local function enforce_fixed_width(win)
+				if not win or not vim.api.nvim_win_is_valid(win) then
+					return false
 				end
-				-- 启动时限制最大为30
-				if width > 30 then
-					return 30
+				local current_width = vim.api.nvim_win_get_width(win)
+				if current_width ~= FIXED_WIDTH then
+					vim.api.nvim_win_set_width(win, FIXED_WIDTH)
+					return true
 				end
-				return width
+				return false
 			end
 
 			--==============================================================================
-			-- 启动时限制初始宽度不超过30（多次延迟重试，确保覆盖各种时序）
+			-- 启动时强制固定宽度为30（多次延迟重试，确保覆盖各种时序）
 			--==============================================================================
 			vim.api.nvim_create_autocmd("VimEnter", {
 				callback = function()
-					for _, delay in ipairs({ 50, 150, 300, 500 }) do
+					for _, delay in ipairs({ 0, 50, 100, 200, 300, 500, 1000 }) do
 						vim.defer_fn(function()
 							for _, win in ipairs(vim.api.nvim_list_wins()) do
 								local buf = vim.api.nvim_win_get_buf(win)
 								local ok, ft = pcall(vim.api.nvim_get_option_value, "filetype", { buf = buf })
 								if ok and ft and ft:match("^snacks_") then
-									local w = vim.api.nvim_win_get_width(win)
-									if w > 30 then
-										vim.api.nvim_win_set_width(win, 30)
-									end
+									enforce_fixed_width(win)
 									break
 								end
 							end
@@ -91,7 +85,7 @@ return {
 					preset = "sidebar",
 					preview = false,
 					layout = {
-						width = load_width(),
+						width = FIXED_WIDTH,
 					},
 				}
 			end
@@ -99,102 +93,72 @@ return {
 			opts.picker.sources.explorer.hidden = false -- 默认不显示隐藏文件 (如 .env)
 
 			--==============================================================================
-			-- Explorer 宽度持久化配置（带防抖）
+			-- 运行时强制固定宽度为30（严格模式：无论大于还是小于都强制调整）
 			--==============================================================================
-			local width_save_timer = nil
-			local function save_width_debounced(width)
-				-- 取消之前的定时器
-				if width_save_timer then
-					width_save_timer:stop()
-					width_save_timer:close()
+			local _width_adjusting = false
+
+			-- 获取 explorer 窗口
+			local function get_explorer_win()
+				for _, win in ipairs(vim.api.nvim_list_wins()) do
+					local buf = vim.api.nvim_win_get_buf(win)
+					local ok, ft = pcall(vim.api.nvim_get_option_value, "filetype", { buf = buf })
+					if ok and ft and ft:match("^snacks_") then
+						return win
+					end
 				end
-				-- 创建新的定时器（500ms 后执行）
-				width_save_timer = vim.uv.new_timer()
-				width_save_timer:start(
-					500,
-					0,
-					vim.schedule_wrap(function()
-						local f = io.open(width_file, "w")
-						if f then
-							f:write(tostring(width))
-							f:close()
-						end
-						width_save_timer:close()
-						width_save_timer = nil
-					end)
-				)
+				return nil
 			end
 
-			-- 使用 autocmd 在窗口调整大小时保存宽度（带防抖）
-			-- 同时运行时强制限制宽度不超过30
-			local _width_adjusting = false
+			-- 窗口调整大小时强制固定宽度
 			vim.api.nvim_create_autocmd("WinResized", {
 				group = vim.api.nvim_create_augroup("SnacksExplorerWidth", { clear = true }),
-				callback = function(ev)
-					-- 防止递归触发
+				callback = function()
 					if _width_adjusting then
 						return
 					end
-					-- 检查是否有 explorer picker 在运行
-					local ok, pickers = pcall(function()
-						return require("snacks.picker").get({ source = "explorer" })
-					end)
-					if not ok or not pickers or #pickers == 0 then
-						return
-					end
-					-- 获取第一个 explorer picker
-					local picker = pickers[1]
-					if picker.closed then
-						return
-					end
-					-- 获取当前宽度
-					local ok2, size = pcall(function()
-						return picker.layout.root:size()
-					end)
-					if not ok2 or not size or not size.width then
-						return
-					end
-					-- 运行时强制限制宽度不超过30
-					if size.width > 30 then
+					local win = get_explorer_win()
+					if win then
 						_width_adjusting = true
-						local ok3, win = pcall(function()
-							return picker.layout.root.win
-						end)
-						if ok3 and win and vim.api.nvim_win_is_valid(win) then
-							vim.api.nvim_win_set_width(win, 30)
-						end
+						enforce_fixed_width(win)
 						vim.schedule(function()
 							_width_adjusting = false
 						end)
-						save_width_debounced(30)
-					else
-						save_width_debounced(size.width)
 					end
 				end,
 			})
 
-			-- 切换窗口时也强制检查 explorer 宽度（补充 WinResized 遗漏的场景）
+			-- 切换窗口时强制检查 explorer 宽度
 			vim.api.nvim_create_autocmd("WinEnter", {
 				group = vim.api.nvim_create_augroup("SnacksExplorerWidthOnEnter", { clear = true }),
 				callback = function()
 					if _width_adjusting then
 						return
 					end
-					for _, win in ipairs(vim.api.nvim_list_wins()) do
-						local buf = vim.api.nvim_win_get_buf(win)
-						local ok, ft = pcall(vim.api.nvim_get_option_value, "filetype", { buf = buf })
-						if ok and ft and ft:match("^snacks_") then
-							local w = vim.api.nvim_win_get_width(win)
-							if w > 30 then
-								_width_adjusting = true
-								vim.api.nvim_win_set_width(win, 30)
-								vim.schedule(function()
-									_width_adjusting = false
-								end)
-								save_width_debounced(30)
-							end
-							break
-						end
+					local win = get_explorer_win()
+					if win then
+						_width_adjusting = true
+						enforce_fixed_width(win)
+						vim.schedule(function()
+							_width_adjusting = false
+						end)
+					end
+				end,
+			})
+
+			-- 定期强制检查（捕获拖拽调整宽度的场景）
+			vim.api.nvim_create_autocmd({ "CursorHold", "CursorMoved" }, {
+				group = vim.api.nvim_create_augroup("SnacksExplorerWidthPeriodic", { clear = true }),
+				callback = function()
+					if _width_adjusting then
+						return
+					end
+					local win = get_explorer_win()
+					if win then
+						_width_adjusting = true
+						enforce_fixed_width(win)
+						vim.schedule(function()
+							_width_adjusting = false
+						end)
 					end
 				end,
 			})
@@ -428,19 +392,12 @@ return {
 									or vim.fn.getcwd()
 								Snacks.explorer.open({ cwd = root })
 
-								-- 打开后多次延迟检查并修正宽度
-								for _, delay in ipairs({ 50, 150, 300 }) do
+								-- 打开后多次延迟强制固定宽度为30
+								for _, delay in ipairs({ 0, 50, 100, 200, 300, 500, 1000 }) do
 									vim.defer_fn(function()
-										for _, win in ipairs(vim.api.nvim_list_wins()) do
-											local buf = vim.api.nvim_win_get_buf(win)
-											local ok, ft = pcall(vim.api.nvim_get_option_value, "filetype", { buf = buf })
-											if ok and ft and ft:match("^snacks_") then
-												local w = vim.api.nvim_win_get_width(win)
-												if w > 30 then
-													vim.api.nvim_win_set_width(win, 30)
-												end
-												break
-											end
+										local win = get_explorer_win()
+										if win then
+											enforce_fixed_width(win)
 										end
 									end, delay)
 								end
