@@ -20,6 +20,7 @@ return {
 		dependencies = {
 			"nvim-lua/plenary.nvim",
 			"nvim-treesitter/nvim-treesitter",
+			"lewis6991/async.nvim",
 		},
 		opts = {
 			-- 禁用类型提示（使用原生UI）
