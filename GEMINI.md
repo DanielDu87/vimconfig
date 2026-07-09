@@ -1,5 +1,14 @@
 # Neovim Configuration (LazyVim Based)
 
+> **全局规则入口**：除本仓库已有约定外，本项目所有任务同时遵守 `/Users/dyx/ai_coding_rules/` 下规则；冲突时按"用户当前明确指令 > 当前项目规则 > 用户长期偏好 > 专项规则 > 全局规则 > 项目已有代码风格 > 通用最佳实践"处理。
+>
+> - 规则总索引：`/Users/dyx/ai_coding_rules/README.md`
+> - 用户偏好：`/Users/dyx/ai_coding_rules/user-preferences.md`
+> - 核心全局规则：`/Users/dyx/ai_coding_rules/coding-global.md`
+> - 前端专项：`/Users/dyx/ai_coding_rules/coding-frontend.md`
+> - Git 专项：`/Users/dyx/ai_coding_rules/coding-git.md`
+> - 命令分类总入口：`/Users/dyx/ai_coding_rules/coding-commands.md`
+
 This directory contains a highly customized **Neovim configuration** built on top of [LazyVim](https://www.lazyvim.org/). It is tailored for full-stack development (TypeScript, Vue, Python, Docker) with a focus on performance, visual transparency, and a localized Chinese user experience.
 
 ## ✨ Project Overview
