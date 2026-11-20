@@ -35,8 +35,8 @@ return {
 					end,
 					-- 快捷键设置
 					keymap = {
-						-- 接受建议（Tab 键）
-						accept = "<Tab>",
+						-- 接受建议的 Tab 绑定在 blink.cmp 的 <Tab> 映射链最前面
+						-- （见 lua/plugins/completion.lua），避免两处绑定竞争
 						-- 下一个建议
 						next = "<M-]>",
 						-- 上一个建议

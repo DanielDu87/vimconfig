@@ -1,27 +1,16 @@
 --==============================================================================
--- Treesitter 配置（锁定兼容版本）
+-- Treesitter 配置
 --==============================================================================
--- 锁定 nvim-treesitter 到兼容 LazyVim 的版本
--- 原因：2023-06-12 的重构版本删除了 configs.lua，导致与 LazyVim 不兼容
---
--- 重要：不要运行 :Lazy update nvim-treesitter，会破坏兼容性
--- 如需更新，请手动测试并更新 pin 版本
+-- Neovim 0.12 起 treesitter 高亮/注入由核心运行时提供，nvim-treesitter 必须使用
+-- main 分支。旧的 master 分支（曾 pin 在 310f0925）与 0.12 不兼容，会在注入
+-- 解析时报 "attempt to call method 'range' (a nil value)"。
+-- 其余配置（高亮/缩进/折叠/自动安装）沿用 LazyVim 默认 spec，这里只补充
+-- ensure_installed。
 
 return {
 	{
 		"nvim-treesitter/nvim-treesitter",
-		-- 完全覆盖 LazyVim 的配置
-		commit = "310f0925ec64c7e54f3ee952679d285b13e5a735", -- 用 commit 锁定版本（替代本地 branch）
-		pin = true, -- 禁止自动更新
-		version = false, -- 不使用版本标签
-		build = ":TSUpdate", -- 简化的 build 命令
-		event = { "LazyFile", "VeryLazy" },
-		cmd = { "TSUpdate", "TSInstall", "TSLog", "TSUninstall" },
-		opts_extend = { "ensure_installed" },
 		opts = {
-			indent = { enable = true },
-			highlight = { enable = true },
-			folds = { enable = true },
 			ensure_installed = {
 				"bash",
 				"c",
@@ -49,19 +38,5 @@ return {
 				"yaml",
 			},
 		},
-		-- 提供兼容层，使旧版本符合 LazyVim 的期望
-		config = function(_, opts)
-			local TS = require("nvim-treesitter")
-
-			-- 为旧版本添加 get_installed 函数（LazyVim 需要）
-			if not TS.get_installed then
-				TS.get_installed = function()
-					local info = require("nvim-treesitter.info")
-					return info.installed_parsers()
-				end
-			end
-
-			TS.setup(opts)
-		end,
 	},
 }

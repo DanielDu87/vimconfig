@@ -8,3 +8,5 @@ foo.*
 data
 .explorer_width
 node_modules/
+.DS_Store
+.handoff-backups/

@@ -124,12 +124,12 @@ require("lazy").setup({
 	},
 
 	-- 更新检查器配置
+	-- 已关闭：不自动检查插件更新，也不弹出更新提示
+	-- 需要更新时手动执行 :Lazy update 或 :Lazy sync
 	checker = {
-		-- 定期检查插件更新（默认每周检查一次）
-		enabled = true,
-		-- 检查到更新时显示通知
-		notify = true,
-	}, -- automatically check for plugin updates
+		enabled = false,
+		notify = false,
+	},
 
 	-- 性能优化配置
 	performance = {

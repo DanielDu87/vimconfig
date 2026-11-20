@@ -37,7 +37,20 @@ return {
 			-- 键盘映射配置
 			opts.keymap = {
 				preset = "enter",
-				["<Tab>"] = { "show", "snippet_forward", "fallback" },
+				-- Tab 优先接受 Copilot 内联建议，其次补全菜单/片段跳转，最后回退缩进
+				["<Tab>"] = {
+					function()
+						local ok, suggestion = pcall(require, "copilot.suggestion")
+						if ok and suggestion.is_visible() then
+							suggestion.accept()
+							return true -- 已处理，不再执行后续命令
+						end
+						return false -- 交给下一个命令
+					end,
+					"show",
+					"snippet_forward",
+					"fallback",
+				},
 				["<S-Tab>"] = { "snippet_backward", "fallback" },
 				-- 确保 Enter 在有补全项时优先选择，无补全项时才换行
 				["<CR>"] = { "accept", "fallback" },
